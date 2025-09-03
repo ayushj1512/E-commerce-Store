@@ -12,14 +12,14 @@ type HydrationStrategies = {
 }
 type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
 interface _GlobalComponents {
-      'CartRelatedProducts': typeof import("../components/cart/relatedProducts.vue")['default']
+      'TopBar': typeof import("../components/TopBar.vue")['default']
+    'CartRelatedProducts': typeof import("../components/cart/relatedProducts.vue")['default']
     'CollectionFilterSidebar': typeof import("../components/collection/FilterSidebar.vue")['default']
     'CollectionPage': typeof import("../components/collection/collectionPage.vue")['default']
     'CommonFooter': typeof import("../components/common/Footer.vue")['default']
     'CommonGlobalNotification': typeof import("../components/common/GlobalNotification.vue")['default']
     'CommonHeader': typeof import("../components/common/Header.vue")['default']
     'CommonProductCard': typeof import("../components/common/ProductCard.vue")['default']
-    'CommonTopBar': typeof import("../components/common/TopBar.vue")['default']
     'CommonVideoCard': typeof import("../components/common/VideoCard.vue")['default']
     'HomeBannerComponent': typeof import("../components/home/BannerComponent.vue")['default']
     'HomeCategorySlider': typeof import("../components/home/CategorySlider.vue")['default']
@@ -60,14 +60,14 @@ interface _GlobalComponents {
     'Body': typeof import("../node_modules/nuxt/dist/head/runtime/components")['Body']
     'NuxtIsland': typeof import("../node_modules/nuxt/dist/app/components/nuxt-island")['default']
     'NuxtRouteAnnouncer': typeof import("../node_modules/nuxt/dist/app/components/server-placeholder")['default']
-      'LazyCartRelatedProducts': LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
+      'LazyTopBar': LazyComponent<typeof import("../components/TopBar.vue")['default']>
+    'LazyCartRelatedProducts': LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
     'LazyCollectionFilterSidebar': LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
     'LazyCollectionPage': LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
     'LazyCommonFooter': LazyComponent<typeof import("../components/common/Footer.vue")['default']>
     'LazyCommonGlobalNotification': LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>
     'LazyCommonHeader': LazyComponent<typeof import("../components/common/Header.vue")['default']>
     'LazyCommonProductCard': LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
-    'LazyCommonTopBar': LazyComponent<typeof import("../components/common/TopBar.vue")['default']>
     'LazyCommonVideoCard': LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
     'LazyHomeBannerComponent': LazyComponent<typeof import("../components/home/BannerComponent.vue")['default']>
     'LazyHomeCategorySlider': LazyComponent<typeof import("../components/home/CategorySlider.vue")['default']>
@@ -114,6 +114,7 @@ declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
 
+export const TopBar: typeof import("../components/TopBar.vue")['default']
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CollectionFilterSidebar: typeof import("../components/collection/FilterSidebar.vue")['default']
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
@@ -121,7 +122,6 @@ export const CommonFooter: typeof import("../components/common/Footer.vue")['def
 export const CommonGlobalNotification: typeof import("../components/common/GlobalNotification.vue")['default']
 export const CommonHeader: typeof import("../components/common/Header.vue")['default']
 export const CommonProductCard: typeof import("../components/common/ProductCard.vue")['default']
-export const CommonTopBar: typeof import("../components/common/TopBar.vue")['default']
 export const CommonVideoCard: typeof import("../components/common/VideoCard.vue")['default']
 export const HomeBannerComponent: typeof import("../components/home/BannerComponent.vue")['default']
 export const HomeCategorySlider: typeof import("../components/home/CategorySlider.vue")['default']
@@ -162,6 +162,7 @@ export const Html: typeof import("../node_modules/nuxt/dist/head/runtime/compone
 export const Body: typeof import("../node_modules/nuxt/dist/head/runtime/components")['Body']
 export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components/nuxt-island")['default']
 export const NuxtRouteAnnouncer: typeof import("../node_modules/nuxt/dist/app/components/server-placeholder")['default']
+export const LazyTopBar: LazyComponent<typeof import("../components/TopBar.vue")['default']>
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
@@ -169,7 +170,6 @@ export const LazyCommonFooter: LazyComponent<typeof import("../components/common
 export const LazyCommonGlobalNotification: LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>
 export const LazyCommonHeader: LazyComponent<typeof import("../components/common/Header.vue")['default']>
 export const LazyCommonProductCard: LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
-export const LazyCommonTopBar: LazyComponent<typeof import("../components/common/TopBar.vue")['default']>
 export const LazyCommonVideoCard: LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
 export const LazyHomeBannerComponent: LazyComponent<typeof import("../components/home/BannerComponent.vue")['default']>
 export const LazyHomeCategorySlider: LazyComponent<typeof import("../components/home/CategorySlider.vue")['default']>

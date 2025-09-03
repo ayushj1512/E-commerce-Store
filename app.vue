@@ -20,7 +20,7 @@
 <script setup>
 import Header from '~/components/common/Header.vue'
 import Footer from '~/components/common/Footer.vue'
-import TopBar from '~/components/common/TopBar.vue'
+import TopBar from '~/components/TopBar.vue'
 
 const { vueApp } = useNuxtApp()
 </script>
