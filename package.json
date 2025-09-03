@@ -2,7 +2,7 @@
   "name": "nuxt4-tailwind-starter",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
+    "scripts": {
     "dev": "npx nuxt dev",
     "build": "npx nuxt build",
     "generate": "npx nuxt generate",
