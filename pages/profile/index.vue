@@ -1,45 +1,46 @@
 <template>
-  <div class="bg-gray-50 min-h-screen py-8 px-4 md:px-12 lg:px-24">
-    <div class="max-w-7xl mx-auto space-y-10">
+  <div class="bg-gray-50 min-h-screen py-6 px-3 sm:px-6 md:px-12 lg:px-24">
+    <div class="max-w-7xl mx-auto space-y-8 sm:space-y-10">
+      
       <!-- Profile Header -->
-      <div class="bg-white shadow-lg rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12">
+      <div class="bg-white shadow-lg rounded-2xl p-5 sm:p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-5 md:gap-12">
         <!-- Avatar -->
         <div class="flex-shrink-0">
           <img
             :src="customer.avatar"
             alt="Customer Avatar"
-            class="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-black shadow-md"
+            class="w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 rounded-full border-4 border-black shadow-md"
           />
         </div>
 
         <!-- Info -->
         <div class="flex-1 flex flex-col gap-2 text-center md:text-left">
-          <h1 class="text-2xl md:text-4xl font-extrabold text-black">{{ customer.name }}</h1>
-          <p class="text-gray-700 font-medium text-sm md:text-base">{{ customer.email }}</p>
-          <span class="inline-block mt-2 px-3 py-1 bg-black text-white font-semibold rounded-full text-sm md:text-base">
+          <h1 class="text-xl sm:text-2xl md:text-4xl font-extrabold text-black">{{ customer.name }}</h1>
+          <p class="text-gray-700 font-medium text-sm sm:text-base">{{ customer.email }}</p>
+          <span class="inline-block mt-2 px-3 py-1 bg-black text-white font-semibold rounded-full text-xs sm:text-sm md:text-base">
             VIP Customer
           </span>
-          <p class="mt-3 text-gray-600 italic text-sm md:text-base">"{{ randomQuote }}"</p>
+          <p class="mt-3 text-gray-600 italic text-xs sm:text-sm md:text-base">"{{ randomQuote }}"</p>
         </div>
       </div>
 
       <!-- Orders History -->
       <section>
-        <h2 class="text-xl md:text-2xl font-bold py-4 text-black">Orders History</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold py-3 sm:py-4 text-black">Orders History</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div
             v-for="order in orders"
             :key="order.id"
-            class="bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-1"
+            class="bg-white p-4 sm:p-5 rounded-xl shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
           >
-            <h3 class="font-semibold text-black mb-2 text-lg">Order #{{ order.id }}</h3>
-            <p class="text-gray-700 text-sm mb-1">Date: {{ order.date }}</p>
-            <p class="text-gray-700 text-sm mb-2">Total: ₹{{ order.total }}</p>
+            <h3 class="font-semibold text-black mb-2 text-base sm:text-lg">Order #{{ order.id }}</h3>
+            <p class="text-gray-700 text-xs sm:text-sm mb-1">Date: {{ order.date }}</p>
+            <p class="text-gray-700 text-xs sm:text-sm mb-2">Total: ₹{{ order.total }}</p>
             <div class="flex flex-wrap gap-2 mt-2">
               <span
                 v-for="item in order.items"
                 :key="item"
-                class="text-xs md:text-sm bg-gray-100 px-2 py-1 rounded-full text-gray-800"
+                class="text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded-full text-gray-800"
               >
                 {{ item }}
               </span>
@@ -50,36 +51,36 @@
 
       <!-- Saved Addresses -->
       <section>
-        <h2 class="text-xl md:text-2xl font-bold pt-4 pb-6 text-black">Saved Addresses</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold pt-4 pb-5 text-black">Saved Addresses</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div
             v-for="address in addresses"
             :key="address.id"
-            class="bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-1"
+            class="bg-white p-4 sm:p-5 rounded-xl shadow-md hover:shadow-xl transition-transform hover:-translate-y-1"
           >
-            <p class="font-semibold text-black mb-2">{{ address.name }}</p>
-            <p class="text-gray-700 text-sm mb-1">{{ address.street }}, {{ address.city }}</p>
-            <p class="text-gray-700 text-sm mb-1">{{ address.state }} - {{ address.zip }}</p>
-            <p class="text-gray-700 text-sm">{{ address.phone }}</p>
+            <p class="font-semibold text-black mb-2 text-sm sm:text-base">{{ address.name }}</p>
+            <p class="text-gray-700 text-xs sm:text-sm mb-1">{{ address.street }}, {{ address.city }}</p>
+            <p class="text-gray-700 text-xs sm:text-sm mb-1">{{ address.state }} - {{ address.zip }}</p>
+            <p class="text-gray-700 text-xs sm:text-sm">{{ address.phone }}</p>
           </div>
         </div>
       </section>
 
       <!-- Raise Concern / Support -->
-      <section class="bg-white p-6 md:p-8 rounded-2xl shadow-lg max-w-7xl mx-auto">
-        <h2 class="text-xl md:text-2xl font-bold mb-4 text-black">Raise a Concern</h2>
-        <p class="text-gray-700 mb-4 text-sm md:text-base">
+      <section class="bg-white p-5 sm:p-6 md:p-8 rounded-2xl shadow-lg max-w-7xl mx-auto">
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black">Raise a Concern</h2>
+        <p class="text-gray-700 mb-3 sm:mb-4 text-xs sm:text-sm md:text-base">
           Facing any issue? Let us know and our support team will assist you.
         </p>
         <textarea
           v-model="concernText"
           placeholder="Type your concern here..."
-          class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent mb-4 text-sm md:text-base resize-none"
+          class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent mb-3 sm:mb-4 text-xs sm:text-sm md:text-base resize-none"
           rows="4"
         ></textarea>
         <button
           @click="submitConcern"
-          class="bg-black text-white px-6 py-2 rounded-full font-semibold hover:bg-gray-800 transition-shadow shadow-md text-sm md:text-base"
+          class="bg-black text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-gray-800 transition-shadow shadow-md text-xs sm:text-sm md:text-base"
         >
           Submit
         </button>

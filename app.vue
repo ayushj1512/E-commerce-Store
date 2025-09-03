@@ -13,6 +13,7 @@
 
     <!-- Footer -->
     <Footer />
+
   </div>
 </template>
 
@@ -20,6 +21,8 @@
 import Header from '~/components/common/Header.vue'
 import Footer from '~/components/common/Footer.vue'
 import TopBar from '~/components/common/Topbar.vue'
+
+const { vueApp } = useNuxtApp()
 </script>
 
 <style>
@@ -31,26 +34,31 @@ import TopBar from '~/components/common/Topbar.vue'
 }
 
 /* Optional: smooth fade for header/footer */
-#app > * {
+#app>* {
   transition: all 0.5s ease;
 }
 
 /* Page slide transition */
-.page-slide-enter-active, .page-slide-leave-active {
+.page-slide-enter-active,
+.page-slide-leave-active {
   transition: all 0.5s ease;
 }
+
 .page-slide-enter-from {
   opacity: 0;
   transform: translateY(20px);
 }
+
 .page-slide-enter-to {
   opacity: 1;
   transform: translateY(0);
 }
+
 .page-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
 }
+
 .page-slide-leave-to {
   opacity: 0;
   transform: translateY(-20px);

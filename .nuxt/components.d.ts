@@ -16,6 +16,7 @@ interface _GlobalComponents {
     'CollectionFilterSidebar': typeof import("../components/collection/FilterSidebar.vue")['default']
     'CollectionPage': typeof import("../components/collection/collectionPage.vue")['default']
     'CommonFooter': typeof import("../components/common/Footer.vue")['default']
+    'CommonGlobalNotification': typeof import("../components/common/GlobalNotification.vue")['default']
     'CommonHeader': typeof import("../components/common/Header.vue")['default']
     'CommonProductCard': typeof import("../components/common/ProductCard.vue")['default']
     'CommonTopBar': typeof import("../components/common/TopBar.vue")['default']
@@ -34,6 +35,7 @@ interface _GlobalComponents {
     'LoginNewUserForm': typeof import("../components/login/NewUserForm.vue")['default']
     'LoginOtpInput': typeof import("../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../components/login/PhoneNumberInput.vue")['default']
+    'ProductDetailReviews&rating': typeof import("../components/productDetail/reviews&rating.vue")['default']
     'NuxtWelcome': typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
     'NuxtLayout': typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
     'NuxtErrorBoundary': typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -62,6 +64,7 @@ interface _GlobalComponents {
     'LazyCollectionFilterSidebar': LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
     'LazyCollectionPage': LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
     'LazyCommonFooter': LazyComponent<typeof import("../components/common/Footer.vue")['default']>
+    'LazyCommonGlobalNotification': LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>
     'LazyCommonHeader': LazyComponent<typeof import("../components/common/Header.vue")['default']>
     'LazyCommonProductCard': LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
     'LazyCommonTopBar': LazyComponent<typeof import("../components/common/TopBar.vue")['default']>
@@ -80,6 +83,7 @@ interface _GlobalComponents {
     'LazyLoginNewUserForm': LazyComponent<typeof import("../components/login/NewUserForm.vue")['default']>
     'LazyLoginOtpInput': LazyComponent<typeof import("../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
+    'LazyProductDetailReviews&rating': LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
     'LazyNuxtWelcome': LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
     'LazyNuxtLayout': LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
     'LazyNuxtErrorBoundary': LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>
@@ -114,6 +118,7 @@ export const CartRelatedProducts: typeof import("../components/cart/relatedProdu
 export const CollectionFilterSidebar: typeof import("../components/collection/FilterSidebar.vue")['default']
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
 export const CommonFooter: typeof import("../components/common/Footer.vue")['default']
+export const CommonGlobalNotification: typeof import("../components/common/GlobalNotification.vue")['default']
 export const CommonHeader: typeof import("../components/common/Header.vue")['default']
 export const CommonProductCard: typeof import("../components/common/ProductCard.vue")['default']
 export const CommonTopBar: typeof import("../components/common/TopBar.vue")['default']
@@ -132,6 +137,7 @@ export const HomeStars: typeof import("../components/home/stars.vue")['default']
 export const LoginNewUserForm: typeof import("../components/login/NewUserForm.vue")['default']
 export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['default']
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
+export const ProductDetailReviews&rating: typeof import("../components/productDetail/reviews&rating.vue")['default']
 export const NuxtWelcome: typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
 export const NuxtLayout: typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
 export const NuxtErrorBoundary: typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -160,6 +166,7 @@ export const LazyCartRelatedProducts: LazyComponent<typeof import("../components
 export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
 export const LazyCommonFooter: LazyComponent<typeof import("../components/common/Footer.vue")['default']>
+export const LazyCommonGlobalNotification: LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>
 export const LazyCommonHeader: LazyComponent<typeof import("../components/common/Header.vue")['default']>
 export const LazyCommonProductCard: LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
 export const LazyCommonTopBar: LazyComponent<typeof import("../components/common/TopBar.vue")['default']>
@@ -178,6 +185,7 @@ export const LazyHomeStars: LazyComponent<typeof import("../components/home/star
 export const LazyLoginNewUserForm: LazyComponent<typeof import("../components/login/NewUserForm.vue")['default']>
 export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login/OtpInput.vue")['default']>
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
+export const LazyProductDetailReviews&rating: LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
 export const LazyNuxtLayout: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
 export const LazyNuxtErrorBoundary: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>
