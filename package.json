@@ -2,12 +2,14 @@
   "name": "nuxt4-tailwind-starter",
   "version": "1.0.0",
   "private": true,
-    "scripts": {
+  "scripts": {
     "dev": "npx nuxt dev",
     "build": "npx nuxt build",
     "generate": "npx nuxt generate",
     "preview": "npx nuxt preview",
-    "postinstall": "chmod +x node_modules/.bin/nuxt || true"
+    "postinstall": "chmod +x node_modules/.bin/nuxt || true",
+    "lint": "npx eslint . --ext .js,.ts,.vue",
+    "format": "npx prettier --write ."
   },
   "dependencies": {
     "@vueuse/motion": "^3.0.3",
@@ -21,7 +23,9 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13"
+    "tailwindcss": "^3.4.13",
+    "eslint": "^8.51.0",
+    "prettier": "^3.3.0"
   },
   "engines": {
     "node": ">=18"
