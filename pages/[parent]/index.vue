@@ -87,10 +87,8 @@
       <div class="cmsContent prose max-w-none text-gray-800" v-html="cmsContent"></div>
     </div>
 
-    <!-- Fallback -->
-    <div v-else class="flex justify-center items-center h-60">
-      <p class="text-gray-400 text-lg font-medium">No content available.</p>
-    </div>
+    <!-- Error Handler Fallback -->
+    <ErrorHandler v-else />
   </div>
 </template>
 
@@ -99,6 +97,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "#app";
 import axios from "axios";
 import CollectionPage from "~/components/collection/collectionPage.vue";
+import ErrorHandler from "~/components/common/errorHandler.vue"; // ✅ Import ErrorHandler
 
 const route = useRoute();
 const router = useRouter();

@@ -1,16 +1,67 @@
 <template>
   <header class="bg-white text-black shadow-md relative z-50">
-
     <!-- Mobile Header -->
     <div class="flex items-center justify-between px-4 py-3 md:hidden">
-      <!-- Hamburger (Left) -->
+      <!-- Hamburger -->
       <button @click="mobileSidebarOpen = true" class="focus:outline-none">
         <Menu class="w-6 h-6" />
       </button>
 
-      <!-- Brand Centered -->
-      <div class="text-xl font-bold cursor-pointer" @click="navigateTo('/')">
-        SSS
+      <!-- Brand -->
+      <div class="text-xl font-great-vibes cursor-pointer" @click="navigateTo('/')">
+        Street Style Store
+      </div>
+
+      <!-- Right Icons -->
+      <div class="flex items-center space-x-4">
+        <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors">
+          <SearchIcon class="w-6 h-6" />
+        </button>
+        <ShoppingCart
+          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
+          @click="navigateTo('/cart')"
+        />
+        <User
+          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
+          @click="navigateTo('/profile')"
+        />
+        <Heart
+          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
+          @click="navigateTo('/wishlist')"
+        />
+      </div>
+    </div>
+
+    <!-- Desktop Header -->
+    <div class="hidden md:flex items-center justify-between px-6 py-3">
+      <!-- Brand -->
+      <div class="text-2xl font-great-vibes cursor-pointer" @click="navigateTo('/')">
+        Street Style Store
+      </div>
+
+      <!-- Menu + Search -->
+      <div class="flex items-center space-x-6 w-full max-w-3xl">
+        <nav class="flex space-x-4 flex-1">
+          <div
+            v-for="menu in menus"
+            :key="menu.name"
+            class="relative cursor-pointer"
+            @click="navigateTo('/collection')"
+          >
+            <button class="font-medium hover:text-gray-600 transition-colors">
+              {{ menu.name }}
+            </button>
+          </div>
+        </nav>
+
+        <!-- Header Search Component -->
+        <HeaderSearch
+          class="flex-1"
+          :recent-searches="recentSearches"
+          :popular-searches="popularSearches"
+          @search="navigateToSearch"
+          @image-search="handleImageSearch"
+        />
       </div>
 
       <!-- Right Icons -->
@@ -30,55 +81,6 @@
       </div>
     </div>
 
-    <!-- Desktop Header -->
-    <div class="hidden md:flex items-center justify-between px-6 py-3">
-      <!-- Brand -->
-      <div class="text-2xl font-bold cursor-pointer" @click="router.push('/')">
-        Street Style Store
-      </div>
-
-      <!-- Menu + Search -->
-      <div class="flex items-center space-x-6">
-        <nav class="flex space-x-4">
-          <div
-            v-for="menu in menus"
-            :key="menu.name"
-            class="relative cursor-pointer"
-            @click="router.push('/collection')"
-          >
-            <button class="font-medium hover:text-gray-600 transition-colors">
-              {{ menu.name }}
-            </button>
-          </div>
-        </nav>
-
-        <!-- Search Field -->
-        <div>
-          <input
-            type="text"
-            placeholder="Search..."
-            class="border border-black rounded-md px-3 py-1 w-64 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <!-- Right Icons -->
-      <div class="flex items-center space-x-4">
-        <ShoppingCart
-          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
-          @click="router.push('/cart')"
-        />
-        <User
-          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
-          @click="router.push('/profile')"
-        />
-        <Heart
-          class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors"
-          @click="router.push('/wishlist')"
-        />
-      </div>
-    </div>
-
     <!-- Mobile Sidebar -->
     <transition name="slide">
       <div
@@ -87,14 +89,12 @@
         @click.self="mobileSidebarOpen = false"
       >
         <div class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg z-50 flex flex-col overflow-y-auto">
-          <!-- Close Button -->
           <div class="flex justify-end p-4">
             <button @click="mobileSidebarOpen = false" class="focus:outline-none">
               <X class="w-6 h-6" />
             </button>
           </div>
 
-          <!-- Menu -->
           <nav class="flex flex-col">
             <div
               v-for="menu in menus"
@@ -123,26 +123,17 @@
               </ul>
             </div>
           </nav>
-
-          <!-- Mobile Search -->
-          <div class="px-4 py-3 mt-auto">
-            <input
-              type="text"
-              placeholder="Search..."
-              class="border border-gray-300 rounded-md px-3 py-2 w-full bg-white text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-            />
-          </div>
         </div>
       </div>
     </transition>
-
   </header>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ShoppingCart, User, Heart, Menu, X } from 'lucide-vue-next';
+import { ShoppingCart, User, Heart, Menu, X, SearchIcon } from 'lucide-vue-next';
+import HeaderSearch from './HeaderSearch.vue';
 
 const router = useRouter();
 
@@ -154,9 +145,13 @@ const menus = [
   { name: "Footwear", items: ["Flats", "Heels", "Sneakers", "Sandals"] },
 ];
 
+const recentSearches = ref(['Crop Tops', 'Black Jeans', 'Sneakers']);
+const popularSearches = ref(['Maxi Dress', 'Sunglasses', 'Flats', 'Belts']);
+
 const mobileSidebarOpen = ref(false);
 const openMenus = ref([]);
 
+// Sidebar toggle
 const toggleMenu = (name) => {
   if (openMenus.value.includes(name)) {
     openMenus.value = openMenus.value.filter((n) => n !== name);
@@ -165,15 +160,40 @@ const toggleMenu = (name) => {
   }
 };
 
-// Navigate and close mobile sidebar automatically
+// Navigate helper
 const navigateTo = (path) => {
   router.push(path);
-  mobileSidebarOpen.value = false; // auto close sidebar on mobile
+  mobileSidebarOpen.value = false;
+};
+
+// Search navigation
+const navigateToSearch = (query) => {
+  if (window.innerWidth < 768) {
+    router.push('/search'); // Mobile always goes to /search
+  } else {
+    if (query) {
+      router.push(`/search-results?query=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/search');
+    }
+  }
+};
+
+// Handle image search
+const handleImageSearch = (file) => {
+  console.log('Image uploaded for search:', file);
+  // Add your image search logic here
 };
 </script>
 
 <style scoped>
-/* Sidebar slide animation */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
+.font-great-vibes {
+  font-family: 'Great Vibes', cursive;
+  font-weight: 700;
+}
+
 .slide-enter-active, .slide-leave-active {
   transition: all 0.3s ease;
 }
