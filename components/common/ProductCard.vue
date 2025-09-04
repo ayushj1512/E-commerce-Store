@@ -66,32 +66,38 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 import { useRouter } from "#app"
-import { useToast } from "vue-toastification" // Vue Toastification
+import Toastification from "vue-toastification" // default import
 
 const props = defineProps({
   title: { type: String, required: true },
   image: { type: String, required: true },
-  hoverImage: { type: String, default: null }, 
-  tags: { type: Array, default: () => [] }, 
+  hoverImage: { type: String, default: null },
+  tags: { type: Array, default: () => [] },
   price: { type: Number, required: true },
   mrp: { type: Number, default: null },
   showCartBtn: { type: Boolean, default: true },
-  slug: { type: String, required: true },    
-  parent: { type: String, required: true },  
+  slug: { type: String, required: true },
+  parent: { type: String, required: true },
 })
 
 const currentImage = ref(props.image)
 const router = useRouter()
-const toast = useToast() // Vue Toastification instance
+
+// toast instance (only initialized on client)
+let toast
+onMounted(() => {
+  const { useToast } = Toastification
+  toast = useToast()
+})
 
 const goToDetail = () => {
   router.push(`/${props.parent}/${props.slug}`)
 }
 
-// Add to Cart with global notification
 const addToCart = () => {
+  if (!toast) return // safety for SSR
   toast.success(`${props.title} has been added to your cart`, {
     timeout: 2000,
     closeOnClick: true,

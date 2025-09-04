@@ -72,13 +72,9 @@
   </div>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Toastification from 'vue-toastification' // default import
-
-// Destructure useToast from default import to fix deployment issue
-const { useToast } = Toastification
-const toast = useToast()
 
 const router = useRouter()
 
@@ -102,37 +98,40 @@ const cartItems = ref([
   }
 ])
 
-// Coupon & totals
 const couponCode = ref('')
 const discount = ref(0)
 const subtotal = computed(() => cartItems.value.reduce((sum, i) => sum + i.price * i.qty, 0))
 const total = computed(() => subtotal.value + 40 - discount.value) // assuming 40 is shipping
 
 // Quantity management
+let toast // declare toast
+onMounted(() => {
+  const { useToast } = Toastification
+  toast = useToast()
+})
+
 const increaseQty = (item) => {
   item.qty++
-  toast.info(`Increased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
+  if (toast) toast.info(`Increased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
 }
 
 const decreaseQty = (item) => {
   if (item.qty > 1) {
     item.qty--
-    toast.warning(`Decreased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
+    if (toast) toast.warning(`Decreased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
   }
 }
 
 // Remove item modal
 const showModal = ref(false)
 const modalItem = ref(null)
-
 const confirmRemove = (item) => {
   modalItem.value = item
   showModal.value = true
 }
-
 const removeConfirmed = () => {
   cartItems.value = cartItems.value.filter(i => i.id !== modalItem.value.id)
-  toast.error(`${modalItem.value.name} removed from cart`, { timeout: 2500, position: 'top-right' })
+  if (toast) toast.error(`${modalItem.value.name} removed from cart`, { timeout: 2500, position: 'top-right' })
   showModal.value = false
 }
 
@@ -140,24 +139,23 @@ const removeConfirmed = () => {
 const applyCoupon = () => {
   if (couponCode.value.toLowerCase() === 'save10') {
     discount.value = 200
-    toast.success('Coupon Applied! You saved ₹200', { timeout: 2500, position: 'top-right' })
+    if (toast) toast.success('Coupon Applied! You saved ₹200', { timeout: 2500, position: 'top-right' })
   } else {
     discount.value = 0
-    toast.warning('Invalid Coupon! Enter a valid code', { timeout: 2500, position: 'top-right' })
+    if (toast) toast.warning('Invalid Coupon! Enter a valid code', { timeout: 2500, position: 'top-right' })
   }
 }
 
 // Checkout
 const checkout = () => {
   if (cartItems.value.length === 0) {
-    toast.error('Your cart is empty!', { timeout: 2500, position: 'top-right' })
+    if (toast) toast.error('Your cart is empty!', { timeout: 2500, position: 'top-right' })
     return
   }
-  toast.success('Proceeding to checkout...', { timeout: 1800, position: 'top-right' })
+  if (toast) toast.success('Proceeding to checkout...', { timeout: 1800, position: 'top-right' })
   setTimeout(() => router.push('/order-success'), 500)
 }
 </script>
-
 <style scoped>
 .fade-scale-enter-active, .fade-scale-leave-active { transition: all 0.3s ease; }
 .fade-scale-enter-from, .fade-scale-leave-to { opacity:0; transform: scale(0.95); }
