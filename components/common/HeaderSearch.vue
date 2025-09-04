@@ -14,14 +14,14 @@
         @keydown.enter="searchItem(query)"
       />
 
-      <!-- Compact Image Upload Button -->
-      <button
-        @click="triggerFileUpload"
-        class="absolute right-3 text-gray-400 hover:text-gray-700 transition text-lg"
-        title="Search by Image"
-      >
-        📷
-      </button>
+      <!-- Image Upload Button -->
+       <button
+    @click="triggerFileUpload"
+    class="absolute right-3 text-gray-400 hover:text-gray-700 transition text-lg"
+    title="Search by Image"
+  >
+    <Camera class="w-5 h-5" />
+  </button>
       <input
         type="file"
         ref="fileInput"
@@ -74,6 +74,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { Camera } from 'lucide-vue-next'
 
 const props = defineProps({
   recentSearches: { type: Array, default: () => ['Crop Tops', 'Black Jeans', 'Sneakers'] },
@@ -86,12 +87,20 @@ const router = useRouter();
 const query = ref('');
 const showDropdown = ref(false);
 const fileInput = ref(null);
-const isMobile = ref(window.innerWidth < 768);
+const isMobile = ref(false); // SSR-safe default
+
+// SSR-safe: update only if window exists
+const updateIsMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth < 768;
+  }
+};
 
 onMounted(() => {
-  window.addEventListener('resize', () => {
-    isMobile.value = window.innerWidth < 768;
-  });
+  updateIsMobile(); // safe
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', updateIsMobile);
+  }
 });
 
 // Search via text
@@ -101,7 +110,7 @@ const searchItem = (item) => {
   emit('search', item);
 
   if (isMobile.value) {
-    router.push('/search'); // Mobile: always go to /search
+    router.push('/search');
   } else {
     router.push(`/search-results?query=${encodeURIComponent(item)}`);
   }
@@ -109,7 +118,7 @@ const searchItem = (item) => {
 
 // Trigger hidden file input
 const triggerFileUpload = () => {
-  fileInput.value.click();
+  if (fileInput.value) fileInput.value.click();
 };
 
 // Handle Image Upload
@@ -128,7 +137,7 @@ const handleImageUpload = (event) => {
 
 // Handle focus for dropdown
 const handleFocus = () => {
-  if (!isMobile.value) showDropdown.value = true;
+  if (isMobile.value === false) showDropdown.value = true;
 };
 
 // Prevent dropdown from disappearing too early

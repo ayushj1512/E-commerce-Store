@@ -74,7 +74,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Toastification from 'vue-toastification' // default import
 
 const router = useRouter()
 
@@ -98,18 +97,22 @@ const cartItems = ref([
   }
 ])
 
+// Coupon & totals
 const couponCode = ref('')
 const discount = ref(0)
 const subtotal = computed(() => cartItems.value.reduce((sum, i) => sum + i.price * i.qty, 0))
 const total = computed(() => subtotal.value + 40 - discount.value) // assuming 40 is shipping
 
 // Quantity management
-let toast // declare toast
-onMounted(() => {
+let toast = null
+onMounted(async () => {
+  // Dynamic import only on client-side
+  const Toastification = await import('vue-toastification')
   const { useToast } = Toastification
   toast = useToast()
 })
 
+// Quantity functions
 const increaseQty = (item) => {
   item.qty++
   if (toast) toast.info(`Increased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
@@ -122,7 +125,7 @@ const decreaseQty = (item) => {
   }
 }
 
-// Remove item modal
+// Remove modal
 const showModal = ref(false)
 const modalItem = ref(null)
 const confirmRemove = (item) => {
@@ -135,7 +138,7 @@ const removeConfirmed = () => {
   showModal.value = false
 }
 
-// Apply coupon
+// Coupon
 const applyCoupon = () => {
   if (couponCode.value.toLowerCase() === 'save10') {
     discount.value = 200
@@ -156,6 +159,14 @@ const checkout = () => {
   setTimeout(() => router.push('/order-success'), 500)
 }
 </script>
+
+<style scoped>
+.fade-scale-enter-active, .fade-scale-leave-active { transition: all 0.3s ease; }
+.fade-scale-enter-from, .fade-scale-leave-to { opacity:0; transform: scale(0.95); }
+.fade-scale-enter-to, .fade-scale-leave-from { opacity:1; transform: scale(1); }
+</style>
+
+
 <style scoped>
 .fade-scale-enter-active, .fade-scale-leave-active { transition: all 0.3s ease; }
 .fade-scale-enter-from, .fade-scale-leave-to { opacity:0; transform: scale(0.95); }

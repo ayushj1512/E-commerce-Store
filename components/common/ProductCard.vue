@@ -3,7 +3,7 @@
     class="relative cursor-pointer group overflow-hidden shadow-sm hover:shadow-md transform transition-all duration-300 bg-white rounded-lg"
     @click="goToDetail"
   >
-    <!-- Product Image with optional hover -->
+    <!-- Product Image -->
     <div class="relative w-full overflow-hidden">
       <img
         :src="currentImage"
@@ -15,10 +15,7 @@
     </div>
 
     <!-- Tags -->
-    <div
-      v-if="tags && tags.length"
-      class="absolute top-2 left-2 flex flex-wrap gap-1 z-10"
-    >
+    <div v-if="tags && tags.length" class="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
       <span
         v-for="(tag, index) in tags"
         :key="index"
@@ -28,10 +25,8 @@
       </span>
     </div>
 
-    <!-- Product info: Name & Price + Add to Cart -->
-    <div
-      class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-    >
+    <!-- Product info -->
+    <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div class="flex flex-col flex-1">
         <h3
           class="text-gray-900 font-medium text-sm sm:text-base md:text-base truncate"
@@ -39,21 +34,12 @@
         >
           {{ title }}
         </h3>
-
         <div class="mt-1 flex items-center space-x-1 sm:space-x-2">
-          <span
-            v-if="mrp"
-            class="text-gray-400 line-through text-[10px] sm:text-sm"
-          >
-            ₹{{ mrp }}
-          </span>
-          <span class="text-gray-900 font-semibold text-sm sm:text-base">
-            ₹{{ price }}
-          </span>
+          <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
+          <span class="text-gray-900 font-semibold text-sm sm:text-base">₹{{ price }}</span>
         </div>
       </div>
 
-      <!-- Add to Cart Button -->
       <button
         v-if="showCartBtn"
         class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-1.5 bg-black text-white rounded-sm text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-300"
@@ -68,7 +54,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { useRouter } from "#app"
-import Toastification from "vue-toastification" // default import
+import { useToast } from "vue-toastification" // ✅ Named import
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -85,10 +71,9 @@ const props = defineProps({
 const currentImage = ref(props.image)
 const router = useRouter()
 
-// toast instance (only initialized on client)
-let toast
+// SSR-safe toast
+let toast = null
 onMounted(() => {
-  const { useToast } = Toastification
   toast = useToast()
 })
 
@@ -97,7 +82,7 @@ const goToDetail = () => {
 }
 
 const addToCart = () => {
-  if (!toast) return // safety for SSR
+  if (!toast) return
   toast.success(`${props.title} has been added to your cart`, {
     timeout: 2000,
     closeOnClick: true,
