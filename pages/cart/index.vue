@@ -71,62 +71,90 @@
     </transition>
   </div>
 </template>
-
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import Toastification from 'vue-toastification' // default import
 
-const router = useRouter()
+// Destructure useToast from default import to fix deployment issue
+const { useToast } = Toastification
 const toast = useToast()
 
+const router = useRouter()
+
+// Cart Items
 const cartItems = ref([
-  {id:1,name:'Classic White Shirt',description:'Pure cotton, slim fit',price:1200,qty:1,image:'https://i.pinimg.com/736x/88/a2/7f/88a27fb10d01781e0d5ae6bbba078214.jpg'},
-  {id:2,name:'Black Denim Jeans',description:'Comfort stretch, regular fit',price:2200,qty:2,image:'https://i.pinimg.com/736x/88/a2/7f/88a27fb10d01781e0d5ae6bbba078214.jpg'},
+  {
+    id: 1,
+    name: 'Classic White Shirt',
+    description: 'Pure cotton, slim fit',
+    price: 1200,
+    qty: 1,
+    image: 'https://i.pinimg.com/736x/88/a2/7f/88a27fb10d01781e0d5ae6bbba078214.jpg'
+  },
+  {
+    id: 2,
+    name: 'Black Denim Jeans',
+    description: 'Comfort stretch, regular fit',
+    price: 2200,
+    qty: 2,
+    image: 'https://i.pinimg.com/736x/88/a2/7f/88a27fb10d01781e0d5ae6bbba078214.jpg'
+  }
 ])
 
+// Coupon & totals
 const couponCode = ref('')
 const discount = ref(0)
-const subtotal = computed(()=>cartItems.value.reduce((sum,i)=>sum+i.price*i.qty,0))
-const total = computed(()=>subtotal.value+40-discount.value)
+const subtotal = computed(() => cartItems.value.reduce((sum, i) => sum + i.price * i.qty, 0))
+const total = computed(() => subtotal.value + 40 - discount.value) // assuming 40 is shipping
 
-const increaseQty=item=>{
+// Quantity management
+const increaseQty = (item) => {
   item.qty++
-  toast.info(`Increased quantity of ${item.name}`,{timeout:1800,position:'top-right'})
+  toast.info(`Increased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
 }
-const decreaseQty=item=>{
-  if(item.qty>1){
+
+const decreaseQty = (item) => {
+  if (item.qty > 1) {
     item.qty--
-    toast.warning(`Decreased quantity of ${item.name}`,{timeout:1800,position:'top-right'})
+    toast.warning(`Decreased quantity of ${item.name}`, { timeout: 1800, position: 'top-right' })
   }
 }
 
+// Remove item modal
 const showModal = ref(false)
 const modalItem = ref(null)
-const confirmRemove = item => { modalItem.value = item; showModal.value = true }
+
+const confirmRemove = (item) => {
+  modalItem.value = item
+  showModal.value = true
+}
+
 const removeConfirmed = () => {
-  cartItems.value = cartItems.value.filter(i=>i.id!==modalItem.value.id)
-  toast.error(`${modalItem.value.name} removed from cart`,{timeout:2500,position:'top-right'})
+  cartItems.value = cartItems.value.filter(i => i.id !== modalItem.value.id)
+  toast.error(`${modalItem.value.name} removed from cart`, { timeout: 2500, position: 'top-right' })
   showModal.value = false
 }
 
-const applyCoupon=()=>{
-  if(couponCode.value.toLowerCase()==='save10'){
-    discount.value=200
-    toast.success('Coupon Applied! You saved ₹200',{timeout:2500,position:'top-right'})
-  }else{
-    discount.value=0
-    toast.warning('Invalid Coupon! Enter a valid code',{timeout:2500,position:'top-right'})
+// Apply coupon
+const applyCoupon = () => {
+  if (couponCode.value.toLowerCase() === 'save10') {
+    discount.value = 200
+    toast.success('Coupon Applied! You saved ₹200', { timeout: 2500, position: 'top-right' })
+  } else {
+    discount.value = 0
+    toast.warning('Invalid Coupon! Enter a valid code', { timeout: 2500, position: 'top-right' })
   }
 }
 
-const checkout=()=>{
-  if(cartItems.value.length===0){
-    toast.error('Your cart is empty!',{timeout:2500,position:'top-right'})
+// Checkout
+const checkout = () => {
+  if (cartItems.value.length === 0) {
+    toast.error('Your cart is empty!', { timeout: 2500, position: 'top-right' })
     return
   }
-  toast.success('Proceeding to checkout...',{timeout:1800,position:'top-right'})
-  setTimeout(()=>router.push('/order-success'), 500) // small delay for UX
+  toast.success('Proceeding to checkout...', { timeout: 1800, position: 'top-right' })
+  setTimeout(() => router.push('/order-success'), 500)
 }
 </script>
 
