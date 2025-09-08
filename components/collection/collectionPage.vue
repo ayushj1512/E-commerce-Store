@@ -1,22 +1,57 @@
 <template>
   <div class="bg-white text-black min-h-screen p-4 md:p-8">
     <div class="flex flex-col md:flex-row gap-6">
-      <!-- Filters Sidebar -->
-      <div class="w-full md:w-1/5 flex-shrink-0">
-        <FilterSidebar
-          :categories="categories"
-          :selectedCategories="selectedCategories"
-          :priceRange="priceRange"
-          @applyPrice="applyPriceFilter"
-          @clear="clearFilters"
-        />
+      
+      <!-- Sidebar (mobile = drawer, desktop = fixed column) -->
+      <div class="md:w-1/5 flex-shrink-0">
+        <!-- Mobile Filter Toggle -->
+        <button
+          @click="isFilterOpen = true"
+          class="md:hidden mb-4 bg-black text-white px-5 py-2 rounded-full shadow hover:bg-gray-800 transition w-full sm:w-auto"
+        >
+          Filters
+        </button>
+
+        <!-- Mobile Drawer Overlay -->
+        <div
+          v-if="isFilterOpen"
+          class="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+          @click="isFilterOpen = false"
+        ></div>
+
+        <!-- Drawer / Sidebar -->
+        <aside
+          :class="[
+            'fixed top-0 left-0 h-full w-10/12 sm:w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 overflow-y-auto md:relative md:h-auto md:w-full md:translate-x-0 md:shadow-none',
+            isFilterOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          ]"
+        >
+          <div class="p-4 sm:p-6 flex flex-col h-full">
+            <!-- Mobile Close Btn -->
+            <button
+              class="md:hidden self-end text-gray-600 text-xl font-bold hover:text-gray-800 transition mb-4"
+              @click="isFilterOpen = false"
+            >
+              ✕
+            </button>
+
+            <!-- FilterSidebar Component -->
+            <FilterSidebar
+              :categories="categories"
+              :selectedCategories="selectedCategories"
+              :priceRange="priceRange"
+              @applyPrice="applyPriceFilter"
+              @clear="clearFilters"
+            />
+          </div>
+        </aside>
       </div>
 
       <!-- Products Section -->
-      <div class="w-full md:w-4/5">
-        <!-- Tags + Quick Filters Row -->
+      <div class="flex-1">
+        <!-- Tags + Sort Buttons -->
         <div class="flex flex-wrap gap-2 mb-4 overflow-x-auto">
-          <!-- Tags Filter -->
+          <!-- Tags -->
           <button
             v-for="tag in availableTags"
             :key="tag"
@@ -31,7 +66,7 @@
             {{ tag }}
           </button>
 
-          <!-- Quick Filter Buttons -->
+          <!-- Sort -->
           <button
             v-for="option in sortOptions"
             :key="option.value"
@@ -80,6 +115,7 @@ import ProductCard from "@/components/common/ProductCard.vue";
 import FilterSidebar from "@/components/collection/FilterSidebar.vue";
 
 const router = useRouter();
+const isFilterOpen = ref(false);
 
 const products = ref([
   { id: 1, name: "Classic White Shirt", slug: "classic-white-shirt", parent: "shirts", category: "Shirts", price: 1200, mrp: 1500, image: "https://i.pinimg.com/736x/32/a0/94/32a0944320c93cbf7d47d69f606925dd.jpg", hoverImage: null, tags: ["New","Best Seller"] },
@@ -143,6 +179,5 @@ const goToProduct = (product) => {
 .fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.5s ease; }
 .fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 .fade-slide-enter-to, .fade-slide-leave-from { opacity: 1; transform: translateY(0); }
-
 button { transition: all 0.3s ease; }
 </style>

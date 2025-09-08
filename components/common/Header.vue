@@ -3,7 +3,9 @@
     <!-- Mobile Header -->
     <div class="flex items-center justify-between px-4 py-3 md:hidden">
       <button @click="mobileSidebarOpen = true" class="focus:outline-none"><Menu class="w-6 h-6"/></button>
-      <div class="text-xl font-great-vibes cursor-pointer" @click="navigateTo('/')">Street Style Store</div>
+      <div class="cursor-pointer" @click="navigateTo('/')">
+        <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
+      </div>
       <div class="flex items-center space-x-4">
         <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors"><SearchIcon class="w-6 h-6"/></button>
         <ShoppingCart class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/cart')"/>
@@ -14,7 +16,9 @@
 
     <!-- Desktop Header -->
     <div class="hidden md:flex items-center justify-between px-6 py-3">
-      <div class="text-2xl font-great-vibes cursor-pointer" @click="navigateTo('/')">Street Style Store</div>
+      <div class="cursor-pointer" @click="navigateTo('/')">
+        <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-12 object-contain"/>
+      </div>
       <div class="flex items-center space-x-6 w-full max-w-3xl">
         <nav class="flex space-x-4 flex-1">
           <div v-for="menu in menus" :key="menu.name" class="relative cursor-pointer" @click="navigateTo('/collection')">
@@ -53,7 +57,6 @@
     </transition>
   </header>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'

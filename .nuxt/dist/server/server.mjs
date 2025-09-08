@@ -1,1 +1,1 @@
-export { default } from "file:///C:/Users/croma/SSS_website/FableStreetSSS/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
+export { default } from "file:///C:/Users/DELL/SSS-Website/E-commerce-Store/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"
