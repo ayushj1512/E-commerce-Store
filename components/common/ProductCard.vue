@@ -54,7 +54,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { useRouter } from "#app"
-import { useToast } from "vue-toastification" // ✅ Named import
+import { useToast } from "vue-toastification"
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -64,21 +64,32 @@ const props = defineProps({
   price: { type: Number, required: true },
   mrp: { type: Number, default: null },
   showCartBtn: { type: Boolean, default: true },
-  slug: { type: String, required: true },
-  parent: { type: String, required: true },
+  productUrl: { type: String, required: true }, // ✅ from API
 })
 
 const currentImage = ref(props.image)
 const router = useRouter()
 
-// SSR-safe toast
 let toast = null
 onMounted(() => {
   toast = useToast()
 })
 
 const goToDetail = () => {
-  router.push(`/${props.parent}/${props.slug}`)
+  if (!props.productUrl) return
+
+  // ✅ agar internal route hai
+  if (props.productUrl.startsWith("/")) {
+    try {
+      router.push(props.productUrl)
+    } catch (e) {
+      console.error("Router push failed, falling back to full redirect:", e)
+      window.location.href = props.productUrl
+    }
+  } else {
+    // ✅ external URL case
+    window.location.href = props.productUrl
+  }
 }
 
 const addToCart = () => {
