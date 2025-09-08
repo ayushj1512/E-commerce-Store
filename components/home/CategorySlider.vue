@@ -5,15 +5,15 @@
     <div class="flex justify-start sm:justify-center">
       <div class="flex space-x-3 overflow-x-auto px-4 sm:px-6 pb-4 scrollbar-hide snap-x snap-mandatory">
         <div
-          v-for="(category, index) in categories"
+          v-for="(category, index) in apiStore.sliderList"
           :key="index"
-          @click="goToCollection"
+          @click="goToLink(category.link)"
           class="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44 xl:w-48 rounded-lg overflow-hidden shadow-md cursor-pointer transform hover:scale-105 transition-transform duration-300 bg-gray-50 snap-start"
         >
           <!-- Image -->
           <div class="relative">
             <img
-              :src="category.image"
+              :src="category.img"
               :alt="category.name"
               class="w-full h-28 sm:h-32 md:h-36 lg:h-40 xl:h-44 object-cover rounded-t-lg"
             />
@@ -31,21 +31,25 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useApiStore } from '~/stores/apiStore'
 
 const router = useRouter()
+const apiStore = useApiStore()
 
-const categories = [
-  { name: "Tops & Shirts", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Ftops_27ae4357-df67-4215-a2de-e5b6d17d20d3.jpg%3Fv%3D1755858460&w=1920&q=75" },
-  { name: "Dresses", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Fdress_d6d90a45-ecec-45bf-adf8-bdedbaf90b51.jpg%3Fv%3D1755858460&w=1920&q=75" },
-  { name: "Tees", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Ftee_knits.jpg%3Fv%3D1755858460&w=1920&q=75" },
-  { name: "Trousers", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Fskirts_0047415b-cac2-4a5a-8197-0f84d1bff8e7.jpg%3Fv%3D1755858460&w=1920&q=75" },
-  { name: "Skirts & Shorts", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Fskirts_0047415b-cac2-4a5a-8197-0f84d1bff8e7.jpg%3Fv%3D1755858460&w=1920&q=75" },
-  { name: "Denim", image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2Fskirts_0047415b-cac2-4a5a-8197-0f84d1bff8e7.jpg%3Fv%3D1755858460&w=1920&q=75" },
-]
+// Fetch only top_menu data on mounted
+onMounted(() => {
+  apiStore.fetchSlider('top_menu')
+})
 
-const goToCollection = () => {
-  router.push('/collection')
+// Navigate to the link of the category
+const goToLink = (link) => {
+  if (link.startsWith('/')) {
+    router.push(link)
+  } else {
+    window.location.href = link
+  }
 }
 </script>
 
