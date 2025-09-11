@@ -1,73 +1,146 @@
 <template>
-  <section class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-    <div class="w-full max-w-md">
-      <!-- Step 1: Enter Number -->
-      <PhoneNumberInput v-if="!otpSent" @otpSent="handleOtpSent" />
+  <div class="min-h-screen flex flex-col justify-center items-center p-4 bg-white">
 
-      <!-- Step 2: Enter OTP -->
-      <OtpInput
-        v-else-if="!verified"
-        :sentOtp="sentOtp"
-        :phoneNumber="phoneNumber"
-        :isNewUser="isNewUser"
-        @verified="handleVerified"
-      />
+    <!-- Step 1: Mobile Number Input -->
+    <div v-if="step === 1" class="w-full max-w-sm text-center">
+      <h1 class="text-3xl font-bold mb-2 text-black">Welcome Back!</h1>
+      <p class="text-gray-700 mb-6">You're just a step away from your favorite clothes </p>
 
-      <!-- Step 3: New User Registration -->
-      <NewUserForm
-        v-else-if="isNewUser"
-        :phoneNumber="phoneNumber"
-        @registered="handleRegistered"
-      />
-
-      <!-- Step 4: Logged In Existing User -->
-      <div v-else class="text-center mt-4 text-black text-xl font-bold">
-        Welcome back! You are logged in.
+      <div class="flex items-center border border-gray-400 rounded-lg overflow-hidden mb-4 shadow-sm">
+        <span class="px-3  text-black font-semibold">+91</span>
+        <input
+          v-model="auth.mobileNumber"
+          type="tel"
+          maxlength="10"
+          placeholder="Enter mobile number"
+          class="w-full p-4 focus:outline-none text-black text-lg"
+        />
       </div>
+
+      <button
+        class="w-full p-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold shadow-md"
+        @click="sendOTP"
+        :disabled="auth.loading || !auth.mobileNumber || auth.mobileNumber.length < 10"
+      >
+        {{ auth.loading ? "Sending OTP..." : "Send OTP" }}
+      </button>
+
+      <p v-if="message" class="mt-2 text-red-500 text-sm">{{ message }}</p>
     </div>
-  </section>
+
+    <!-- Step 2: OTP Verification -->
+    <div v-if="step === 2" class="w-full max-w-sm text-center">
+      <h2 class="text-2xl font-bold mb-2 text-black">Almost There!</h2>
+      <p class="text-gray-700 mb-4">We sent a 4-digit OTP to {{ auth.mobileNumber }}</p>
+
+      <!-- OTP Inputs -->
+      <div class="flex justify-center space-x-3 mb-4">
+        <input
+          v-for="(digit, index) in otpDigits"
+          :key="index"
+          v-model="otpDigits[index]"
+          type="text"
+          maxlength="1"
+          class="w-16 h-16 text-center border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-2xl font-bold shadow-sm"
+          @input="focusNext(index, $event)"
+          @keydown.backspace="focusPrev(index, $event)"
+        />
+      </div>
+
+      <button
+        class="w-full p-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold shadow-md"
+        @click="verifyOTP"
+        :disabled="auth.loading || otpDigits.join('').length < 4"
+      >
+        {{ auth.loading ? "Verifying..." : "Verify OTP" }}
+      </button>
+
+      <p v-if="otpMessage" class="mt-2 text-red-500 text-sm">{{ otpMessage }}</p>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div v-if="step === 3" class="text-center">
+      <h2 class="text-3xl font-bold mb-2 text-black">Welcome, {{ auth.name }}!</h2>
+      <p class="text-gray-700 mb-4">You're all set to grab your favorite clothes </p>
+      <div class="w-20 h-20 mx-auto border-4 border-black rounded-full animate-ping mt-4"></div>
+    </div>
+
+  </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "~/stores/auth";
 
-// Import the components
-import PhoneNumberInput from "@/components/login/PhoneNumberInput.vue";
-import OtpInput from "@/components/login/OtpInput.vue";
-import NewUserForm from "@/components/login/NewUserForm.vue";
+const auth = useAuthStore();
+const router = useRouter();
 
-// State
-const phoneNumber = ref("");
-const sentOtp = ref("");
-const otpSent = ref(false);
-const verified = ref(false);
-const isNewUser = ref(false);
+const step = ref(1);
+const otpDigits = ref(["", "", "", ""]);
+const message = ref("");
+const otpMessage = ref("");
 
-// Handle OTP sent from PhoneNumberInput
-const handleOtpSent = ({ phoneNumber: num, otp }) => {
-  phoneNumber.value = num;
-  sentOtp.value = otp;
-
-  // Dummy logic: numbers ending with "0" are considered existing users
-  isNewUser.value = !num.endsWith("0");
-
-  otpSent.value = true;
+// Send OTP
+const sendOTP = async () => {
+  if (!auth.mobileNumber || auth.mobileNumber.length < 10) {
+    message.value = "Enter a valid 10-digit number";
+    return;
+  }
+  message.value = "";
+  try {
+    await auth.sendLoginOTP();
+    step.value = 2;
+  } catch (err) {
+    message.value = "Failed to send OTP. Try again.";
+    console.error("Send OTP error:", err);
+  }
 };
 
-// Handle OTP verified
-const handleVerified = () => {
-  verified.value = true;
+// Focus next OTP input
+const focusNext = (index, event) => {
+  if (event.target.value.length === 1 && index < otpDigits.value.length - 1) {
+    event.target.nextElementSibling.focus();
+  }
 };
 
-// Handle new user registration
-const handleRegistered = (data) => {
-  console.log("New user registered:", data);
+// Focus previous on backspace
+const focusPrev = (index, event) => {
+  if (!otpDigits.value[index] && event.key === "Backspace" && index > 0) {
+    event.target.previousElementSibling.focus();
+  }
+};
 
-  // After registration, mark user as verified & not new
-  isNewUser.value = false;
+// Verify OTP
+const verifyOTP = async () => {
+  const otp = otpDigits.value.join("");
+  if (otp.length < 4) {
+    otpMessage.value = "Enter the full 4-digit OTP";
+    return;
+  }
+  otpMessage.value = "";
+  try {
+    const res = await auth.verifyOtp(otp);
+    if (res?.newUser) {
+      otpMessage.value = "New user detected. Registration required.";
+    } else {
+      step.value = 3;
+      setTimeout(() => router.push("/profile"), 1500);
+    }
+  } catch (err) {
+    otpMessage.value = "OTP verification failed. Try again.";
+    console.error("OTP verify error:", err);
+  }
 };
 </script>
 
 <style scoped>
-/* Overall page black & white theme handled in components */
+input:focus {
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 </style>

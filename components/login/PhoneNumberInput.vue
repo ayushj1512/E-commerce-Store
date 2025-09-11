@@ -1,63 +1,79 @@
 <template>
-    <div class="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg flex flex-col items-center">
-        <h2 class="text-2xl font-bold mb-4 text-center text-black">Enter Mobile Number</h2>
+  <div class="w-full max-w-md mx-auto p-5 bg-black rounded-lg shadow-md flex flex-col items-center">
+    <h2 class="text-xl font-semibold mb-3 text-center text-white">Enter Your Phone Number</h2>
 
-        <img src="https://i.pinimg.com/736x/25/7d/36/257d3658f5c87f706a1ee9404e7519ef.jpg" alt="decorative"
-            class="w-50 object-contain rounded" />
+    <img
+      src="https://i.pinimg.com/736x/95/90/25/959025a4c08cc4051c00e38c7bc62cbd.jpg"
+      alt="otp decorative"
+      class="w-28 aspect-[4/5] mb-3 object-cover rounded"
+    />
 
+    <input
+      v-model="phone"
+      type="tel"
+      placeholder="Enter 10-digit number"
+      maxlength="10"
+      @keypress.enter="sendOtp"
+      class="w-full h-12 mb-4 px-3 rounded text-black text-lg focus:outline-none"
+    />
 
-        <input v-model="phoneNumber" type="tel" maxlength="10" placeholder="Enter your mobile number"
-            @input="handleInput" class="w-full p-3 border border-black rounded mb-4 text-black text-lg text-center" />
+    <button
+      @click="sendOtp"
+      class="w-full bg-white text-black p-3 rounded hover:bg-gray-200 text-base font-medium"
+    >
+      Send OTP
+    </button>
 
-        <!-- Image below the input -->
-
-
-        <button @click="sendOtpHandler" class="w-full bg-black text-white p-3 rounded hover:bg-gray-800">
-            Send OTP
-        </button>
-
-        <p v-if="message" class="mt-2 text-center text-red-500">{{ message }}</p>
-    </div>
+    <p v-if="message" class="mt-2 text-center text-red-400 text-sm">{{ message }}</p>
+  </div>
 </template>
 
 <script setup>
-import { ref, defineEmits } from "vue";
-
-const phoneNumber = ref("");
-const message = ref("");
+import { ref } from "vue";
 
 const emit = defineEmits(["otpSent"]);
 
-const sendOtpHandler = () => {
-    if (!/^\d{10}$/.test(phoneNumber.value)) {
-        message.value = "Please enter a valid 10-digit mobile number.";
-        return;
+const phone = ref("");
+const message = ref("");
+
+const sendOtp = async () => {
+  // Sanitize number
+  const sanitizedPhone = phone.value.trim();
+
+  if (!/^\d{10}$/.test(sanitizedPhone)) {
+    message.value = "Enter a valid 10-digit phone number";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3003/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber: sanitizedPhone }),
+    });
+
+    const data = await res.json();
+    console.log("[PhoneNumberInput] Send OTP response:", data);
+
+    if (res.ok) {
+      message.value = ""; // ✅ Clear any previous error
+      emit("otpSent", {
+        phoneNumber: sanitizedPhone,
+        otp: data.otp,
+        existingUser: data.existingUser,
+      });
+    } else {
+      message.value = data.error || "Failed to send OTP. Try again.";
     }
-
-    // Generate dummy OTP for demo
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    emit("otpSent", { phoneNumber: phoneNumber.value, otp });
-
-    message.value = `OTP sent to ${phoneNumber.value}`;
-};
-
-const handleInput = () => {
-    if (phoneNumber.value.length === 10) {
-        sendOtpHandler();
-    }
+  } catch (err) {
+    console.error("[PhoneNumberInput] Error sending OTP:", err);
+    message.value = "Error connecting to server";
+  }
 };
 </script>
 
 <style scoped>
 input {
-    font-weight: 500;
-}
-
-/* Focus effect */
-input:focus {
-    outline: none;
-    border-color: black;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
 }
 </style>

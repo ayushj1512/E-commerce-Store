@@ -4,7 +4,8 @@ import { useRoute } from "#app";
 import { ofetch } from "ofetch";
 
 export const useProductStore = defineStore("productStore", () => {
-  const products = ref([]);
+  // State
+  const productLists = ref({}); // { [categoryId]: { products: [], currentPage: 1, total: 0 } }
   const loading = ref(false);
   const error = ref(null);
 
@@ -13,7 +14,7 @@ export const useProductStore = defineStore("productStore", () => {
 
   const route = useRoute();
 
-  // ✅ Utility to safely parse JSON
+  // Utilities
   const safeParseJSON = (str, fallback = {}) => {
     try {
       return JSON.parse(str);
@@ -22,37 +23,28 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
+  const slugify = (str) =>
+    str?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+  // Fetch products by category
   const fetchProducts = async (options = {}) => {
     loading.value = true;
     error.value = null;
 
     try {
-      const {
-        categoryId,
-        page = 1,
-        perPage = 30,
-        city,
-        idBrand,
-        shop,
-        type,
-      } = options;
+      const { categoryId, page = 1, perPage = 30, city, idBrand, shop, type } = options;
 
-      // ✅ Resolve category ID from route params if not provided
       const childParam = route?.params?.child || "";
       const parentParam = route?.params?.parent || "";
 
       let resolvedCatId = categoryId;
       if (!resolvedCatId) {
-        const match = (childParam !== "all" ? childParam : parentParam).match(
-          /(\d+)$/
-        );
-        resolvedCatId = match ? match[1] : null;
+        const match = (childParam !== "all" ? childParam : parentParam).match(/(\d+)$/);
+        resolvedCatId = match ? match[1] : "default";
       }
 
-      // ✅ Build filter string
       const filterParts = [];
-      if (resolvedCatId && !isNaN(Number(resolvedCatId)))
-        filterParts.push(`categories:=${resolvedCatId}`);
+      if (resolvedCatId && !isNaN(Number(resolvedCatId))) filterParts.push(`categories:=${resolvedCatId}`);
       if (city) filterParts.push(`deal_cities:=[${city}]`);
       if (idBrand) filterParts.push(`id_brand:=${idBrand}`);
       if (shop) filterParts.push(`sss_shops:=[${shop}]`);
@@ -61,9 +53,9 @@ export const useProductStore = defineStore("productStore", () => {
       const filterStr = filterParts.join(",");
       const safeFilterStr = encodeURIComponent(filterStr);
 
-      const url = `${API_URL}/collections/products/documents/search?q=*&${
-        filterParts.length ? "filter_by=" + safeFilterStr + "&" : ""
-      }per_page=${perPage}&filter_by=active:=1&page=${page}`;
+      const url = `${API_URL}/collections/products/documents/search?q=*${
+        filterParts.length ? "&filter_by=" + safeFilterStr : ""
+      }&per_page=${perPage}&filter_by=active:=1&page=${page}`;
 
       console.log("📦 Fetching products from URL:", url);
 
@@ -73,55 +65,60 @@ export const useProductStore = defineStore("productStore", () => {
         retry: 1,
       });
 
-      // ✅ Normalize products
       const data = Array.isArray(res.hits)
         ? res.hits.map((hit) => {
             const doc = hit.document ?? hit;
-            const parsedData = doc.product_data
-              ? safeParseJSON(doc.product_data, {})
-              : {};
-
-            // Product 0 (first variant) data
+            const parsedData = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
             const firstData = parsedData["0"] || {};
 
-            // ✅ Build category array
+            const sizes =
+              (parsedData.shoeSize || []).map((s) => s.Size).filter(Boolean) ||
+              (doc.product_all_sizes || []).filter(Boolean) ||
+              ["N/A"];
+
             const categories = firstData.categories
-              ? firstData.categories.split("^")
+              ? firstData.categories.split("^").map((c) => c.split("*")[0])
               : doc.categories?.map((c) => c.toString()) || [];
 
-            // ✅ Build slug (for clean URLs)
-            const slugify = (str) =>
-              str
-                ?.toString()
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")
-                .replace(/(^-|-$)+/g, "");
+            const resolvedId =
+              doc.product_id || firstData.id || doc.id || `product-${Math.random().toString(36).substring(2, 9)}`;
 
-            const productSlug = slugify(
-              doc.name || firstData.name || `product-${doc.id}`
-            );
+            const productSlug = slugify(doc.name || firstData.name || resolvedId);
 
             return {
-              ...doc,
-              parsedData,
-              displayName: doc.name || firstData.name || "",
+              id: String(resolvedId),
+              displayName: firstData.name || doc.name || "",
               displayPrice:
+                Number(firstData.selling_price) ||
                 Number(doc.real_selling_price) ||
                 Number(doc.selling_price) ||
-                Number(firstData.selling_price) ||
                 0,
               displayDiscount:
-                Number(doc.discount_price) ||
                 Number(firstData.discount_price) ||
+                Number(doc.discount_price) ||
                 0,
+              sizes,
               displayCategories: categories,
               tags: doc.tags || [],
-              slug: productSlug, // ✅ for /category/.../slug/id route
+              slug: productSlug,
+              images: parsedData.images || [{ img: doc.img }],
+              quantity_available: firstData.product_quantity || doc.quantity_available || 0,
+              rawData: doc,
             };
           })
         : [];
 
-      products.value = page === 1 ? data : [...products.value, ...data];
+      // Initialize category if not present
+      if (!productLists.value[resolvedCatId]) {
+        productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
+      }
+
+      // Append or replace products
+      productLists.value[resolvedCatId].products =
+        page === 1 ? data : [...productLists.value[resolvedCatId].products, ...data];
+
+      productLists.value[resolvedCatId].currentPage = page;
+      productLists.value[resolvedCatId].total = res.found || data.length;
     } catch (err) {
       console.error("❌ Fetch error:", err);
       error.value = err?.message || "Failed to fetch products";
@@ -130,18 +127,28 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // ✅ Extract all tags from loaded products
+  // Getters
+  const getProductsByCategory = (categoryId) => {
+    return productLists.value[categoryId]?.products || [];
+  };
+
+  const getCurrentPage = (categoryId) => {
+    return productLists.value[categoryId]?.currentPage || 1;
+  };
+
+  const getTotalProducts = (categoryId) => {
+    return productLists.value[categoryId]?.total || 0;
+  };
+
   const availableTags = computed(() => {
     const tags = new Set();
-    products.value.forEach((prod) => {
-      if (prod?.tags) {
-        prod.tags.forEach((t) => tags.add(t));
-      }
+    Object.values(productLists.value).forEach((cat) => {
+      cat.products.forEach((prod) => prod?.tags?.forEach((t) => tags.add(t)));
     });
     return Array.from(tags);
   });
 
-  // ✅ Auto-fetch on mount & when category route changes
+  // Auto-fetch
   onMounted(() => fetchProducts());
   watch(
     () => [route.params.parent, route.params.child],
@@ -149,10 +156,13 @@ export const useProductStore = defineStore("productStore", () => {
   );
 
   return {
-    products,
+    productLists,
     loading,
     error,
     fetchProducts,
+    getProductsByCategory,
+    getCurrentPage,
+    getTotalProducts,
     availableTags,
   };
 });

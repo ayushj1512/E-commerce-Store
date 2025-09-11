@@ -1,13 +1,14 @@
 <template>
   <div class="bg-gray-50 min-h-screen py-6 px-4 md:px-12 lg:px-20">
+    
     <!-- Header -->
-    <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-white p-4 md:p-6 rounded-xl shadow-sm">
+    <div v-if="mounted" class="flex flex-col md:flex-row items-center gap-4 md:gap-6 bg-white p-4 md:p-6 rounded-xl shadow-sm">
       <h1 class="text-2xl md:text-3xl font-bold">My Wishlist</h1>
       <p class="text-gray-600 italic text-sm md:text-base text-center">"{{ randomQuote }}"</p>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white p-4 flex flex-wrap gap-3 rounded-xl shadow-sm">
+    <div v-if="mounted" class="bg-white p-4 flex flex-wrap gap-3 rounded-xl shadow-sm mt-4">
       <button
         v-for="cat in categories" :key="cat"
         @click="selectedCategory = cat"
@@ -17,7 +18,12 @@
     </div>
 
     <!-- Products -->
-    <transition-group name="fade-scale" tag="div" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-4">
+    <transition-group
+      v-if="mounted && filteredProducts.length"
+      name="fade-scale"
+      tag="div"
+      class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-4"
+    >
       <div v-for="p in filteredProducts" :key="p.id" class="relative">
         <ProductCard
           :title="p.title"
@@ -36,14 +42,25 @@
     </transition-group>
 
     <!-- Empty State -->
-    <div v-if="filteredProducts.length===0" class="text-center text-gray-500 py-10">No products found.</div>
+    <div v-if="mounted && filteredProducts.length===0" class="text-center text-gray-500 py-10">
+      No products found.
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import ProductCard from "~/components/common/ProductCard.vue";
 
+const mounted = ref(false);
+
+// Categories
+const categories = ["All","Jackets","Dresses","Footwear","Jeans"];
+const selectedCategory = ref("All");
+
+// Products & Images
+const products = ref([]);
 const images = [
   "https://i.pinimg.com/1200x/a9/48/44/a9484468215d4b58e0bf831157d73c34.jpg",
   "https://i.pinimg.com/736x/fc/84/43/fc8443ac393cd90b56c6c89ee3087a84.jpg",
@@ -53,19 +70,7 @@ const images = [
   "https://i.pinimg.com/736x/f0/97/28/f09728e53d1bd74930f647b72a8fc1b2.jpg"
 ];
 
-const categories = ["All","Jackets","Dresses","Footwear","Jeans"];
-const selectedCategory = ref("All");
-const products = ref(Array.from({length:20},(_,i)=>({
-  id:i+1,
-  title:`Product ${i+1}`,
-  image:images[i%images.length],
-  hoverImage:images[(i+1)%images.length],
-  tags:["New","Trending"],
-  price:Math.floor(Math.random()*5000+1000),
-  mrp:Math.floor(Math.random()*6000+1500),
-  category:categories[i%categories.length]
-})));
-
+// Quotes
 const quotes = [
   "Fashion is the armor to survive the reality of everyday life.",
   "Style is a way to say who you are without having to speak.",
@@ -73,9 +78,40 @@ const quotes = [
   "Fashion is about dreaming and making other people dream.",
   "Elegance is not standing out, but being remembered."
 ];
-const randomQuote = computed(()=>quotes[Math.floor(Math.random()*quotes.length)]);
-const filteredProducts = computed(()=>selectedCategory.value==="All"?products.value:products.value.filter(p=>p.category===selectedCategory.value));
-const removeFromWishlist=id=>products.value=products.value.filter(p=>p.id!==id);
+
+// SSR-safe refs
+const randomQuote = ref(quotes[0]);
+
+onMounted(() => {
+  mounted.value = true;
+
+  // Generate products only on client
+  products.value = Array.from({length:20},(_,i)=>({
+    id:i+1,
+    title:`Product ${i+1}`,
+    image:images[i%images.length],
+    hoverImage:images[(i+1)%images.length],
+    tags:["New","Trending"],
+    price:Math.floor(Math.random()*5000+1000),
+    mrp:Math.floor(Math.random()*6000+1500),
+    category:categories[i%categories.length]
+  }));
+
+  // Pick random quote
+  randomQuote.value = quotes[Math.floor(Math.random()*quotes.length)];
+});
+
+// Computed
+const filteredProducts = computed(()=>{
+  return selectedCategory.value==="All"
+    ? products.value
+    : products.value.filter(p=>p.category===selectedCategory.value);
+});
+
+// Remove from wishlist
+const removeFromWishlist = id => {
+  products.value = products.value.filter(p => p.id !== id);
+};
 </script>
 
 <style scoped>

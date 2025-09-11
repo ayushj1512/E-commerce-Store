@@ -1,9 +1,9 @@
 <template>
-  <div>
-    <!-- Responsive Filter Bar -->
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Sidebar -->
     <aside
-      class="w-full  bg-white shadow-xl rounded-xl md:rounded-none 
-             flex flex-wrap md:flex-col gap-4 p-4 sm:p-6 sticky top-0 z-20"
+      class="w-full md:w-1/5 bg-white shadow-xl rounded-xl md:rounded-none
+             flex flex-wrap md:flex-col gap-4 p-4 sm:p-6 relative mt-16 md:mt-0 z-10"
     >
       <!-- Category Filter -->
       <div class="flex-1 min-w-[200px]">
@@ -56,9 +56,7 @@
           v-model="priceRange"
           class="w-full accent-black"
         />
-        <div
-          class="flex justify-between text-xs sm:text-sm text-gray-600 mt-1"
-        >
+        <div class="flex justify-between text-xs sm:text-sm text-gray-600 mt-1">
           <span>₹0</span>
           <span>₹{{ priceRange }}</span>
         </div>
@@ -85,9 +83,7 @@
       </div>
 
       <!-- Apply / Reset Buttons -->
-      <div
-        class="flex-1 min-w-[200px] flex flex-col md:flex-row md:gap-3 mt-auto"
-      >
+      <div class="flex-1 min-w-[200px] flex flex-col md:flex-row md:gap-3 mt-auto">
         <button
           @click="resetFilters"
           class="py-2 px-4 border border-gray-300 rounded-full hover:bg-gray-100 transition font-medium text-black text-sm sm:text-base"

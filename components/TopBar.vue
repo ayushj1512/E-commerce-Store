@@ -1,19 +1,14 @@
 <template>
   <div class="w-full bg-black text-white overflow-hidden relative shadow-lg">
     <div class="relative flex items-center justify-center h-12 sm:h-14 md:h-14 lg:h-14 px-2 sm:px-4 md:px-6">
-      <transition-group
-        name="pop-fade"
-        tag="div"
-        class="absolute w-full flex justify-center items-center"
-      >
+      <transition name="pop-fade" mode="out-in">
         <p
-          v-for="(item, index) in [items[currentIndex]]"
-          :key="index"
+          :key="currentIndex"
           class="text-[10px] sm:text-xs md:text-sm lg:text-base font-medium px-3 sm:px-4 md:px-6 py-1 rounded-md bg-white bg-opacity-10 backdrop-blur-sm hover:scale-105 transition-transform duration-300 cursor-pointer text-center"
         >
-          {{ item }}
+          {{ items[currentIndex] }}
         </p>
-      </transition-group>
+      </transition>
     </div>
   </div>
 </template>

@@ -35,10 +35,11 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps } from "vue";
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
 const props = defineProps({
-  phoneNumber: String
+  phoneNumber: String,
 });
 
 const emit = defineEmits(["registered"]);
@@ -48,24 +49,54 @@ const email = ref("");
 const address = ref("");
 const message = ref("");
 
-const submitHandler = () => {
+const authStore = useAuthStore();
+
+// ✅ Node.js backend URL
+const BACKEND_URL = "http://localhost:3003/register";
+
+const submitHandler = async () => {
   if (!name.value || !email.value || !address.value) {
     message.value = "Please fill all details.";
     return;
   }
 
-  // Send registration data to parent (dummy for now)
-  emit("registered", {
-    phoneNumber: props.phoneNumber,
-    name: name.value,
-    email: email.value,
-    address: address.value
-  });
+  try {
+    console.log("[NewUserForm] Submitting registration for:", props.phoneNumber);
 
-  message.value = "Registration complete!";
+    const res = await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phoneNumber: props.phoneNumber,
+        name: name.value,
+        email: email.value,
+        address: address.value,
+      }),
+    });
+
+    const data = await res.json();
+    console.log("[NewUserForm] Registration response:", data);
+
+    if (res.ok) {
+      // Save token + id + name in Pinia store
+      authStore.setAuth({
+        token: data.token,
+        id_customer: data.id_customer,
+        name: data.name,
+      });
+
+      emit("registered", data);
+      message.value = "Registration successful!";
+    } else {
+      message.value = data.error || "Registration failed. Try again.";
+    }
+  } catch (err) {
+    console.error("[NewUserForm] Error registering user:", err);
+    message.value = "Error connecting to server";
+  }
 };
 </script>
 
 <style scoped>
-/* Theme already black & white */
+/* Input & button styling already black & white */
 </style>

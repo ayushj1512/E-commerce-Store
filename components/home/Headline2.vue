@@ -1,6 +1,8 @@
 <template>
   <div class="overflow-hidden w-full bg-white py-4">
+    <!-- Render only on client to avoid SSR hydration mismatch -->
     <div
+      v-if="mounted"
       class="flex whitespace-nowrap animate-scroll"
       :style="{ animationDuration: animationDuration + 's' }"
       ref="headlineWrapper"
@@ -17,11 +19,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 
 const headlineWrapper = ref(null);
 const animationDuration = ref(20);
 const repeatCount = ref(20);
+const mounted = ref(false);
 
 const adjustRepeatCount = () => {
   const width = window.innerWidth;
@@ -30,11 +33,18 @@ const adjustRepeatCount = () => {
   else repeatCount.value = 20; // desktop
 };
 
-onMounted(() => {
+onMounted(async () => {
+  mounted.value = true; // ensure rendering happens only on client
   adjustRepeatCount();
   window.addEventListener("resize", adjustRepeatCount);
-  const wrapperWidth = headlineWrapper.value.offsetWidth;
-  animationDuration.value = Math.max(wrapperWidth / 100, 20);
+
+  // Wait for DOM to render
+  await nextTick();
+
+  if (headlineWrapper.value) {
+    const wrapperWidth = headlineWrapper.value.offsetWidth;
+    animationDuration.value = Math.max(wrapperWidth / 100, 20);
+  }
 });
 </script>
 
@@ -48,7 +58,7 @@ onMounted(() => {
 
 @keyframes scroll {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-100%); } /* scroll full width */
 }
 
 .animate-scroll {
