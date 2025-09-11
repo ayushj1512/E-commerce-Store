@@ -1,6 +1,8 @@
 <template>
-  <div class="relative flex-shrink-0 w-40 sm:w-48 md:w-52 lg:w-60 cursor-pointer group">
-    
+  <div
+    class="relative flex-shrink-0 w-40 sm:w-48 md:w-52 lg:w-60 cursor-pointer group"
+    @click="handleClick"
+  >
     <!-- Video Container -->
     <div class="relative overflow-hidden rounded-xl shadow-lg">
       <video
@@ -12,13 +14,28 @@
         playsinline
       ></video>
     </div>
+
+    <!-- Optional Title -->
+    <!-- <div v-if="title" class="absolute bottom-2 left-2 right-2 text-white font-semibold text-sm sm:text-base">
+      {{ title }}
+    </div> -->
   </div>
 </template>
 
 <script setup>
+import { defineEmits, defineProps } from 'vue';
+
 const props = defineProps({
-  videoUrl: { type: String, required: true }
+  videoUrl: { type: String, required: true },
+  title: { type: String, default: '' }
 });
+
+const emit = defineEmits(['click']);
+
+// Emit click event upwards
+function handleClick() {
+  emit('click');
+}
 </script>
 
 <style scoped>

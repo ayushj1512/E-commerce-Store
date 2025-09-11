@@ -1,14 +1,14 @@
 <template>
   <div
-    class="relative cursor-pointer group overflow-hidden shadow-sm hover:shadow-md transform transition-all duration-300 bg-white rounded-lg"
+    class="relative cursor-pointer group overflow-hidden shadow-sm hover:shadow-md transform transition-all duration-300 bg-white rounded-lg flex flex-col"
     @click="goToDetail"
   >
     <!-- Product Image -->
-    <div class="relative w-full overflow-hidden">
+    <div class="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 flex-shrink-0 overflow-hidden">
       <img
         :src="currentImage"
         :alt="title"
-        class="w-full h-64 sm:h-72 md:h-80 lg:h-96 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+        class="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
         @mouseover="hoverImage && (currentImage = hoverImage)"
         @mouseleave="currentImage = image"
       />
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Product info -->
-    <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div class="p-3 flex flex-col flex-1 justify-between gap-2">
       <div class="flex flex-col flex-1">
         <h3
           class="text-gray-900 font-medium text-sm sm:text-base md:text-base truncate"
@@ -40,9 +40,20 @@
         </div>
       </div>
 
+      <!-- Sizes Dropdown -->
+      <div v-if="sizes && sizes.length" class="mt-2">
+        <select
+          v-model="selectedSize"
+          class="border rounded-sm px-2 py-1 text-sm w-full focus:outline-none focus:ring-1 focus:ring-black"
+        >
+          <option v-for="(s, idx) in sizes" :key="idx" :value="s">Size: {{ s }}</option>
+        </select>
+      </div>
+
+      <!-- Add to Cart Button -->
       <button
         v-if="showCartBtn"
-        class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-1.5 bg-black text-white rounded-sm text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-300"
+        class="w-full sm:w-auto mt-2 sm:mt-3 px-4 py-1.5 bg-black text-white rounded-sm text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-300"
         @click.stop="addToCart"
       >
         Add to Cart
@@ -55,8 +66,10 @@
 import { ref, onMounted } from "vue"
 import { useRouter } from "#app"
 import { useToast } from "vue-toastification"
+import { useCartStore } from "@/stores/cartStore"
 
 const props = defineProps({
+  id: { type: [String, Number], required: true },
   title: { type: String, required: true },
   image: { type: String, required: true },
   hoverImage: { type: String, default: null },
@@ -64,37 +77,43 @@ const props = defineProps({
   price: { type: Number, required: true },
   mrp: { type: Number, default: null },
   showCartBtn: { type: Boolean, default: true },
-  productUrl: { type: String, required: true }, // ✅ from API
+  productUrl: { type: String, required: true },
+  sizes: { type: Array, default: () => [] },
 })
 
 const currentImage = ref(props.image)
+const selectedSize = ref(props.sizes?.[0] ?? null)
 const router = useRouter()
-
+const cart = useCartStore()
 let toast = null
+
 onMounted(() => {
   toast = useToast()
 })
 
 const goToDetail = () => {
   if (!props.productUrl) return
-
-  // ✅ agar internal route hai
   if (props.productUrl.startsWith("/")) {
-    try {
-      router.push(props.productUrl)
-    } catch (e) {
-      console.error("Router push failed, falling back to full redirect:", e)
-      window.location.href = props.productUrl
-    }
+    router.push(props.productUrl).catch(() => {})
   } else {
-    // ✅ external URL case
     window.location.href = props.productUrl
   }
 }
 
 const addToCart = () => {
-  if (!toast) return
-  toast.success(`${props.title} has been added to your cart`, {
+  // Prepare product object matching cart store
+  const productToAdd = {
+    id: props.id,
+    name: props.title,
+    price: props.price,
+    quantity: 1,
+    size: selectedSize.value,
+    image: props.image,
+  }
+
+  cart.addToCart(productToAdd)
+
+  toast?.success(`${props.title} has been added to your cart`, {
     timeout: 2000,
     closeOnClick: true,
     pauseOnFocusLoss: true,

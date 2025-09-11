@@ -102,17 +102,24 @@ import ErrorHandler from "~/components/common/errorHandler.vue"; // ✅ Import E
 const route = useRoute();
 const router = useRouter();
 
+// Reactive state
 const cmsContent = ref("");
 const showLoader = ref(false);
 const stores = ref([]);
 
+// Globals
 const $globals = {
   site: "sss",
   microSite: "sss",
   gatewayUrl: "https://gateway.streetstylestore.com/gateway/v1/",
 };
 
+// SSR-safe: only run on client
+const isClient = typeof window !== "undefined";
+
+// Fetch CMS content
 const getCMSContent = async (idCMS) => {
+  if (!isClient) return null; // Prevent SSR fetch
   try {
     const requestData = {
       gateway_action: "common/cmsContent",
@@ -128,8 +135,9 @@ const getCMSContent = async (idCMS) => {
   }
 };
 
+// Fetch page data
 const fetchPageData = async () => {
-  // ✅ Only fetch CMS if not "collection"
+  if (!isClient) return; // SSR-safe
   if (route.params.parent !== "collection") {
     showLoader.value = true;
     const returnVal = await getCMSContent(route.params.parent);
@@ -147,11 +155,16 @@ const fetchPageData = async () => {
   }
 };
 
+// Navigate to catalog
 const viewCatalog = (storeUrl, type) => {
+  if (!isClient) return;
   router.push(`/store/${storeUrl}/${type}`);
 };
 
-onMounted(fetchPageData);
+// Mount only on client
+if (isClient) {
+  onMounted(fetchPageData);
+}
 </script>
 
 <style scoped>

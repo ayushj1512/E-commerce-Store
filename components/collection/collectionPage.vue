@@ -1,8 +1,8 @@
 <template>
   <div class="bg-white text-black min-h-screen p-4 md:p-8">
     <div class="flex flex-col md:flex-row gap-6">
-      
-      <!-- Sidebar (mobile = drawer, desktop = fixed column) -->
+
+      <!-- Sidebar -->
       <div class="md:w-1/5 flex-shrink-0">
         <!-- Mobile Filter Toggle -->
         <button
@@ -12,7 +12,7 @@
           Filters
         </button>
 
-        <!-- Mobile Drawer Overlay -->
+        <!-- Mobile Overlay -->
         <div
           v-if="isFilterOpen"
           class="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
@@ -35,7 +35,7 @@
               ✕
             </button>
 
-            <!-- FilterSidebar Component -->
+            <!-- Filter Sidebar -->
             <FilterSidebar
               :categories="categories"
               :selectedCategories="selectedCategories"
@@ -49,7 +49,7 @@
 
       <!-- Products Section -->
       <div class="flex-1">
-        <!-- Tags + Sort Buttons -->
+        <!-- Tags & Sort -->
         <div class="flex flex-wrap gap-2 mb-4 overflow-x-auto">
           <!-- Tags -->
           <button
@@ -66,7 +66,7 @@
             {{ tag }}
           </button>
 
-          <!-- Sort -->
+          <!-- Sort Options -->
           <button
             v-for="option in sortOptions"
             :key="option.value"
@@ -117,17 +117,19 @@ import FilterSidebar from "@/components/collection/FilterSidebar.vue";
 const router = useRouter();
 const isFilterOpen = ref(false);
 
+// Sample Products
 const products = ref([
   { id: 1, name: "Classic White Shirt", slug: "classic-white-shirt", parent: "shirts", category: "Shirts", price: 1200, mrp: 1500, image: "https://i.pinimg.com/736x/32/a0/94/32a0944320c93cbf7d47d69f606925dd.jpg", hoverImage: null, tags: ["New","Best Seller"] },
   { id: 2, name: "Black Denim Jeans", slug: "black-denim-jeans", parent: "jeans", category: "Jeans", price: 2200, mrp: 2500, image: "https://i.pinimg.com/736x/31/84/8c/31848cdd1e8a118cfc206b107139d244.jpg", hoverImage: null, tags: ["Trending"] },
   { id: 3, name: "Red T-Shirt", slug: "red-t-shirt", parent: "t-shirts", category: "T-Shirts", price: 800, mrp: 1000, image: "https://i.pinimg.com/736x/a5/d7/11/a5d71185a01f926838790a5b254531cb.jpg", hoverImage: null, tags: ["Sale"] },
 ]);
 
+// Filters & Sorting
 const categories = ref(["Shirts","Jeans","T-Shirts"]);
 const selectedCategories = ref([]);
 const priceRange = ref({ min: null, max: null });
 const selectedTags = ref([]);
-const selectedSort = ref("price_asc");
+const selectedSort = ref({ value: "price_asc" });
 
 const sortOptions = [
   { label: "Price: Low to High", value: "price_asc" },
@@ -135,16 +137,20 @@ const sortOptions = [
   { label: "Newest", value: "newest" },
 ];
 
+// Computed Tags
 const availableTags = computed(() => {
   const tags = new Set();
   products.value.forEach(p => p.tags.forEach(t => tags.add(t)));
   return Array.from(tags);
 });
 
+// Methods
 const toggleTag = (tag) => {
-  selectedTags.value.includes(tag)
-    ? selectedTags.value = selectedTags.value.filter(t => t !== tag)
-    : selectedTags.value.push(tag);
+  if (selectedTags.value.includes(tag)) {
+    selectedTags.value = selectedTags.value.filter(t => t !== tag);
+  } else {
+    selectedTags.value.push(tag);
+  }
 };
 
 const filteredProducts = computed(() => {
@@ -156,8 +162,8 @@ const filteredProducts = computed(() => {
       return inCategory && inPrice && inTags;
     })
     .sort((a,b) => {
-      if(selectedSort.value === "price_asc") return a.price - b.price;
-      if(selectedSort.value === "price_desc") return b.price - a.price;
+      if(selectedSort.value.value === "price_asc") return a.price - b.price;
+      if(selectedSort.value.value === "price_desc") return b.price - a.price;
       return b.id - a.id;
     });
 });
@@ -168,14 +174,14 @@ const clearFilters = () => {
   priceRange.value = { min: null, max: null };
   selectedTags.value = [];
 };
-const applySort = (option) => { selectedSort.value = option.value; };
+const applySort = (option) => { selectedSort.value = option; };
 
 const goToProduct = (product) => {
   router.push(`/${product.parent}/${product.slug}`);
 };
 </script>
 
-<style>
+<style scoped>
 .fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.5s ease; }
 .fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 .fade-slide-enter-to, .fade-slide-leave-from { opacity: 1; transform: translateY(0); }

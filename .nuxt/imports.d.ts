@@ -29,7 +29,11 @@ export { withCtx, withDirectives, withKeys, withMemo, withModifiers, withScopeId
 export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callback';
 export { setInterval } from '#app/compat/interval';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
+export { useAddressStore } from '../stores/address';
+export { useAuthStore } from '../stores/auth';
+export { useCartStore } from '../stores/cartStore';
 export { useHomeStore } from '../stores/homeStore';
+export { useOrderStore } from '../stores/orders';
 export { useProductStore } from '../stores/productStore';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';
