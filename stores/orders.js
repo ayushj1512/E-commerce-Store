@@ -47,13 +47,21 @@ export const useOrderStore = defineStore("order", {
       );
     },
 
-    async getCustomerOrderList({ orderType, orderTime }) {
+    /**
+     * Fetch customer order list
+     * Accepts full payload including id_cart, id_customer, and user_hash_key
+     */
+    async getCustomerOrderList({ orderType, orderTime, id_cart, id_customer, user_hash_key }) {
       const { $api, $globals, $axios } = useNuxtApp();
+
       const payload = JSON.stringify({
         gateway_action: "customer/getCustomerOrderList",
         version: "1",
         orderType,
         orderTime,
+        id_cart,
+        id_customer,
+        user_hash_key,
       });
 
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
@@ -86,13 +94,17 @@ export const useOrderStore = defineStore("order", {
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
     },
 
-    async getSpecificOrder({ orderType, idOrder }) {
+    async getSpecificOrder({ orderType, idOrder, id_cart, id_customer, user_hash_key }) {
       const { $api, $globals, $axios } = useNuxtApp();
+
       const payload = JSON.stringify({
         gateway_action: "customer/getCustomerOrderList",
         version: "1",
         orderType,
         idOrder,
+        id_cart,
+        id_customer,
+        user_hash_key,
       });
 
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);

@@ -6,15 +6,16 @@
         <ProductCard
           v-for="product in products"
           :key="product.id"
+          :id="product.id"
           :title="product.name"
-          :image="product.image"
-          :hoverImage="product.hoverImage"
-          :price="product.price"
-          :mrp="product.mrp"
+          :image="product.img"
+          :hoverImage="null" 
           :tags="product.tags"
+          :price="product.real_selling_price"
+          :mrp="product.selling_price"
+          :productUrl="product.product_url"
           :showCartBtn="true"
-          :productUrl="product.productUrl"  
-          class="flex-shrink-0"
+          @click="goToDetail(product.product_url)"
         />
       </div>
     </div>
@@ -22,64 +23,56 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
 import ProductCard from "@/components/common/ProductCard.vue";
 
-const products = [
-  {
-    id: 1,
-    name: "Party Dress",
-    price: 2499,
-    mrp: 2999,
-    image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_1_3da0b44a-741d-4e1c-ac17-1f6cb89df721.jpg%3Fv%3D1752472623&w=1920&q=75",
-    hoverImage: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_2_98a7a948-b126-4608-82eb-f159260c3628.jpg%3Fv%3D1752472623&w=1920&q=75",
-    tags: ["New"],
-    productUrl: "/product/party-dress"
-  },
-  {
-    id: 2,
-    name: "Streetwear Top",
-    price: 1299,
-    mrp: 1599,
-    image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_1_3da0b44a-741d-4e1c-ac17-1f6cb89df721.jpg%3Fv%3D1752472623&w=1920&q=75",
-    hoverImage: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_2_98a7a948-b126-4608-82eb-f159260c3628.jpg%3Fv%3D1752472623&w=1920&q=75",
-    tags: ["Trending"],
-    productUrl: "/product/streetwear-top"
-  },
-  {
-    id: 3,
-    name: "Casual Tee",
-    price: 899,
-    mrp: null,
-    image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_1_3da0b44a-741d-4e1c-ac17-1f6cb89df721.jpg%3Fv%3D1752472623&w=1920&q=75",
-    hoverImage: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_2_98a7a948-b126-4608-82eb-f159260c3628.jpg%3Fv%3D1752472623&w=1920&q=75",
-    tags: [],
-    productUrl: "/product/casual-tee"
-  },
-  {
-    id: 4,
-    name: "Formal Blouse",
-    price: 1599,
-    mrp: 1999,
-    image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_1_3da0b44a-741d-4e1c-ac17-1f6cb89df721.jpg%3Fv%3D1752472623&w=1920&q=75",
-    hoverImage: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_2_98a7a948-b126-4608-82eb-f159260c3628.jpg%3Fv%3D1752472623&w=1920&q=75",
-    tags: ["Best Seller"],
-    productUrl: "/product/formal-blouse"
-  },
-  {
-    id: 5,
-    name: "Loungewear Set",
-    price: 1999,
-    mrp: 2299,
-    image: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_1_3da0b44a-741d-4e1c-ac17-1f6cb89df721.jpg%3Fv%3D1752472623&w=1920&q=75",
-    hoverImage: "https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FFSKNSH400PINK_2_98a7a948-b126-4608-82eb-f159260c3628.jpg%3Fv%3D1752472623&w=1920&q=75",
-    tags: [],
-    productUrl: "/product/loungewear-set"
+const router = useRouter();
+const products = ref([]);
+
+// Navigate to product detail
+const goToDetail = (url) => {
+  if (!url) return;
+  if (url.startsWith("/")) {
+    router.push(url).catch(() => {});
+  } else {
+    window.location.href = url;
   }
-];
+};
+
+const fetchProducts = async () => {
+  try {
+    const res = await axios.get(
+      "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=categories:=373&filter_by=active:=1&sort_by=avg_rating:desc&per_page=12&page=1",
+      {
+        headers: {
+          "X-Typesense-Api-Key": "VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh",
+        },
+      }
+    );
+
+    products.value = res.data.hits.map((hit) => ({
+      id: hit.document.id,
+      name: hit.document.name,
+      img: hit.document.img,
+      real_selling_price: hit.document.real_selling_price,
+      selling_price: hit.document.selling_price,
+      tags: hit.document.tags || [],
+      product_url: hit.document.product_url,
+    }));
+  } catch (err) {
+    console.error("Failed to fetch products:", err);
+  }
+};
+
+onMounted(() => {
+  fetchProducts();
+});
 </script>
 
 <style scoped>
-/* Hide scrollbar */
+/* Hide horizontal scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

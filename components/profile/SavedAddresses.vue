@@ -4,8 +4,26 @@
       Saved Addresses
     </h2>
 
+    <!-- Shimmer loading -->
+    <div
+      v-if="loading"
+      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-3"
+    >
+      <div
+        v-for="n in 3"
+        :key="n"
+        class="min-w-[260px] sm:min-w-[300px] max-w-[85%] sm:max-w-xs snap-start flex-shrink-0 rounded-lg border border-gray-200 bg-gray-100 animate-pulse p-4"
+      >
+        <div class="h-4 w-24 bg-gray-300 rounded mb-3"></div>
+        <div class="h-3 w-40 bg-gray-300 rounded mb-2"></div>
+        <div class="h-3 w-28 bg-gray-300 rounded mb-2"></div>
+        <div class="h-3 w-32 bg-gray-300 rounded"></div>
+        <div class="mt-4 h-8 w-20 bg-gray-300 rounded-full"></div>
+      </div>
+    </div>
+
     <!-- No addresses -->
-    <div v-if="addresses.length === 0" class="text-center py-10">
+    <div v-else-if="addresses.length === 0" class="text-center py-10">
       <p class="text-gray-600 mb-3 text-sm sm:text-base">
         No saved addresses yet.
       </p>
@@ -36,23 +54,24 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAddressStore } from "~/stores/address";
 import { useRouter } from "vue-router";
 import AddressCard from "./AddressCard.vue";
 
 const router = useRouter();
 const addressStore = useAddressStore();
+const loading = ref(true);
 
 onMounted(async () => {
-  if (!addressStore.addresses.length) {
-    try {
-      console.log("[SavedAddresses] 📡 Fetching addresses...");
-      await addressStore.fetchAddresses();
-      console.log("[SavedAddresses] ✅ Addresses loaded:", addressStore.addresses);
-    } catch (err) {
-      console.error("[SavedAddresses] ❌ Failed to fetch addresses:", err);
-    }
+  try {
+    console.log("[SavedAddresses] 📡 Fetching addresses...");
+    await addressStore.fetchAddresses();
+    console.log("[SavedAddresses] ✅ Addresses loaded:", addressStore.addresses);
+  } catch (err) {
+    console.error("[SavedAddresses] ❌ Failed to fetch addresses:", err);
+  } finally {
+    loading.value = false;
   }
 });
 

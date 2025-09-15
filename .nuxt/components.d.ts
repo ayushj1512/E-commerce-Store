@@ -42,6 +42,7 @@ interface _GlobalComponents {
     'LoginPhoneNumberInput': typeof import("../components/login/PhoneNumberInput.vue")['default']
     'ProductDetailReviews&rating': typeof import("../components/productDetail/reviews&rating.vue")['default']
     'ProfileAddressCard': typeof import("../components/profile/AddressCard.vue")['default']
+    'ProfilePastOrders': typeof import("../components/profile/PastOrders.vue")['default']
     'ProfileSavedAddresses': typeof import("../components/profile/SavedAddresses.vue")['default']
     'NuxtWelcome': typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
     'NuxtLayout': typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
@@ -97,6 +98,7 @@ interface _GlobalComponents {
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
     'LazyProductDetailReviews&rating': LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
     'LazyProfileAddressCard': LazyComponent<typeof import("../components/profile/AddressCard.vue")['default']>
+    'LazyProfilePastOrders': LazyComponent<typeof import("../components/profile/PastOrders.vue")['default']>
     'LazyProfileSavedAddresses': LazyComponent<typeof import("../components/profile/SavedAddresses.vue")['default']>
     'LazyNuxtWelcome': LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
     'LazyNuxtLayout': LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
@@ -158,6 +160,7 @@ export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['d
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
 export const ProductDetailReviews&rating: typeof import("../components/productDetail/reviews&rating.vue")['default']
 export const ProfileAddressCard: typeof import("../components/profile/AddressCard.vue")['default']
+export const ProfilePastOrders: typeof import("../components/profile/PastOrders.vue")['default']
 export const ProfileSavedAddresses: typeof import("../components/profile/SavedAddresses.vue")['default']
 export const NuxtWelcome: typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
 export const NuxtLayout: typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
@@ -213,6 +216,7 @@ export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
 export const LazyProductDetailReviews&rating: LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
 export const LazyProfileAddressCard: LazyComponent<typeof import("../components/profile/AddressCard.vue")['default']>
+export const LazyProfilePastOrders: LazyComponent<typeof import("../components/profile/PastOrders.vue")['default']>
 export const LazyProfileSavedAddresses: LazyComponent<typeof import("../components/profile/SavedAddresses.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
 export const LazyNuxtLayout: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
