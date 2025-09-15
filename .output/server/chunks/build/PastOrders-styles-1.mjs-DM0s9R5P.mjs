@@ -1,0 +1,4 @@
+const PastOrders_vue_vue_type_style_index_0_scoped_12c14131_lang = "section div[data-v-12c14131]:hover{transform:translateY(-2px);transition:all .3s ease}";
+
+export { PastOrders_vue_vue_type_style_index_0_scoped_12c14131_lang as P };
+//# sourceMappingURL=PastOrders-styles-1.mjs-DM0s9R5P.mjs.map

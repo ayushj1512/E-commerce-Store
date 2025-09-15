@@ -1,0 +1,4 @@
+const vouchers_vue_vue_type_style_index_0_scoped_037c75f4_lang = "@media (max-width:640px){.grid[data-v-037c75f4]{grid-template-columns:1fr!important}}";
+
+export { vouchers_vue_vue_type_style_index_0_scoped_037c75f4_lang as v };
+//# sourceMappingURL=vouchers-styles-1.mjs-CsxrQsEp.mjs.map

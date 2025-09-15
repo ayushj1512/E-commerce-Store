@@ -1,0 +1,4 @@
+const collectionPage_vue_vue_type_style_index_0_scoped_d0c9cf0d_lang = ".fade-slide-enter-active[data-v-d0c9cf0d],.fade-slide-leave-active[data-v-d0c9cf0d]{transition:all .5s ease}.fade-slide-enter-from[data-v-d0c9cf0d],.fade-slide-leave-to[data-v-d0c9cf0d]{opacity:0;transform:translateY(-10px)}.fade-slide-enter-to[data-v-d0c9cf0d],.fade-slide-leave-from[data-v-d0c9cf0d]{opacity:1;transform:translateY(0)}button[data-v-d0c9cf0d]{transition:all .3s ease}";
+
+export { collectionPage_vue_vue_type_style_index_0_scoped_d0c9cf0d_lang as c };
+//# sourceMappingURL=collectionPage-styles-1.mjs-CAcm9Vfu.mjs.map

@@ -1,0 +1,174 @@
+import { ref, computed, watch, mergeProps, unref, useSSRContext } from 'vue';
+import { ssrRenderAttrs, ssrRenderList, ssrRenderAttr, ssrInterpolate, ssrRenderComponent, ssrRenderClass, ssrIncludeBooleanAttr, ssrLooseEqual } from 'vue/server-renderer';
+import { _ as _export_sfc, f as useCartStore } from './server.mjs';
+import { u as useAddressStore } from './address-DV-O_Zdc.mjs';
+import { useRouter } from 'vue-router';
+import { u as useAuthStore } from './auth-BNE6mzpu.mjs';
+import { LucideAlertCircle, LucideClock, LucideSmartphone, LucideCreditCard, LucideBriefcase, LucideShield, LucideRepeat, LucideRefreshCw, LucideArrowRight } from 'lucide-vue-next';
+import '../_/nitro.mjs';
+import 'node:http';
+import 'node:https';
+import 'node:events';
+import 'node:buffer';
+import 'node:fs';
+import 'node:path';
+import 'node:crypto';
+import 'node:url';
+import '../routes/renderer.mjs';
+import 'vue-bundle-renderer/runtime';
+import 'unhead/server';
+import 'devalue';
+import 'unhead/utils';
+import 'pinia';
+import 'axios';
+import '@vueuse/integrations/useCookies';
+
+const _sfc_main$1 = {
+  __name: "CheckoutAddressSelector",
+  __ssrInlineRender: true,
+  setup(__props) {
+    const mounted = ref(false);
+    const loading = ref(true);
+    const selectedAddress = ref(null);
+    useRouter();
+    const addressStore = useAddressStore();
+    useAuthStore();
+    const addresses = computed(
+      () => addressStore.addresses.map((a) => ({
+        id_address: a.id_address,
+        fullname: a.fullname || `${a.firstname ?? ""} ${a.lastname ?? ""}`,
+        address1: a.address1 || "",
+        address2: a.address2 || "",
+        city: a.city || "",
+        name: a.name || "",
+        postcode: a.postcode || "",
+        phone_mobile: a.phone_mobile || ""
+      }))
+    );
+    return (_ctx, _push, _parent, _attrs) => {
+      if (mounted.value) {
+        _push(`<div${ssrRenderAttrs(mergeProps({ class: "bg-gray-50 py-6" }, _attrs))}><div class="max-w-7xl mx-auto space-y-8"><section class="bg-white p-6 rounded-2xl shadow-md"><h2 class="text-xl font-bold mb-4">Delivery Address</h2>`);
+        if (loading.value) {
+          _push(`<div class="space-y-3"><!--[-->`);
+          ssrRenderList(2, (n) => {
+            _push(`<div class="h-20 bg-gray-100 rounded-lg animate-pulse"></div>`);
+          });
+          _push(`<!--]--></div>`);
+        } else if (!addresses.value.length) {
+          _push(`<div class="text-center py-6"><p class="text-gray-600 mb-3">No addresses found.</p><button class="bg-black text-white px-4 py-2 rounded-full"> Add Address </button></div>`);
+        } else {
+          _push(`<div class="space-y-3"><!--[-->`);
+          ssrRenderList(addresses.value, (addr) => {
+            _push(`<div class="${ssrRenderClass([selectedAddress.value?.id_address === addr.id_address ? "border-black shadow-lg ring-1 ring-black/10" : "border-gray-200", "relative border p-4 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md"])}">`);
+            if (selectedAddress.value?.id_address === addr.id_address) {
+              _push(`<span class="absolute top-2 right-2 text-xs bg-black text-white px-2 py-1 rounded-full"> Selected </span>`);
+            } else {
+              _push(`<!---->`);
+            }
+            _push(`<div><p class="font-semibold">${ssrInterpolate(addr.fullname)}</p><p class="text-sm text-gray-600">${ssrInterpolate(addr.address1)} `);
+            if (addr.address2) {
+              _push(`<span>, ${ssrInterpolate(addr.address2)}</span>`);
+            } else {
+              _push(`<!---->`);
+            }
+            _push(`</p><p class="text-sm text-gray-600">${ssrInterpolate(addr.city)}, ${ssrInterpolate(addr.name)} - ${ssrInterpolate(addr.postcode)}</p><p class="text-sm text-gray-500">📞 ${ssrInterpolate(addr.phone_mobile)}</p></div></div>`);
+          });
+          _push(`<!--]--><div class="flex justify-center"><button class="bg-black text-white px-4 py-2 rounded-full"> Add New Address </button></div></div>`);
+        }
+        _push(`</section></div></div>`);
+      } else {
+        _push(`<!---->`);
+      }
+    };
+  }
+};
+const _sfc_setup$1 = _sfc_main$1.setup;
+_sfc_main$1.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/checkout/CheckoutAddressSelector.vue");
+  return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
+};
+const deliveryCharge = 40;
+const discount = 0;
+const _sfc_main = {
+  __name: "index",
+  __ssrInlineRender: true,
+  setup(__props) {
+    const cart = useCartStore();
+    const addressStore = useAddressStore();
+    useRouter();
+    const mounted = ref(false);
+    ref(false);
+    const selectedPayment = ref("cod");
+    computed(() => {
+      const a = addressStore.deliveryAddress ?? addressStore.getDeliveryAddress ?? {};
+      console.log("[Checkout] computed selectedAddress:", a && Object.keys(a).length ? a.id_address ?? "has-id" : "none");
+      return a;
+    });
+    const subtotal = computed(
+      () => cart.items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0)
+    );
+    const totalItems = computed(
+      () => cart.items.reduce((acc, item) => acc + (item.quantity || 0), 0)
+    );
+    const total = computed(() => subtotal.value + deliveryCharge - discount);
+    const bnplNow = computed(() => Math.round(total.value / 3));
+    const bnplLater = computed(() => bnplNow.value);
+    watch(selectedPayment, (v) => console.log("[Checkout] payment changed to:", v));
+    return (_ctx, _push, _parent, _attrs) => {
+      if (mounted.value) {
+        _push(`<div${ssrRenderAttrs(mergeProps({ class: "bg-gray-50 min-h-screen py-6 px-3 sm:px-6 md:px-12 lg:px-24" }, _attrs))} data-v-444430ed><div class="max-w-7xl mx-auto space-y-8" data-v-444430ed><section class="bg-white p-6 rounded-2xl shadow-md" data-v-444430ed><h2 class="text-xl font-bold mb-4" data-v-444430ed>Your Cart</h2>`);
+        if (unref(cart).items.length === 0) {
+          _push(`<div class="text-center py-6" data-v-444430ed><p class="text-gray-600 text-sm sm:text-base" data-v-444430ed>Your cart is empty.</p></div>`);
+        } else {
+          _push(`<div class="space-y-4" data-v-444430ed><!--[-->`);
+          ssrRenderList(unref(cart).items, (item) => {
+            _push(`<div class="flex justify-between items-center border-b pb-3" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><img${ssrRenderAttr("src", item.image)} alt="Product" class="w-16 h-20 object-cover rounded-xl" data-v-444430ed><div data-v-444430ed><p class="font-medium text-gray-800" data-v-444430ed>${ssrInterpolate(item.name)}</p>`);
+            if (item.size) {
+              _push(`<p class="text-gray-500 text-sm" data-v-444430ed>Size: ${ssrInterpolate(item.size)}</p>`);
+            } else {
+              _push(`<!---->`);
+            }
+            _push(`<p class="text-gray-900 font-semibold" data-v-444430ed>₹${ssrInterpolate(item.price)} x ${ssrInterpolate(item.quantity)}</p></div></div><p class="font-semibold text-gray-900" data-v-444430ed>₹${ssrInterpolate(item.price * item.quantity)}</p></div>`);
+          });
+          _push(`<!--]--><div class="mt-4 flex justify-between items-center text-gray-700" data-v-444430ed><div data-v-444430ed><div class="text-sm" data-v-444430ed>Total items: <span class="font-semibold" data-v-444430ed>${ssrInterpolate(totalItems.value)}</span></div><div class="text-sm" data-v-444430ed>Subtotal: <span class="font-semibold" data-v-444430ed>₹${ssrInterpolate(subtotal.value)}</span></div></div><div class="text-right" data-v-444430ed><div class="text-sm" data-v-444430ed>Delivery: ₹${ssrInterpolate(deliveryCharge)}</div><div class="text-sm" data-v-444430ed>Discount: -₹${ssrInterpolate(discount)}</div><div class="text-lg font-bold mt-1" data-v-444430ed>Total: ₹${ssrInterpolate(total.value)}</div></div></div></div>`);
+        }
+        _push(`</section><div data-v-444430ed>`);
+        _push(ssrRenderComponent(_sfc_main$1, null, null, _parent));
+        _push(`</div><section class="bg-white p-6 rounded-2xl shadow-md" data-v-444430ed><h2 class="text-xl font-bold mb-4" data-v-444430ed>Payment Options</h2><div class="grid grid-cols-1 gap-4" data-v-444430ed><label class="${ssrRenderClass([selectedPayment.value === "cod" ? "border-black shadow-md" : "border-gray-300", "flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"])}" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><input type="radio" value="cod"${ssrIncludeBooleanAttr(ssrLooseEqual(selectedPayment.value, "cod")) ? " checked" : ""} class="accent-black" data-v-444430ed><div data-v-444430ed><p class="font-medium" data-v-444430ed>Cash on Delivery</p><p class="text-xs text-gray-500" data-v-444430ed>Not available on this order. ₹99 COD charge if applicable.</p></div></div>`);
+        _push(ssrRenderComponent(unref(LucideAlertCircle), { class: "w-5 h-5 text-gray-500" }, null, _parent));
+        _push(`</label><label class="${ssrRenderClass([selectedPayment.value === "bnpl" ? "border-black shadow-md" : "border-gray-300", "flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"])}" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><input type="radio" value="bnpl"${ssrIncludeBooleanAttr(ssrLooseEqual(selectedPayment.value, "bnpl")) ? " checked" : ""} class="accent-black" data-v-444430ed><div data-v-444430ed><p class="font-medium" data-v-444430ed>Buy Now Pay Later</p><p class="text-xs text-gray-500" data-v-444430ed>Pay ₹${ssrInterpolate(bnplNow.value)} now + 2 monthly payments of ₹${ssrInterpolate(bnplLater.value)} later</p></div></div>`);
+        _push(ssrRenderComponent(unref(LucideClock), { class: "w-5 h-5 text-gray-500" }, null, _parent));
+        _push(`</label><label class="${ssrRenderClass([selectedPayment.value === "upi" ? "border-black shadow-md" : "border-gray-300", "flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"])}" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><input type="radio" value="upi"${ssrIncludeBooleanAttr(ssrLooseEqual(selectedPayment.value, "upi")) ? " checked" : ""} class="accent-black" data-v-444430ed><span class="font-medium" data-v-444430ed>UPI (GooglePay / PhonePe / PayTM)</span></div>`);
+        _push(ssrRenderComponent(unref(LucideSmartphone), { class: "w-5 h-5 text-gray-500" }, null, _parent));
+        _push(`</label><label class="${ssrRenderClass([selectedPayment.value === "card" ? "border-black shadow-md" : "border-gray-300", "flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"])}" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><input type="radio" value="card"${ssrIncludeBooleanAttr(ssrLooseEqual(selectedPayment.value, "card")) ? " checked" : ""} class="accent-black" data-v-444430ed><span class="font-medium" data-v-444430ed>Credit / Debit Card (Visa / Master / Amex)</span></div>`);
+        _push(ssrRenderComponent(unref(LucideCreditCard), { class: "w-5 h-5 text-gray-500" }, null, _parent));
+        _push(`</label><label class="${ssrRenderClass([selectedPayment.value === "netbanking" ? "border-black shadow-md" : "border-gray-300", "flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"])}" data-v-444430ed><div class="flex items-center gap-3" data-v-444430ed><input type="radio" value="netbanking"${ssrIncludeBooleanAttr(ssrLooseEqual(selectedPayment.value, "netbanking")) ? " checked" : ""} class="accent-black" data-v-444430ed><span class="font-medium" data-v-444430ed>Net Banking</span></div>`);
+        _push(ssrRenderComponent(unref(LucideBriefcase), { class: "w-5 h-5 text-gray-500" }, null, _parent));
+        _push(`</label></div></section><section class="bg-white p-6 rounded-2xl shadow-md" data-v-444430ed><h2 class="text-xl font-bold mb-4" data-v-444430ed>Order Summary</h2><div class="space-y-3 text-gray-700" data-v-444430ed><div class="flex justify-between font-medium" data-v-444430ed><span data-v-444430ed>Total Items</span><span data-v-444430ed>${ssrInterpolate(totalItems.value)}</span></div><div class="flex justify-between font-medium" data-v-444430ed><span data-v-444430ed>Subtotal</span><span data-v-444430ed>₹${ssrInterpolate(subtotal.value)}</span></div><div class="flex justify-between font-medium" data-v-444430ed><span data-v-444430ed>Delivery</span><span data-v-444430ed>₹${ssrInterpolate(deliveryCharge)}</span></div><div class="flex justify-between font-medium" data-v-444430ed><span data-v-444430ed>Discount</span><span data-v-444430ed>-₹${ssrInterpolate(discount)}</span></div><div class="flex justify-between font-bold text-lg border-t pt-2" data-v-444430ed><span data-v-444430ed>Total Payment</span><span data-v-444430ed>₹${ssrInterpolate(total.value)}</span></div><div class="pt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3" data-v-444430ed><div class="flex items-center gap-4" data-v-444430ed><div class="flex items-center gap-2" data-v-444430ed>`);
+        _push(ssrRenderComponent(unref(LucideShield), { class: "w-5 h-5 text-green-600" }, null, _parent));
+        _push(`<span class="text-sm font-medium" data-v-444430ed>Secure Payment</span></div><div class="flex items-center gap-2" data-v-444430ed>`);
+        _push(ssrRenderComponent(unref(LucideRepeat), { class: "w-5 h-5 text-green-600" }, null, _parent));
+        _push(`<span class="text-sm font-medium" data-v-444430ed>Easy Exchange</span></div><div class="flex items-center gap-2" data-v-444430ed>`);
+        _push(ssrRenderComponent(unref(LucideRefreshCw), { class: "w-5 h-5 text-green-600" }, null, _parent));
+        _push(`<span class="text-sm font-medium" data-v-444430ed>Fast Refunds</span></div></div><div class="flex items-center gap-3" data-v-444430ed><button class="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2" data-v-444430ed>`);
+        _push(ssrRenderComponent(unref(LucideCreditCard), { class: "w-5 h-5" }, null, _parent));
+        _push(`<span data-v-444430ed>Proceed to Payment • ₹${ssrInterpolate(total.value)}</span>`);
+        _push(ssrRenderComponent(unref(LucideArrowRight), { class: "w-5 h-5" }, null, _parent));
+        _push(`</button></div></div></div></section></div></div>`);
+      } else {
+        _push(`<!---->`);
+      }
+    };
+  }
+};
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/checkout/index.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-444430ed"]]);
+
+export { index as default };
+//# sourceMappingURL=index-PtgIAj03.mjs.map

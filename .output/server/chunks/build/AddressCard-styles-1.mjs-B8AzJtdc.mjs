@@ -1,0 +1,4 @@
+const AddressCard_vue_vue_type_style_index_0_scoped_26e301dd_lang = "div[data-v-26e301dd]:hover{background:linear-gradient(180deg,#fff,#fafafa)}";
+
+export { AddressCard_vue_vue_type_style_index_0_scoped_26e301dd_lang as A };
+//# sourceMappingURL=AddressCard-styles-1.mjs-B8AzJtdc.mjs.map
