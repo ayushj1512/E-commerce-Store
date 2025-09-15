@@ -1,11 +1,11 @@
 <template>
   <footer class="bg-black text-white px-6 py-8 sm:py-10">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="max-w-7xl mx-auto flex flex-wrap gap-8">
 
-      <!-- Left Row: Street Style Store + About -->
-      <div class="flex flex-wrap gap-8">
+      <!-- Left Row: Street Style Store + About (wrap on mobile) -->
+      <div class="flex flex-wrap gap-8 flex-1 min-w-[250px]">
         <!-- Street Style Store Section -->
-        <div class="flex-1 min-w-[150px]">
+        <div class="flex-1 min-w-[120px]">
           <h3 class="text-lg font-bold mb-3 sm:mb-4">Street Style Store</h3>
           <ul class="space-y-1 sm:space-y-2 text-sm">
             <li @click="navigate('/returns')" class="hover:underline cursor-pointer">Returns & Exchange</li>
@@ -16,7 +16,7 @@
         </div>
 
         <!-- About Section -->
-        <div class="flex-1 min-w-[150px]">
+        <div class="flex-1 min-w-[120px]">
           <h3 class="text-lg font-bold mb-3 sm:mb-4">About SSS</h3>
           <ul class="space-y-1 sm:space-y-2 text-sm">
             <li @click="navigate('/about')" class="hover:underline cursor-pointer">About Us</li>
@@ -26,7 +26,7 @@
       </div>
 
       <!-- Connect Section -->
-      <div class="mt-6 md:mt-0">
+      <div class="flex-1 min-w-[250px]">
         <h3 class="text-lg font-bold mb-3 sm:mb-4">Connect</h3>
         <p class="text-sm mb-1 sm:mb-2">Office: No.356, Aggarwal Metro Heights, Netaji Subhash Place, Pitampura, North West Delhi, Delhi-110034</p>
         <p class="text-sm mb-3 sm:mb-4">Phone: +91-11-41171712 (10 AM - 6 PM, Mon to Sat)</p>

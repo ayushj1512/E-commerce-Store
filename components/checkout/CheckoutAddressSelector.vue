@@ -1,119 +1,129 @@
 <template>
-  <section class="bg-white p-6 rounded-2xl shadow-md">
-    <h2 class="text-xl font-bold mb-4">Delivery Address</h2>
+  <div v-if="mounted" class="bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto space-y-8">
 
-    <!-- No addresses -->
-    <div v-if="!addresses.length" class="text-center py-6">
-      <p class="text-gray-600 mb-3 text-sm sm:text-base">No addresses found.</p>
-      <button @click="addNewAddress"
-        class="bg-black text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition-shadow">
-        Add Address
-      </button>
-    </div>
+      <!-- 📍 ADDRESS -->
+      <section class="bg-white p-6 rounded-2xl shadow-md">
+        <h2 class="text-xl font-bold mb-4">Delivery Address</h2>
 
-    <!-- Existing addresses -->
-    <div v-else class="space-y-3">
-      <div v-for="addr in addresses" :key="addr.id_address"
-        class="border rounded-xl p-4 flex justify-between items-start cursor-pointer hover:shadow-md transition"
-        :class="{'border-black': isSelected(addr), 'border-gray-200': !isSelected(addr)}"
-        @click="selectAddress(addr)"
-      >
-        <div>
-          <p class="font-semibold text-black">{{ addr.name }}</p>
-          <p class="text-gray-700 text-sm">{{ addr.street }}, {{ addr.city }}</p>
-          <p class="text-gray-700 text-sm">{{ addr.state }} - {{ addr.zip }}</p>
-          <p class="text-gray-700 text-sm">{{ addr.phone }}</p>
+        <!-- shimmer -->
+        <div v-if="loading" class="space-y-3">
+          <div v-for="n in 2" :key="n" class="h-20 bg-gray-100 rounded-lg animate-pulse"></div>
         </div>
-        <div class="flex flex-col items-end gap-2">
-          <span v-if="isSelected(addr)" class="text-green-600 font-semibold text-sm">Selected</span>
-          <button @click.stop="editAddress(addr)" class="text-blue-600 text-xs underline hover:text-blue-800">
-            Edit
-          </button>
-          <button @click.stop="removeAddress(addr.id_address)" class="text-red-500 text-xs underline hover:text-red-600">
-            Remove
+
+        <!-- no addresses -->
+        <div v-else-if="!addresses.length" class="text-center py-6">
+          <p class="text-gray-600 mb-3">No addresses found.</p>
+          <button @click="goToAddAddress" class="bg-black text-white px-4 py-2 rounded-full">
+            Add Address
           </button>
         </div>
-      </div>
 
-      <!-- Add new address button -->
-      <div class="flex justify-center mt-4">
-        <button @click="addNewAddress"
-          class="bg-black text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition-shadow">
-          Add New Address
-        </button>
-      </div>
+        <!-- show addresses -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="addr in addresses"
+            :key="addr.id_address"
+            @click="selectAddress(addr)"
+            class="relative border p-4 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md"
+            :class="selectedAddress?.id_address === addr.id_address
+              ? 'border-black shadow-lg ring-1 ring-black/10'
+              : 'border-gray-200'"
+          >
+            <!-- Selected Tag -->
+            <span
+              v-if="selectedAddress?.id_address === addr.id_address"
+              class="absolute top-2 right-2 text-xs bg-black text-white px-2 py-1 rounded-full"
+            >
+              Selected
+            </span>
+
+            <div>
+              <p class="font-semibold">{{ addr.fullname }}</p>
+              <p class="text-sm text-gray-600">
+                {{ addr.address1 }} <span v-if="addr.address2">, {{ addr.address2 }}</span>
+              </p>
+              <p class="text-sm text-gray-600">
+                {{ addr.city }}, {{ addr.name }} - {{ addr.postcode }}
+              </p>
+              <p class="text-sm text-gray-500">📞 {{ addr.phone_mobile }}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-center">
+            <button @click="goToAddAddress" class="bg-black text-white px-4 py-2 rounded-full">
+              Add New Address
+            </button>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAddressStore } from "~/stores/address";
+import { useAuthStore } from "~/stores/auth";
 import { useRouter } from "vue-router";
 
-const addressStore = useAddressStore();
+const mounted = ref(false);
+const loading = ref(true);
+const selectedAddress = ref(null);
+
 const router = useRouter();
+const addressStore = useAddressStore();
+const authStore = useAuthStore();
 
-// Fetch addresses on mount
-onMounted(async () => {
-  console.log("[DeliveryAddress] Component mounted");
-  console.log("[DeliveryAddress] Current store addresses:", addressStore.getAddresses);
+const addresses = computed(() =>
+  addressStore.addresses.map((a) => ({
+    id_address: a.id_address,
+    fullname: a.fullname || `${a.firstname ?? ""} ${a.lastname ?? ""}`,
+    address1: a.address1 || "",
+    address2: a.address2 || "",
+    city: a.city || "",
+    name: a.name || "",
+    postcode: a.postcode || "",
+    phone_mobile: a.phone_mobile || "",
+  }))
+);
 
-  if (!addressStore.addresses.length) {
-    console.log("[DeliveryAddress] No addresses found in store. Fetching...");
-    await addressStore.getAddresses();
-    console.log("[DeliveryAddress] Addresses after fetch:", addressStore.getAddresses);
-  }
-});
-
-// Reactive list of addresses
-const addresses = computed(() => {
-  console.log("[DeliveryAddress] Computing addresses list:", addressStore.getAddresses);
-  return addressStore.getAddresses;
-});
-
-// Check if address is selected
-const isSelected = (addr) => {
-  const selected = addressStore.getDeliveryAddress.id_address === addr.id_address;
-  console.log("[DeliveryAddress] Checking if address is selected:", addr, selected);
-  return selected;
-};
-
-// Select delivery address
-const selectAddress = (addr) => {
-  console.log("[DeliveryAddress] Selecting address:", addr);
-  addressStore.setDeliveryAddress(addr);
-  console.log("[DeliveryAddress] Delivery address in store now:", addressStore.getDeliveryAddress);
-};
-
-// Add new address
-const addNewAddress = () => {
-  console.log("[DeliveryAddress] Navigating to add new address page");
+function goToAddAddress() {
   router.push("/profile/add-address");
-};
-
-// Edit address
-const editAddress = (addr) => {
-  console.log("[DeliveryAddress] Editing address:", addr);
-  addressStore.setEditAddress(addr);
-  console.log("[DeliveryAddress] Edit address in store now:", addressStore.getEditAddress);
-  router.push("/profile/add-address");
-};
-
-// Remove address
-const removeAddress = async (id_address) => {
-  console.log("[DeliveryAddress] Attempting to remove address ID:", id_address);
-  if (confirm("Are you sure you want to remove this address?")) {
-    await addressStore.removeAddress(id_address);
-    console.log("[DeliveryAddress] Address removed. Current store addresses:", addressStore.getAddresses);
-  } else {
-    console.log("[DeliveryAddress] Remove action canceled for address ID:", id_address);
-  }
-};
-</script>
-
-<style scoped>
-.border-black {
-  border-width: 2px;
 }
-</style>
+
+function selectAddress(addr) {
+  selectedAddress.value = addr;
+}
+
+onMounted(async () => {
+  mounted.value = true;
+  loading.value = true;
+
+  // 1️⃣ Initialize auth first
+  authStore.initAuth();
+
+  // 2️⃣ Wait until user is authenticated before fetching addresses
+  if (authStore.isAuthenticated && authStore.key) {
+    await addressStore.fetchAddresses();
+
+    // Auto-select first address if available
+    if (addressStore.addresses.length > 0) {
+      const a = addressStore.addresses[0];
+      selectedAddress.value = {
+        id_address: a.id_address,
+        fullname: a.fullname || `${a.firstname ?? ""} ${a.lastname ?? ""}`,
+        address1: a.address1 || "",
+        address2: a.address2 || "",
+        city: a.city || "",
+        name: a.name || "",
+        postcode: a.postcode || "",
+        phone_mobile: a.phone_mobile || "",
+      };
+    }
+  }
+
+  loading.value = false;
+});
+</script>
