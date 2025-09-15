@@ -8,8 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "lint": "eslint . --ext .js,.ts,.vue",
-    "format": "prettier --write .",
-    "vercel-build": "npm install --legacy-peer-deps && nuxt build"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
