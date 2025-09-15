@@ -1,0 +1,4 @@
+const register_vue_vue_type_style_index_0_scoped_598fd1f7_lang = "input[data-v-598fd1f7]:focus,textarea[data-v-598fd1f7]:focus{outline:none}input[data-v-598fd1f7],textarea[data-v-598fd1f7]{font-size:1rem}textarea[data-v-598fd1f7]{max-height:120px;resize:vertical}";
+
+export { register_vue_vue_type_style_index_0_scoped_598fd1f7_lang as r };
+//# sourceMappingURL=register-styles-1.mjs-CGDbZfGq.mjs.map

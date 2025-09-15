@@ -1,0 +1,121 @@
+import axios from 'axios';
+import { Check, Lock, Mail, Phone } from 'lucide-vue-next';
+import { resolveComponent, mergeProps, useSSRContext } from 'vue';
+import { ssrRenderAttrs, ssrRenderComponent, ssrRenderAttr, ssrIncludeBooleanAttr, ssrInterpolate } from 'vue/server-renderer';
+import { _ as _export_sfc } from './server.mjs';
+import '../_/nitro.mjs';
+import 'node:http';
+import 'node:https';
+import 'node:events';
+import 'node:buffer';
+import 'node:fs';
+import 'node:path';
+import 'node:crypto';
+import 'node:url';
+import '../routes/renderer.mjs';
+import 'vue-bundle-renderer/runtime';
+import 'unhead/server';
+import 'devalue';
+import 'unhead/utils';
+import 'pinia';
+import 'vue-router';
+
+const _sfc_main = {
+  name: "Register",
+  components: { Phone, Mail, Lock, Check },
+  data() {
+    return {
+      mobileNumber: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      loading: false,
+      alertMessage: ""
+    };
+  },
+  computed: {
+    passwordMismatch() {
+      return this.password && this.confirmPassword && this.password !== this.confirmPassword;
+    }
+  },
+  methods: {
+    async handleRegister() {
+      if (this.passwordMismatch) {
+        this.alertMessage = "Passwords must match!";
+        return;
+      }
+      this.loading = true;
+      this.alertMessage = "";
+      try {
+        const requestData = JSON.stringify({
+          gateway_action: "customer/createAccount",
+          mobileNumber: this.mobileNumber,
+          site: "streetstylestore",
+          passwd: this.password,
+          email: this.email,
+          firstName: "",
+          lastName: "",
+          checkout: false
+        });
+        const response = await axios.post("https://gateway.streetstylestore.com/gateway/v1/", requestData, {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true
+        });
+        if (response.data.status === 200) {
+          console.log("✅ Registration Success:", response.data);
+          this.$router.push("/profile");
+        } else {
+          this.alertMessage = response.data.alertMessage || "Registration failed.";
+        }
+      } catch (error) {
+        console.error("❌ Error during registration:", error);
+        this.alertMessage = "Something went wrong. Please try again.";
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+};
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Phone = resolveComponent("Phone");
+  const _component_Mail = resolveComponent("Mail");
+  const _component_Lock = resolveComponent("Lock");
+  const _component_Check = resolveComponent("Check");
+  _push(`<div${ssrRenderAttrs(mergeProps({ class: "min-h-screen flex items-center justify-center bg-white px-4" }, _attrs))} data-v-34b0fbd4><div class="w-full max-w-md bg-white shadow-lg rounded-xl p-6" data-v-34b0fbd4><div class="text-center mb-6" data-v-34b0fbd4><h2 class="text-2xl font-bold text-black" data-v-34b0fbd4>Welcome!</h2><p class="text-gray-600 text-sm" data-v-34b0fbd4>Let&#39;s create your account in just a few steps.</p></div><form class="space-y-4" data-v-34b0fbd4><div data-v-34b0fbd4><label class="block text-sm font-medium text-black mb-1" data-v-34b0fbd4>Mobile Number</label><div class="flex items-center border border-gray-300 rounded-md px-3" data-v-34b0fbd4>`);
+  _push(ssrRenderComponent(_component_Phone, { class: "w-4 h-4 text-gray-500 mr-2" }, null, _parent));
+  _push(`<input${ssrRenderAttr("value", $data.mobileNumber)} type="text" placeholder="Enter mobile number" class="w-full py-2 focus:outline-none" required data-v-34b0fbd4></div></div><div data-v-34b0fbd4><label class="block text-sm font-medium text-black mb-1" data-v-34b0fbd4>Email</label><div class="flex items-center border border-gray-300 rounded-md px-3" data-v-34b0fbd4>`);
+  _push(ssrRenderComponent(_component_Mail, { class: "w-4 h-4 text-gray-500 mr-2" }, null, _parent));
+  _push(`<input${ssrRenderAttr("value", $data.email)} type="email" placeholder="Enter email" class="w-full py-2 focus:outline-none" required data-v-34b0fbd4></div></div><div data-v-34b0fbd4><label class="block text-sm font-medium text-black mb-1" data-v-34b0fbd4>Password</label><div class="flex items-center border border-gray-300 rounded-md px-3" data-v-34b0fbd4>`);
+  _push(ssrRenderComponent(_component_Lock, { class: "w-4 h-4 text-gray-500 mr-2" }, null, _parent));
+  _push(`<input${ssrRenderAttr("value", $data.password)} type="password" placeholder="Enter password" class="w-full py-2 focus:outline-none" required data-v-34b0fbd4></div></div><div data-v-34b0fbd4><label class="block text-sm font-medium text-black mb-1" data-v-34b0fbd4>Confirm Password</label><div class="flex items-center border border-gray-300 rounded-md px-3" data-v-34b0fbd4>`);
+  _push(ssrRenderComponent(_component_Check, { class: "w-4 h-4 text-gray-500 mr-2" }, null, _parent));
+  _push(`<input${ssrRenderAttr("value", $data.confirmPassword)} type="password" placeholder="Re-enter password" class="w-full py-2 focus:outline-none" required data-v-34b0fbd4></div>`);
+  if ($options.passwordMismatch) {
+    _push(`<p class="text-red-600 text-xs mt-1" data-v-34b0fbd4>Passwords do not match.</p>`);
+  } else {
+    _push(`<!---->`);
+  }
+  _push(`</div><button type="submit" class="w-full bg-black text-white py-2 rounded-md font-semibold hover:bg-gray-800 transition disabled:opacity-50"${ssrIncludeBooleanAttr($data.loading || $options.passwordMismatch) ? " disabled" : ""} data-v-34b0fbd4>`);
+  if ($data.loading) {
+    _push(`<span data-v-34b0fbd4>Creating Account...</span>`);
+  } else {
+    _push(`<span data-v-34b0fbd4>Register</span>`);
+  }
+  _push(`</button></form>`);
+  if ($data.alertMessage) {
+    _push(`<p class="text-red-600 text-sm text-center mt-4" data-v-34b0fbd4>${ssrInterpolate($data.alertMessage)}</p>`);
+  } else {
+    _push(`<p class="text-gray-500 text-sm text-center mt-4" data-v-34b0fbd4> Already have an account? Login and start exploring! </p>`);
+  }
+  _push(`</div></div>`);
+}
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/login/register.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+const register = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender], ["__scopeId", "data-v-34b0fbd4"]]);
+
+export { register as default };
+//# sourceMappingURL=register-DZ_DUkXN.mjs.map

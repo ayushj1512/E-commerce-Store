@@ -1,0 +1,89 @@
+import { ref, mergeProps, unref, useSSRContext } from 'vue';
+import { ssrRenderAttrs, ssrRenderComponent, ssrRenderList, ssrInterpolate, ssrRenderAttr } from 'vue/server-renderer';
+import { _ as _export_sfc, g as useRoute, u as useRouter } from './server.mjs';
+import { C as CollectionPage } from './collectionPage-BDXYyG7u.mjs';
+import { Frown } from 'lucide-vue-next';
+import { useRouter as useRouter$1 } from 'vue-router';
+import '../_/nitro.mjs';
+import 'node:http';
+import 'node:https';
+import 'node:events';
+import 'node:buffer';
+import 'node:fs';
+import 'node:path';
+import 'node:crypto';
+import 'node:url';
+import '../routes/renderer.mjs';
+import 'vue-bundle-renderer/runtime';
+import 'unhead/server';
+import 'devalue';
+import 'unhead/utils';
+import 'pinia';
+import './ProductCard-BPWj2ggi.mjs';
+import './FilterSidebar-ehXnQ7Lv.mjs';
+
+const _sfc_main$1 = {
+  __name: "CommonErrorHandler",
+  __ssrInlineRender: true,
+  setup(__props) {
+    useRouter$1();
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-white flex items-center justify-center px-4 py-12" }, _attrs))} data-v-1023b93b><div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center max-w-2xl space-y-6 transform transition-all duration-700 animate-fade-in" data-v-1023b93b><div class="flex justify-center mb-4" data-v-1023b93b><div class="w-28 h-28 rounded-full bg-red-400 flex items-center justify-center animate-bounce-forever shadow-2xl" data-v-1023b93b>`);
+      _push(ssrRenderComponent(unref(Frown), { class: "h-14 w-14 text-white" }, null, _parent));
+      _push(`</div></div><h1 class="text-4xl md:text-5xl font-great-vibes text-black font-bold tracking-wide" data-v-1023b93b> Oops! We couldn&#39;t find that. </h1><p class="text-gray-600 text-base md:text-lg max-w-xl mx-auto leading-relaxed" data-v-1023b93b> Looks like the page you’re looking for doesn’t exist. Don’t worry, we’ll help you get back on track! 😊 </p><div class="flex flex-col sm:flex-row justify-center gap-4 mt-6" data-v-1023b93b><button class="bg-black text-white font-semibold py-3 px-7 rounded-xl shadow-md hover:bg-white hover:text-black transition transform hover:-translate-y-1 hover:scale-105" data-v-1023b93b> Go Back Home </button><button class="bg-teal-500 text-white font-semibold py-3 px-7 rounded-xl shadow-md hover:bg-teal-600 transition transform hover:-translate-y-1 hover:scale-105" data-v-1023b93b> Continue Shopping </button></div><p class="text-xs text-gray-400 mt-6" data-v-1023b93b> If you think this is a mistake, contact <a href="mailto:support@sss.com" class="underline hover:text-gray-600" data-v-1023b93b>support@sss.com</a></p></div></div>`);
+    };
+  }
+};
+const _sfc_setup$1 = _sfc_main$1.setup;
+_sfc_main$1.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("components/common/errorHandler.vue");
+  return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
+};
+const ErrorHandler = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1023b93b"]]);
+const _sfc_main = {
+  __name: "index",
+  __ssrInlineRender: true,
+  setup(__props) {
+    const route = useRoute();
+    useRouter();
+    const cmsContent = ref("");
+    const showLoader = ref(false);
+    const stores = ref([]);
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 py-6" }, _attrs))} data-v-b623d7e8>`);
+      if (showLoader.value) {
+        _push(`<div class="flex justify-center items-center h-screen" data-v-b623d7e8><div class="flex flex-col items-center space-y-3" data-v-b623d7e8><div class="loader" data-v-b623d7e8></div><p class="text-gray-600 font-medium text-lg" data-v-b623d7e8>Loading content...</p></div></div>`);
+      } else if (unref(route).params.parent === "collection") {
+        _push(ssrRenderComponent(CollectionPage, null, null, _parent));
+      } else if (stores.value.length > 0) {
+        _push(`<div class="px-4 md:px-10" data-v-b623d7e8><h2 class="text-4xl font-bold text-gray-800 mb-8 text-center" data-v-b623d7e8>Our Stores</h2><div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-v-b623d7e8><!--[-->`);
+        ssrRenderList(stores.value, (store, storeIndex) => {
+          _push(`<div data-v-b623d7e8><div class="relative bg-gradient-to-br from-white via-purple-50 to-purple-100 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 p-6 flex flex-col justify-between h-full" data-v-b623d7e8>`);
+          if (store.isNew) {
+            _push(`<div class="absolute top-4 right-4 bg-pink-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg" data-v-b623d7e8> NEW </div>`);
+          } else {
+            _push(`<!---->`);
+          }
+          _push(`<div class="flex items-center gap-3 mb-4" data-v-b623d7e8><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-purple-600" data-v-b623d7e8><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" data-v-b623d7e8></path><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" data-v-b623d7e8></path></svg><h5 class="text-xl font-bold text-gray-900" data-v-b623d7e8>${ssrInterpolate(store.name)}</h5></div><div class="text-gray-700 text-sm mb-6 space-y-1" data-v-b623d7e8><div data-v-b623d7e8>${ssrInterpolate(store.address1)}</div><div data-v-b623d7e8>${ssrInterpolate(store.address2)}</div><div data-v-b623d7e8>${ssrInterpolate(store.city)}, ${ssrInterpolate(store.postcode)}</div><div data-v-b623d7e8>${ssrInterpolate(store.country)}</div></div><div class="flex flex-col gap-3 mt-auto" data-v-b623d7e8><a${ssrRenderAttr("href", store.note)} target="_blank" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-2 rounded-lg text-center shadow-md hover:scale-105 transition-transform" data-v-b623d7e8> Get Directions </a><button class="border border-purple-600 text-purple-700 font-semibold py-2 rounded-lg text-center hover:bg-purple-50 hover:text-purple-900 transition" data-v-b623d7e8> View Clothing </button><button class="border border-purple-600 text-purple-700 font-semibold py-2 rounded-lg text-center hover:bg-purple-50 hover:text-purple-900 transition" data-v-b623d7e8> View Shoes </button></div></div></div>`);
+        });
+        _push(`<!--]--></div></div>`);
+      } else if (cmsContent.value) {
+        _push(`<div class="px-4 md:px-10" data-v-b623d7e8><div class="cmsContent prose max-w-none text-gray-800" data-v-b623d7e8>${cmsContent.value ?? ""}</div></div>`);
+      } else {
+        _push(ssrRenderComponent(ErrorHandler, null, null, _parent));
+      }
+      _push(`</div>`);
+    };
+  }
+};
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/[parent]/index.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-b623d7e8"]]);
+
+export { index as default };
+//# sourceMappingURL=index-BUlBStJC.mjs.map

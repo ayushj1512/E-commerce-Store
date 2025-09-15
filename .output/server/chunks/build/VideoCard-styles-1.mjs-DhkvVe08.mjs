@@ -1,0 +1,4 @@
+const VideoCard_vue_vue_type_style_index_0_scoped_84fc1ed6_lang = ".group:hover video[data-v-84fc1ed6]{transform:scale(1.05)}";
+
+export { VideoCard_vue_vue_type_style_index_0_scoped_84fc1ed6_lang as V };
+//# sourceMappingURL=VideoCard-styles-1.mjs-DhkvVe08.mjs.map
