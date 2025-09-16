@@ -1,20 +1,22 @@
 <template>
   <section class="py-6 bg-white">
     <!-- Products Horizontal Scroll -->
-    <div class="overflow-x-auto px-4 pb-2 scrollbar-hide">
-      <div class="flex space-x-4">
+    <div class="overflow-x-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-3 scrollbar-hide">
+      <div
+        class="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-6 snap-x snap-mandatory touch-pan-x"
+      >
         <ProductCard
           v-for="product in products"
           :key="product.id"
           :id="product.id"
           :title="product.name"
           :image="product.img"
-          :hoverImage="null" 
-          :tags="product.tags"
+          :hoverImage="null"
           :price="product.real_selling_price"
           :mrp="product.selling_price"
           :productUrl="product.product_url"
           :showCartBtn="true"
+          class="flex-shrink-0 w-36 sm:w-44 md:w-52 lg:w-60 xl:w-64 snap-start"
           @click="goToDetail(product.product_url)"
         />
       </div>
@@ -79,5 +81,10 @@ onMounted(() => {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Smooth horizontal scroll */
+.overflow-x-auto {
+  scroll-behavior: smooth;
 }
 </style>
