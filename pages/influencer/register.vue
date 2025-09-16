@@ -71,9 +71,11 @@
 
 <script setup>
 import { reactive } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
 const baseURL = import.meta.env.VITE_BASE_URL;
+const router = useRouter();
 
 const fields = [
   { id: "name", label: "Your Name *", inputType: "text", type: "input", icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.879 6.196 9 9 0 015.121 17.804z M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>` },
@@ -119,7 +121,9 @@ const handleSubmit = async () => {
     };
 
     await axios.post(`${baseURL}`, payload);
-    alert("Application submitted successfully!");
+
+    // ✅ Redirect after successful submission
+    router.push("/influencer/submitted");
   } catch (error) {
     console.error(error);
     alert("Submission failed. Please try again.");

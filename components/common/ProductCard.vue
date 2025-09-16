@@ -29,11 +29,12 @@
     <div class="p-3 flex flex-col flex-1 justify-between gap-2">
       <div class="flex flex-col flex-1">
        <h3
-  class="text-gray-900 font-medium text-sm sm:text-base md:text-base break-words leading-snug"
+  class="text-gray-900 font-medium text-xs sm:text-sm md:text-base break-words leading-snug"
   :title="title"
 >
   {{ title }}
 </h3>
+
 
         <div class="mt-1 flex items-center space-x-1 sm:space-x-2">
           <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
@@ -52,13 +53,7 @@
       </div>
 
       <!-- Add to Cart Button -->
-      <button
-        v-if="showCartBtn"
-        class="w-full sm:w-auto mt-2 sm:mt-3 px-4 py-1.5 bg-black text-white rounded-sm text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-300"
-        @click.stop="addToCart"
-      >
-        Add to Cart
-      </button>
+      
     </div>
   </div>
 </template>
