@@ -1,35 +1,44 @@
 <template>
   <section class="w-full overflow-hidden">
-    <h2 class="text-lg sm:text-xl md:text-2xl font-bold pt-4 pb-5 text-black">
-      Saved Addresses
-    </h2>
+    <!-- Header row with title + Manage button -->
+    <div class="flex items-center justify-between pt-4 pb-5">
+      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-black">
+        Saved Addresses
+      </h2>
+      <router-link
+        to="/profile/address"
+        class="bg-black text-white px-4 py-2 rounded-lg shadow-md transition"
+      >
+        Manage Addresses
+      </router-link>
+    </div>
 
     <!-- Shimmer loading -->
     <div
       v-if="loading"
-      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-3"
+      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory p-3"
     >
       <div
         v-for="n in 3"
         :key="n"
-        class="min-w-[260px] sm:min-w-[300px] max-w-[85%] sm:max-w-xs snap-start flex-shrink-0 rounded-lg border border-gray-200 bg-gray-100 animate-pulse p-4"
+        class="min-w-[260px] sm:min-w-[300px] max-w-[85%] sm:max-w-xs min-h-[200px] snap-start flex-shrink-0 rounded-lg border border-gray-200 bg-gray-100 animate-pulse p-5"
       >
-        <div class="h-4 w-24 bg-gray-300 rounded mb-3"></div>
-        <div class="h-3 w-40 bg-gray-300 rounded mb-2"></div>
-        <div class="h-3 w-28 bg-gray-300 rounded mb-2"></div>
-        <div class="h-3 w-32 bg-gray-300 rounded"></div>
-        <div class="mt-4 h-8 w-20 bg-gray-300 rounded-full"></div>
+        <div class="h-4 w-28 bg-gray-300 rounded mb-4"></div>
+        <div class="h-3 w-40 bg-gray-300 rounded mb-3"></div>
+        <div class="h-3 w-32 bg-gray-300 rounded mb-3"></div>
+        <div class="h-3 w-28 bg-gray-300 rounded mb-3"></div>
+        <div class="mt-6 h-8 w-24 bg-gray-300 rounded-full"></div>
       </div>
     </div>
 
     <!-- No addresses -->
-    <div v-else-if="addresses.length === 0" class="text-center py-10">
-      <p class="text-gray-600 mb-3 text-sm sm:text-base">
+    <div v-else-if="addresses.length === 0" class="text-center py-12">
+      <p class="text-gray-600 mb-4 text-sm sm:text-base">
         No saved addresses yet.
       </p>
       <button
         @click="goToAddAddress"
-        class="bg-black text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-gray-800 transition-shadow shadow-md text-xs sm:text-sm md:text-base"
+        class="bg-black text-white px-5 sm:px-7 py-2.5 rounded-full font-semibold hover:bg-gray-800 transition-shadow shadow-md text-xs sm:text-sm md:text-base"
       >
         Click here to add one
       </button>
@@ -38,16 +47,13 @@
     <!-- Display addresses -->
     <div
       v-else
-      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-3 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
     >
       <AddressCard
         v-for="address in addresses"
         :key="address.id_address"
         :address="address"
-        class="min-w-[260px] sm:min-w-[300px] max-w-[85%] sm:max-w-xs snap-start flex-shrink-0"
-        :is-selected="addressStore.deliveryAddress?.id_address === address.id_address"
-        @select="selectAddress"
-        @edit="editAddress"
+        class="min-w-[260px] sm:min-w-[300px] max-w-[85%] sm:max-w-xs min-h-[200px] snap-start flex-shrink-0"
       />
     </div>
   </section>
@@ -79,17 +85,6 @@ const addresses = computed(() => addressStore.addresses);
 
 function goToAddAddress() {
   router.push("/profile/add-address");
-}
-
-function selectAddress(address) {
-  console.log("[SavedAddresses] 🏷️ Selected Address:", address);
-  addressStore.setDeliveryAddress(address);
-}
-
-function editAddress(address) {
-  console.log("[SavedAddresses] ✏️ Editing Address:", address);
-  addressStore.setEditAddress(address);
-  addressStore.setSaveAddressClick(true);
 }
 </script>
 

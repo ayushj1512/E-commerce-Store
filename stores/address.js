@@ -104,8 +104,8 @@ export const useAddressStore = defineStore('address', {
         id_customer: auth.id_customer,
         user_hash_key: auth.key,
         id_address,
-        site: globals.site,
-        version: globals.version,
+        site: "sss",
+        version: "1",
       })
 
       console.log("[Address Store] 📤 Remove Address Request:", requestData)

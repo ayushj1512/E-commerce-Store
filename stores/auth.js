@@ -34,10 +34,16 @@ export const useAuthStore = defineStore("auth", {
       cookies.set("id_customer", this.id_customer, { path: "/", sameSite: "lax" });
       cookies.set("name", this.name, { path: "/", sameSite: "lax" });
 
+      // ✅ also persist mobileNumber if available
+      if (this.mobileNumber) {
+        cookies.set("mobileNumber", this.mobileNumber, { path: "/", sameSite: "lax" });
+      }
+
       console.log("[Auth Store] ✅ Session persisted in cookies:", {
         key: this.key,
         id_customer: this.id_customer,
         name: this.name,
+        mobileNumber: this.mobileNumber,
       });
     },
 
@@ -47,12 +53,14 @@ export const useAuthStore = defineStore("auth", {
         this.key = cookies.get("key") || null;
         this.id_customer = cookies.get("id_customer") || null;
         this.name = cookies.get("name") || null;
+        this.mobileNumber = cookies.get("mobileNumber") || ""; // ✅ load mobile
         this.isAuthenticated = !!this.key;
 
         console.log("[Auth Store] 🔄 Session loaded from cookies:", {
           key: this.key,
           id_customer: this.id_customer,
           name: this.name,
+          mobileNumber: this.mobileNumber,
           isAuthenticated: this.isAuthenticated,
         });
       }
@@ -68,12 +76,14 @@ export const useAuthStore = defineStore("auth", {
       this.key = null;
       this.id_customer = null;
       this.name = null;
+      this.mobileNumber = "";
       this.isAuthenticated = false;
 
       const cookies = useCookies();
       cookies.remove("key");
       cookies.remove("id_customer");
       cookies.remove("name");
+      cookies.remove("mobileNumber"); // ✅ clear on logout
 
       console.log("[Auth Store] ❌ Session cleared");
     },
@@ -139,7 +149,10 @@ export const useAuthStore = defineStore("auth", {
         };
         this.setCustomer(sessionPayload);
 
-        console.log("[Auth Store] ✅ OTP verified and session stored in cookies:", sessionPayload);
+        console.log("[Auth Store] ✅ OTP verified and session stored in cookies:", {
+          ...sessionPayload,
+          mobileNumber: this.mobileNumber,
+        });
         return res;
       } catch (err) {
         this.error = err?.data?.error || "Verify OTP failed";
@@ -191,7 +204,7 @@ export const useAuthStore = defineStore("auth", {
             mobileNumber: this.mobileNumber,
             email,
             password,
-            site: "yourSiteName",
+            site: "sss",
             checkout: false,
           },
         });

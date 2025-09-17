@@ -25,30 +25,56 @@
         </div>
 
         <!-- Avatar -->
-        <div class="flex-shrink-0">
+        <div class="relative flex-shrink-0">
           <img :src="avatarUrl" alt="Customer Avatar"
             class="w-24 h-24 sm:w-28 sm:h-28 md:w-40 md:h-40 rounded-full border-4 border-black shadow-md object-cover" />
+          <button @click="router.push('/profile/avatar')"
+            class="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full border-2 border-white hover:bg-gray-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15.232 5.232l3.536 3.536M16.5 3.75a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+            </svg>
+          </button>
         </div>
 
         <!-- Info -->
         <div class="flex-1 flex flex-col gap-2 text-center md:text-left overflow-hidden">
           <h1 class="text-xl sm:text-2xl md:text-4xl font-extrabold text-black break-words">{{ auth.name || "Customer" }}</h1>
           <p class="text-gray-700 font-medium text-sm sm:text-base break-words">ID: {{ auth.id_customer || "0000" }}</p>
+          
           <p v-if="auth.isVIP" class="text-yellow-500 font-bold text-sm sm:text-base mt-1">
             VIP Customer
           </p>
+
           <div class="flex flex-wrap items-center gap-2 justify-center md:justify-start mt-2">
-            <button @click="router.push('/profile/vouchers')"
-              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap">
+            <button 
+              @click="router.push('/profile/vouchers')"
+              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+            >
               See Available Vouchers
             </button>
-            <button @click="router.push('/profile/refunds')"
-              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap">
+            
+            <button 
+              @click="router.push('/profile/refunds')"
+              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+            >
               View Refunds
             </button>
+
+            <!-- ✅ My Earnings -->
+            <button 
+              @click="router.push('/profile/stats')"
+              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+            >
+              My Earnings
+            </button>
           </div>
-          <p class="mt-2 text-gray-600 italic text-sm sm:text-base break-words">"{{ randomQuote }}"</p>
+
+          <p class="mt-2 text-gray-600 italic text-sm sm:text-base break-words">
+            "{{ randomQuote }}"
+          </p>
         </div>
+
       </div>
 
       <!-- Past Orders -->
@@ -103,6 +129,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "~/stores/auth";
 import { useRouter } from "vue-router";
+import { useCookies } from "@vueuse/integrations/useCookies";
 import SavedAddresses from "~/components/profile/SavedAddresses.vue";
 import PastOrders from "~/components/profile/PastOrders.vue";
 
@@ -114,6 +141,9 @@ const mounted = ref(false);
 
 // Logout modal
 const showLogoutModal = ref(false);
+
+// Cookies
+const cookies = useCookies(["user_avatar"]);
 
 onMounted(() => {
   mounted.value = true;
@@ -128,9 +158,8 @@ onMounted(() => {
   randomQuote.value = quotes[Math.floor(Math.random() * quotes.length)];
 });
 
-const avatarUrl = computed(() =>
-  "https://i.pinimg.com/736x/b1/68/87/b16887baf28b8f5dea2806a92d2f35f2.jpg"
-);
+// Avatar URL (from cookies or default)
+const avatarUrl = computed(() => cookies.get("user_avatar") || "https://i.pinimg.com/736x/f3/74/ae/f374ae1dcad3e0b5920d23041130dadc.jpg");
 
 // Logout confirmation
 const logoutConfirmed = () => {

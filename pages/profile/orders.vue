@@ -58,6 +58,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
+import axios from "axios"   // ✅ FIX: Import axios
 
 // Reactive State
 const orders = ref([])
@@ -133,7 +134,6 @@ const formatDate = (dateStr) => {
 // Actions
 const viewOrder = async (order) => {
   try {
-    // Get Specific Order Details
     const requestData = JSON.stringify({
       gateway_action: "customer/getCustomerOrderList",
       version: "1",
@@ -156,9 +156,6 @@ const viewOrder = async (order) => {
       const trackRes = await $api.gatewayServerCall($axios, $globals.gatewayUrl, trackData, '', true)
       console.log("Tracking Info:", trackRes)
     }
-
-    // Optionally Send Pre-Order Confirmation
-    // await sendPreOrderConfirmation(order.id)
 
   } catch (err) {
     console.error("Failed to fetch order details:", err)

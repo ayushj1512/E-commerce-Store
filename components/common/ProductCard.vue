@@ -3,6 +3,48 @@
     class="relative cursor-pointer group overflow-hidden shadow-sm hover:shadow-md transform transition-all duration-300 bg-white rounded-lg flex flex-col"
     @click="goToDetail"
   >
+    <!-- Wishlist Button -->
+    <button
+      class="absolute top-2 right-2 z-20 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow hover:scale-110 transition"
+      @click.stop="toggleWishlist"
+    >
+      <svg
+        v-if="isWishlisted"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        class="w-5 h-5 text-red-500 transition-transform transform"
+        :class="{ 'scale-125 animate-pingonce': animating }"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 
+             5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 
+             2.09C13.09 3.81 14.76 3 16.5 
+             3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 
+             6.86-8.55 11.54L12 21.35z"
+        />
+      </svg>
+      <svg
+        v-else
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        stroke="currentColor"
+        class="w-5 h-5 text-gray-600"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4.318 6.318a4.5 4.5 0 000 
+             6.364L12 20.364l7.682-7.682a4.5 
+             4.5 0 00-6.364-6.364L12 
+             7.636l-1.318-1.318a4.5 4.5 
+             0 00-6.364 0z"
+        />
+      </svg>
+    </button>
+
     <!-- Product Image -->
     <div class="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 flex-shrink-0 overflow-hidden">
       <img
@@ -28,13 +70,12 @@
     <!-- Product info -->
     <div class="p-3 flex flex-col flex-1 justify-between gap-2">
       <div class="flex flex-col flex-1">
-       <h3
-  class="text-gray-900 font-medium text-xs sm:text-sm md:text-base break-words leading-snug"
-  :title="title"
->
-  {{ title }}
-</h3>
-
+        <h3
+          class="text-gray-900 font-medium text-xs sm:text-sm md:text-base break-words leading-snug"
+          :title="title"
+        >
+          {{ title }}
+        </h3>
 
         <div class="mt-1 flex items-center space-x-1 sm:space-x-2">
           <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
@@ -51,9 +92,6 @@
           <option v-for="(s, idx) in sizes" :key="idx" :value="s">Size: {{ s }}</option>
         </select>
       </div>
-
-      <!-- Add to Cart Button -->
-      
     </div>
   </div>
 </template>
@@ -83,6 +121,9 @@ const router = useRouter()
 const cart = useCartStore()
 let toast = null
 
+const isWishlisted = ref(false)
+const animating = ref(false)
+
 onMounted(() => {
   toast = useToast()
 })
@@ -97,7 +138,6 @@ const goToDetail = () => {
 }
 
 const addToCart = () => {
-  // Prepare product object matching cart store
   const productToAdd = {
     id: props.id,
     name: props.title,
@@ -111,20 +151,39 @@ const addToCart = () => {
 
   toast?.success(`${props.title} has been added to your cart`, {
     timeout: 2000,
-    closeOnClick: true,
-    pauseOnFocusLoss: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: true,
-    hideProgressBar: false,
     icon: "🛒",
   })
+}
+
+const toggleWishlist = () => {
+  isWishlisted.value = !isWishlisted.value
+  animating.value = true
+
+  setTimeout(() => {
+    animating.value = false
+  }, 400)
+
+  if (isWishlisted.value) {
+    toast?.success(`${props.title} added to Wishlist ❤️`, { timeout: 1500 })
+  } else {
+    toast?.info(`${props.title} removed from Wishlist`, { timeout: 1500 })
+  }
 }
 </script>
 
 <style scoped>
-img {
-  transition: transform 0.4s ease, opacity 0.3s ease;
+@keyframes pingonce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pingonce {
+  animation: pingonce 0.4s ease-in-out;
 }
 </style>
