@@ -30,6 +30,7 @@
         subtext="Explore our exclusive picks just for you"
         buttonText="Shop Now"
       />  -->
+
 <div class="py-4">
 <BannerComponent image="influencer.jpg" aspect="1200/563" link="/influencer" />
 </div>

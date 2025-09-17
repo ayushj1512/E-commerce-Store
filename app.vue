@@ -14,6 +14,8 @@
     <!-- Footer -->
     <Footer />
 
+    <!-- Scroll to Top Button -->
+    <ScrollToTopButton />
   </div>
 </template>
 
@@ -21,6 +23,7 @@
 import Header from '~/components/common/Header.vue'
 import Footer from '~/components/common/Footer.vue'
 import TopBar from '~/components/TopBar.vue'
+import ScrollToTopButton from '~/components/common/ScrollToTopButton.vue'
 
 const { vueApp } = useNuxtApp()
 </script>

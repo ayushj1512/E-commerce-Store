@@ -6,6 +6,12 @@ import { ofetch } from "ofetch";
 export const useProductStore = defineStore("productStore", () => {
   // State
   const productLists = ref({}); // { [categoryId]: { products: [], currentPage: 1, total: 0 } }
+  const filters = ref({
+    categories: [],
+    sizes: [],
+    brands: [],
+    maxPrice: 5000,
+  });
   const loading = ref(false);
   const error = ref(null);
 
@@ -80,6 +86,8 @@ export const useProductStore = defineStore("productStore", () => {
               ? firstData.categories.split("^").map((c) => c.split("*")[0])
               : doc.categories?.map((c) => c.toString()) || [];
 
+            const brand = doc.brand || firstData.brand || "";
+
             const resolvedId =
               doc.product_id || firstData.id || doc.id || `product-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -98,6 +106,7 @@ export const useProductStore = defineStore("productStore", () => {
                 Number(doc.discount_price) ||
                 0,
               sizes,
+              brand,
               displayCategories: categories,
               tags: doc.tags || [],
               slug: productSlug,
@@ -119,11 +128,52 @@ export const useProductStore = defineStore("productStore", () => {
 
       productLists.value[resolvedCatId].currentPage = page;
       productLists.value[resolvedCatId].total = res.found || data.length;
+
+      // Update filters dynamically
+      generateFilters();
     } catch (err) {
       console.error("❌ Fetch error:", err);
       error.value = err?.message || "Failed to fetch products";
     } finally {
       loading.value = false;
+    }
+  };
+
+  // Generate filters dynamically
+  const generateFilters = () => {
+    const allCategories = new Set();
+    const allSizes = new Set();
+    const allBrands = new Set();
+    let maxPrice = 0;
+
+    Object.values(productLists.value).forEach((cat) => {
+      cat.products.forEach((p) => {
+        // Categories
+        p.displayCategories?.forEach((c) => allCategories.add(c));
+
+        // Sizes
+        p.sizes?.forEach((s) => allSizes.add(s));
+
+        // Brands
+        if (p.brand) allBrands.add(p.brand);
+
+        // Max Price
+        if (p.displayPrice > maxPrice) maxPrice = p.displayPrice;
+      });
+    });
+
+    filters.value.categories = Array.from(allCategories);
+    filters.value.sizes = Array.from(allSizes);
+    filters.value.brands = Array.from(allBrands);
+    filters.value.maxPrice = maxPrice || 5000;
+  };
+
+  // Fetch filters independently
+  const fetchFilters = async () => {
+    if (Object.keys(productLists.value).length === 0) {
+      await fetchProducts({ page: 1, perPage: 100 });
+    } else {
+      generateFilters();
     }
   };
 
@@ -148,7 +198,7 @@ export const useProductStore = defineStore("productStore", () => {
     return Array.from(tags);
   });
 
-  // Auto-fetch
+  // Auto-fetch products
   onMounted(() => fetchProducts());
   watch(
     () => [route.params.parent, route.params.child],
@@ -157,9 +207,11 @@ export const useProductStore = defineStore("productStore", () => {
 
   return {
     productLists,
+    filters,
     loading,
     error,
     fetchProducts,
+    fetchFilters,
     getProductsByCategory,
     getCurrentPage,
     getTotalProducts,

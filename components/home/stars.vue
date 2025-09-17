@@ -28,7 +28,7 @@ function handleCardClick(item) {
 </script>
 
 <template>
-  <section class="py-6 bg-white">
+  <section class="pb-6 bg-white">
     <!-- Full width black heading -->
     <div class="w-full bg-black py-3 mb-4">
       <h2 class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold">

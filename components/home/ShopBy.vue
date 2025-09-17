@@ -3,22 +3,25 @@
     <!-- Section Heading -->
     <div class="w-full bg-black py-3 mb-4">
       <h2
-        class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold"
+        class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold tracking-wide"
       >
-       SHOP BY STYLE
+        SHOP BY STYLE
       </h2>
     </div>
+
     <!-- Subcategories: horizontal scroll on mobile -->
-    <div class="overflow-x-auto px-4 sm:px-6 mb-6 flex space-x-4 md:justify-center scrollbar-hide">
+    <div
+      class="overflow-x-auto px-4 sm:px-6 mb-6 flex space-x-4 md:justify-center scrollbar-hide"
+    >
       <button
         v-for="(sub, index) in subcategories"
         :key="index"
         @click="selectedSubcategory = sub"
         :class="[
-          'flex-shrink-0 px-4 sm:px-5 py-2 font-medium border-b-2 transition-colors whitespace-nowrap',
+          'flex-shrink-0 px-5 py-2 font-medium border-b-2 transition-all duration-300 whitespace-nowrap',
           selectedSubcategory === sub
             ? 'border-black text-black'
-            : 'border-transparent text-gray-700 hover:text-black hover:border-gray-400'
+            : 'border-transparent text-gray-600 hover:text-black hover:border-gray-400'
         ]"
       >
         {{ sub }}
@@ -27,7 +30,10 @@
 
     <!-- Products Horizontal Scroll -->
     <transition name="fade" mode="out-in">
-      <div :key="selectedSubcategory" class="overflow-x-auto px-4 sm:px-6 pb-4 scrollbar-hide">
+      <div
+        :key="selectedSubcategory"
+        class="overflow-x-auto px-4 sm:px-6 pb-4 scrollbar-hide"
+      >
         <div class="flex space-x-4 sm:space-x-6">
           <ProductCard
             v-for="product in filteredProducts"
@@ -99,19 +105,22 @@ const products = [
 
 
 const filteredProducts = computed(() =>
-  products.filter(p => p.category === selectedSubcategory.value)
+  products.filter((p) => p.category === selectedSubcategory.value)
 );
 </script>
 
 <style scoped>
 /* Fade transition */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
 

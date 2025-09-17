@@ -18,6 +18,7 @@ export const TopBar: typeof import("../components/TopBar.vue")['default']
 export const CartEmptyCart: typeof import("../components/cart/EmptyCart.vue")['default']
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CheckoutAddressSelector: typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']
+export const CollectionFilterDrawer: typeof import("../components/collection/FilterDrawer.vue")['default']
 export const CollectionFilterSidebar: typeof import("../components/collection/FilterSidebar.vue")['default']
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
 export const CommonFooter: typeof import("../components/common/Footer.vue")['default']
@@ -26,6 +27,7 @@ export const CommonHeader: typeof import("../components/common/Header.vue")['def
 export const CommonHeaderSearch: typeof import("../components/common/HeaderSearch.vue")['default']
 export const CommonProductCard: typeof import("../components/common/ProductCard.vue")['default']
 export const CommonProductHorizontalList: typeof import("../components/common/ProductHorizontalList.vue")['default']
+export const CommonScrollToTopButton: typeof import("../components/common/ScrollToTopButton.vue")['default']
 export const CommonVideoCard: typeof import("../components/common/VideoCard.vue")['default']
 export const CommonErrorHandler: typeof import("../components/common/errorHandler.vue")['default']
 export const HomeBannerComponent: typeof import("../components/home/BannerComponent.vue")['default']
@@ -42,6 +44,7 @@ export const HomeStars: typeof import("../components/home/stars.vue")['default']
 export const LoginNewUserForm: typeof import("../components/login/NewUserForm.vue")['default']
 export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['default']
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
+export const ProductDetailHotSelling: typeof import("../components/productDetail/HotSelling.vue")['default']
 export const ProductDetailReviews&rating: typeof import("../components/productDetail/reviews&rating.vue")['default']
 export const ProfileAddressCard: typeof import("../components/profile/AddressCard.vue")['default']
 export const ProfilePastOrders: typeof import("../components/profile/PastOrders.vue")['default']
@@ -74,6 +77,7 @@ export const LazyTopBar: LazyComponent<typeof import("../components/TopBar.vue")
 export const LazyCartEmptyCart: LazyComponent<typeof import("../components/cart/EmptyCart.vue")['default']>
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCheckoutAddressSelector: LazyComponent<typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']>
+export const LazyCollectionFilterDrawer: LazyComponent<typeof import("../components/collection/FilterDrawer.vue")['default']>
 export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
 export const LazyCommonFooter: LazyComponent<typeof import("../components/common/Footer.vue")['default']>
@@ -82,6 +86,7 @@ export const LazyCommonHeader: LazyComponent<typeof import("../components/common
 export const LazyCommonHeaderSearch: LazyComponent<typeof import("../components/common/HeaderSearch.vue")['default']>
 export const LazyCommonProductCard: LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
 export const LazyCommonProductHorizontalList: LazyComponent<typeof import("../components/common/ProductHorizontalList.vue")['default']>
+export const LazyCommonScrollToTopButton: LazyComponent<typeof import("../components/common/ScrollToTopButton.vue")['default']>
 export const LazyCommonVideoCard: LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
 export const LazyCommonErrorHandler: LazyComponent<typeof import("../components/common/errorHandler.vue")['default']>
 export const LazyHomeBannerComponent: LazyComponent<typeof import("../components/home/BannerComponent.vue")['default']>
@@ -98,6 +103,7 @@ export const LazyHomeStars: LazyComponent<typeof import("../components/home/star
 export const LazyLoginNewUserForm: LazyComponent<typeof import("../components/login/NewUserForm.vue")['default']>
 export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login/OtpInput.vue")['default']>
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
+export const LazyProductDetailHotSelling: LazyComponent<typeof import("../components/productDetail/HotSelling.vue")['default']>
 export const LazyProductDetailReviews&rating: LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
 export const LazyProfileAddressCard: LazyComponent<typeof import("../components/profile/AddressCard.vue")['default']>
 export const LazyProfilePastOrders: LazyComponent<typeof import("../components/profile/PastOrders.vue")['default']>

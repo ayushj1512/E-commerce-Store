@@ -18,6 +18,7 @@ interface _GlobalComponents {
     'CartEmptyCart': typeof import("../../components/cart/EmptyCart.vue")['default']
     'CartRelatedProducts': typeof import("../../components/cart/relatedProducts.vue")['default']
     'CheckoutAddressSelector': typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']
+    'CollectionFilterDrawer': typeof import("../../components/collection/FilterDrawer.vue")['default']
     'CollectionFilterSidebar': typeof import("../../components/collection/FilterSidebar.vue")['default']
     'CollectionPage': typeof import("../../components/collection/collectionPage.vue")['default']
     'CommonFooter': typeof import("../../components/common/Footer.vue")['default']
@@ -26,6 +27,7 @@ interface _GlobalComponents {
     'CommonHeaderSearch': typeof import("../../components/common/HeaderSearch.vue")['default']
     'CommonProductCard': typeof import("../../components/common/ProductCard.vue")['default']
     'CommonProductHorizontalList': typeof import("../../components/common/ProductHorizontalList.vue")['default']
+    'CommonScrollToTopButton': typeof import("../../components/common/ScrollToTopButton.vue")['default']
     'CommonVideoCard': typeof import("../../components/common/VideoCard.vue")['default']
     'CommonErrorHandler': typeof import("../../components/common/errorHandler.vue")['default']
     'HomeBannerComponent': typeof import("../../components/home/BannerComponent.vue")['default']
@@ -42,6 +44,7 @@ interface _GlobalComponents {
     'LoginNewUserForm': typeof import("../../components/login/NewUserForm.vue")['default']
     'LoginOtpInput': typeof import("../../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../../components/login/PhoneNumberInput.vue")['default']
+    'ProductDetailHotSelling': typeof import("../../components/productDetail/HotSelling.vue")['default']
     'ProductDetailReviews&rating': typeof import("../../components/productDetail/reviews&rating.vue")['default']
     'ProfileAddressCard': typeof import("../../components/profile/AddressCard.vue")['default']
     'ProfilePastOrders': typeof import("../../components/profile/PastOrders.vue")['default']
@@ -74,6 +77,7 @@ interface _GlobalComponents {
     'LazyCartEmptyCart': LazyComponent<typeof import("../../components/cart/EmptyCart.vue")['default']>
     'LazyCartRelatedProducts': LazyComponent<typeof import("../../components/cart/relatedProducts.vue")['default']>
     'LazyCheckoutAddressSelector': LazyComponent<typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']>
+    'LazyCollectionFilterDrawer': LazyComponent<typeof import("../../components/collection/FilterDrawer.vue")['default']>
     'LazyCollectionFilterSidebar': LazyComponent<typeof import("../../components/collection/FilterSidebar.vue")['default']>
     'LazyCollectionPage': LazyComponent<typeof import("../../components/collection/collectionPage.vue")['default']>
     'LazyCommonFooter': LazyComponent<typeof import("../../components/common/Footer.vue")['default']>
@@ -82,6 +86,7 @@ interface _GlobalComponents {
     'LazyCommonHeaderSearch': LazyComponent<typeof import("../../components/common/HeaderSearch.vue")['default']>
     'LazyCommonProductCard': LazyComponent<typeof import("../../components/common/ProductCard.vue")['default']>
     'LazyCommonProductHorizontalList': LazyComponent<typeof import("../../components/common/ProductHorizontalList.vue")['default']>
+    'LazyCommonScrollToTopButton': LazyComponent<typeof import("../../components/common/ScrollToTopButton.vue")['default']>
     'LazyCommonVideoCard': LazyComponent<typeof import("../../components/common/VideoCard.vue")['default']>
     'LazyCommonErrorHandler': LazyComponent<typeof import("../../components/common/errorHandler.vue")['default']>
     'LazyHomeBannerComponent': LazyComponent<typeof import("../../components/home/BannerComponent.vue")['default']>
@@ -98,6 +103,7 @@ interface _GlobalComponents {
     'LazyLoginNewUserForm': LazyComponent<typeof import("../../components/login/NewUserForm.vue")['default']>
     'LazyLoginOtpInput': LazyComponent<typeof import("../../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../../components/login/PhoneNumberInput.vue")['default']>
+    'LazyProductDetailHotSelling': LazyComponent<typeof import("../../components/productDetail/HotSelling.vue")['default']>
     'LazyProductDetailReviews&rating': LazyComponent<typeof import("../../components/productDetail/reviews&rating.vue")['default']>
     'LazyProfileAddressCard': LazyComponent<typeof import("../../components/profile/AddressCard.vue")['default']>
     'LazyProfilePastOrders': LazyComponent<typeof import("../../components/profile/PastOrders.vue")['default']>
