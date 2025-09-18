@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative bg-white p-8 sm:p-5 rounded-2xl border transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1 border border-gray-200"
+    class="relative bg-white p-8 sm:p-5 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1 border border-gray-200"
   >
     <!-- Address Info -->
     <div class="mb-3 sm:mb-4">

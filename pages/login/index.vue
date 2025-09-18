@@ -4,7 +4,7 @@
     <!-- Step 1: Mobile Number Input -->
     <div v-if="step === 1" class="w-full max-w-sm text-center">
       <h1 class="text-3xl font-bold mb-2 text-black">Welcome Back!</h1>
-      <p class="text-gray-700 mb-6">You're just a step away from your favorite clothes </p>
+      <p class="text-gray-700 mb-6">You're just a step away from your wadrobe needs </p>
 
       <div class="flex items-center border border-gray-400 rounded-lg overflow-hidden mb-4 shadow-sm">
         <span class="px-3  text-black font-semibold">+91</span>
@@ -61,7 +61,7 @@
     <!-- Step 3: Success -->
     <div v-if="step === 3" class="text-center">
       <h2 class="text-3xl font-bold mb-2 text-black">Welcome, {{ auth.name }}!</h2>
-      <p class="text-gray-700 mb-4">You're all set to grab your favorite clothes </p>
+      <p class="text-gray-700 mb-4">You're all set to grab your wadrobe needs </p>
       <div class="w-20 h-20 mx-auto border-4 border-black rounded-full animate-ping mt-4"></div>
     </div>
 
