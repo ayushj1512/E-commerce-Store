@@ -25,7 +25,8 @@ type NuxtAppInjections =
   InjectionType<typeof import("../../node_modules/nuxt/dist/app/plugins/check-if-layout-used.js")> &
   InjectionType<typeof import("../../plugins/global.client.js")> &
   InjectionType<typeof import("../../plugins/pinia-persist.client")> &
-  InjectionType<typeof import("../../plugins/toastify.client")>
+  InjectionType<typeof import("../../plugins/toastify.client")> &
+  InjectionType<typeof import("../../plugins/wishlist.client.js")>
 
 declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }

@@ -90,6 +90,18 @@
             </p>
           </div>
 
+          <!-- ✅ Wishlist Button -->
+          <button
+            @click="toggleWishlist(product.id)"
+            class="mt-4 px-4 py-2 rounded-full border-2 font-medium transition-all flex items-center gap-2"
+            :class="isWishlisted
+              ? 'bg-red-500 border-red-500 text-white hover:bg-red-600'
+              : 'bg-white border-gray-300 text-black hover:border-black hover:bg-gray-100'"
+          >
+            <span v-if="isWishlisted">❤️ In Wishlist</span>
+            <span v-else>🤍 Add to Wishlist</span>
+          </button>
+
           <!-- ✅ Sizes -->
           <div v-if="filteredSizes.length" class="mt-4">
             <div class="flex items-center justify-between mb-2">
@@ -264,6 +276,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ofetch } from "ofetch";
 import { useCartStore } from "@/stores/cartStore";
+import { useWishlistStore } from "@/stores/wishlist";
 import { useToast } from "vue-toastification";
 import { Ruler } from "lucide-vue-next";
 import HotSelling from "@/components/productDetail/HotSelling.vue";
@@ -280,6 +293,7 @@ const showSizeChart = ref(false);
 const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
+const wishlistStore = useWishlistStore();
 const toast = useToast();
 
 const API_URL = "https://api.streetstylestore.com";
@@ -293,6 +307,21 @@ const filteredSizes = computed(() => {
     []
   );
 });
+
+// ✅ Check if product is in wishlist
+const isWishlisted = computed(() =>
+  wishlistStore.isFavorite(product.value.id)
+);
+
+// ✅ Toggle wishlist
+function toggleWishlist(productId) {
+  wishlistStore.toggleFavorite(productId);
+  if (wishlistStore.isFavorite(productId)) {
+    toast?.success("Added to Wishlist ❤️", { timeout: 2000 });
+  } else {
+    toast?.info("Removed from Wishlist 🤍", { timeout: 2000 });
+  }
+}
 
 async function fetchProduct() {
   loading.value = true;
@@ -398,7 +427,10 @@ function goToProduct(productId) {
   router.push(`/category/subcategory/product/${productId}`);
 }
 
-onMounted(fetchProduct);
+onMounted(() => {
+  wishlistStore.loadWishlist();
+  fetchProduct();
+});
 </script>
 
 <style>

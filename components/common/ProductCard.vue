@@ -97,10 +97,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useRouter } from "#app"
 import { useToast } from "vue-toastification"
 import { useCartStore } from "@/stores/cartStore"
+import { useWishlistStore } from "@/stores/wishlist"   // ✅ Import Wishlist Store
 
 const props = defineProps({
   id: { type: [String, Number], required: true },
@@ -119,15 +120,18 @@ const currentImage = ref(props.image)
 const selectedSize = ref(props.sizes?.[0] ?? null)
 const router = useRouter()
 const cart = useCartStore()
+const wishlist = useWishlistStore()   // ✅ Pinia Wishlist Store
 let toast = null
 
-const isWishlisted = ref(false)
+// ✅ Reactive computed check (comes from store, not local state)
+const isWishlisted = computed(() => wishlist.isFavorite(props.id))
 const animating = ref(false)
 
 onMounted(() => {
   toast = useToast()
 })
 
+// Navigate to product details
 const goToDetail = () => {
   if (!props.productUrl) return
   if (props.productUrl.startsWith("/")) {
@@ -137,6 +141,7 @@ const goToDetail = () => {
   }
 }
 
+// Add product to cart
 const addToCart = () => {
   const productToAdd = {
     id: props.id,
@@ -155,21 +160,23 @@ const addToCart = () => {
   })
 }
 
+// ✅ Toggle wishlist using store
 const toggleWishlist = () => {
-  isWishlisted.value = !isWishlisted.value
+  wishlist.toggleFavorite(props.id)
   animating.value = true
 
   setTimeout(() => {
     animating.value = false
   }, 400)
 
-  if (isWishlisted.value) {
+  if (wishlist.isFavorite(props.id)) {
     toast?.success(`${props.title} added to Wishlist ❤️`, { timeout: 1500 })
   } else {
     toast?.info(`${props.title} removed from Wishlist`, { timeout: 1500 })
   }
 }
 </script>
+
 
 <style scoped>
 @keyframes pingonce {
