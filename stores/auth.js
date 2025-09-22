@@ -4,26 +4,22 @@ import { useCookies } from "@vueuse/integrations/useCookies";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    key: null,           // 🔑 Backend session key
+    key: null,
     id_customer: null,
     name: null,
     isAuthenticated: false,
     loading: false,
     error: null,
-    mobileNumber: "",    // User input mobile number
-    newCustomer: false,  // Flag for new users
+    mobileNumber: "",
+    newCustomer: false,
   }),
 
   actions: {
-    /** -------------------------------
-     * 🔑 Set customer session (Pinia + cookies only)
-     * ------------------------------- */
     setCustomer(payload) {
       if (!payload || !payload.key) {
         console.warn("[Auth Store] ⚠️ Invalid payload:", payload);
         return;
       }
-
       this.key = payload.key;
       this.id_customer = payload.id_customer;
       this.name = payload.name;
@@ -33,17 +29,11 @@ export const useAuthStore = defineStore("auth", {
       cookies.set("key", this.key, { path: "/", sameSite: "lax" });
       cookies.set("id_customer", this.id_customer, { path: "/", sameSite: "lax" });
       cookies.set("name", this.name, { path: "/", sameSite: "lax" });
-
-      // ✅ also persist mobileNumber if available
       if (this.mobileNumber) {
         cookies.set("mobileNumber", this.mobileNumber, { path: "/", sameSite: "lax" });
       }
-
-      console.log("[Auth Store] ✅ Session persisted in cookies:", {
-        key: this.key,
-        id_customer: this.id_customer,
-        name: this.name,
-        mobileNumber: this.mobileNumber,
+      console.log("[Auth Store] ✅ Session persisted:", {
+        key: this.key, id_customer: this.id_customer, name: this.name, mobileNumber: this.mobileNumber,
       });
     },
 
@@ -53,172 +43,105 @@ export const useAuthStore = defineStore("auth", {
         this.key = cookies.get("key") || null;
         this.id_customer = cookies.get("id_customer") || null;
         this.name = cookies.get("name") || null;
-        this.mobileNumber = cookies.get("mobileNumber") || ""; // ✅ load mobile
+        this.mobileNumber = cookies.get("mobileNumber") || "";
         this.isAuthenticated = !!this.key;
-
-        console.log("[Auth Store] 🔄 Session loaded from cookies:", {
-          key: this.key,
-          id_customer: this.id_customer,
-          name: this.name,
-          mobileNumber: this.mobileNumber,
-          isAuthenticated: this.isAuthenticated,
+        console.log("[Auth Store] 🔄 Session loaded:", {
+          key: this.key, id_customer: this.id_customer, name: this.name,
+          mobileNumber: this.mobileNumber, isAuthenticated: this.isAuthenticated,
         });
       }
     },
 
-    // ✅ New helper: Call once on app startup
     initAuth() {
       console.log("[Auth Store] 🚀 Initializing auth...");
       this.loadSession();
     },
 
     logout() {
-      this.key = null;
-      this.id_customer = null;
-      this.name = null;
-      this.mobileNumber = "";
-      this.isAuthenticated = false;
-
+      this.key = null; this.id_customer = null; this.name = null;
+      this.mobileNumber = ""; this.isAuthenticated = false;
       const cookies = useCookies();
-      cookies.remove("key");
-      cookies.remove("id_customer");
-      cookies.remove("name");
-      cookies.remove("mobileNumber"); // ✅ clear on logout
-
+      cookies.remove("key"); cookies.remove("id_customer");
+      cookies.remove("name"); cookies.remove("mobileNumber");
       console.log("[Auth Store] ❌ Session cleared");
     },
 
-    /** -------------------------------
-     * 📩 Send login OTP
-     * ------------------------------- */
     async sendLoginOTP() {
-      this.loading = true;
-      this.error = null;
+      this.loading = true; this.error = null;
       try {
-        console.log("[Auth Store] 📩 Sending OTP for mobile:", this.mobileNumber);
-
+        console.log("[Auth Store] 📩 Sending OTP for:", this.mobileNumber);
         const res = await $fetch("http://localhost:4000/send-otp", {
           method: "POST",
           body: { mobileNumber: this.mobileNumber, site: "yourSiteName" },
         });
-
-        console.log("[Auth Store] 📩 OTP Send Response:", res);
+        console.log("[Auth Store] 🔄 API Response (sendLoginOTP):", res);
         return res;
       } catch (err) {
         this.error = err?.data?.error || "Send OTP failed";
         console.error("[Auth Store] ❌ Send OTP Error:", err);
         throw err;
-      } finally {
-        this.loading = false;
-      }
+      } finally { this.loading = false; }
     },
 
-    /** -------------------------------
-     * 📩 Verify OTP
-     * ------------------------------- */
     async verifyOtp(otp) {
-      this.loading = true;
-      this.error = null;
+      this.loading = true; this.error = null;
       try {
-        console.log("[Auth Store] 📩 Verifying OTP for mobile:", this.mobileNumber);
-
+        console.log("[Auth Store] 📩 Verifying OTP for:", this.mobileNumber);
         const res = await $fetch("http://localhost:4000/verify-otp", {
           method: "POST",
-          body: {
-            mobileNumber: this.mobileNumber,
-            otp,
-            newCustomer: this.newCustomer,
-            site: "yourSiteName",
-          },
+          body: { mobileNumber: this.mobileNumber, otp, newCustomer: this.newCustomer, site: "yourSiteName" },
         });
-
-        console.log("[Gateway Proxy] Response Status:", res.status);
-        console.log("[Gateway Proxy] Response Data:", res);
-
+        console.log("[Auth Store] 🔄 API Response (verifyOtp):", res);
         if (res.newUser) {
           this.newCustomer = true;
-          console.log("[Auth Store] 🔹 New user detected, registration required");
+          console.log("[Auth Store] 🔹 New user detected");
           return { newUser: true };
         }
-
-        // Persist session in cookies only
-        const sessionPayload = {
-          key: res.key,
-          id_customer: res.id_customer,
-          name: res.first_name || res.email || "User",
-        };
-        this.setCustomer(sessionPayload);
-
-        console.log("[Auth Store] ✅ OTP verified and session stored in cookies:", {
-          ...sessionPayload,
-          mobileNumber: this.mobileNumber,
+        this.setCustomer({
+          key: res.key, id_customer: res.id_customer, name: res.first_name || res.email || "User",
         });
         return res;
       } catch (err) {
         this.error = err?.data?.error || "Verify OTP failed";
-        console.error("[Auth Store] ❌ OTP Verify Error:", err);
+        console.error("[Auth Store] ❌ Verify OTP Error:", err);
         throw err;
-      } finally {
-        this.loading = false;
-      }
+      } finally { this.loading = false; }
     },
 
-    /** -------------------------------
-     * 📝 Login with password
-     * ------------------------------- */
     async loginWithPassword(password) {
-      this.loading = true;
-      this.error = null;
+      this.loading = true; this.error = null;
       try {
-        console.log("[Auth Store] 📩 Login with password for mobile:", this.mobileNumber);
-
+        console.log("[Auth Store] 🔑 Login with password for:", this.mobileNumber);
         const res = await $fetch("http://localhost:4000/login-password", {
           method: "POST",
           body: { mobileNumber: this.mobileNumber, password, site: "yourSiteName" },
         });
-
-        this.setCustomer(res); // persist session in cookies only
-        console.log("[Auth Store] ✅ Password login successful:", res);
+        console.log("[Auth Store] 🔄 API Response (loginWithPassword):", res);
+        this.setCustomer(res);
         return res;
       } catch (err) {
         this.error = err?.data?.error || "Login failed";
         console.error("[Auth Store] ❌ Login Error:", err);
         throw err;
-      } finally {
-        this.loading = false;
-      }
+      } finally { this.loading = false; }
     },
 
-    /** -------------------------------
-     * 📝 Register new user
-     * ------------------------------- */
     async register(email, password) {
-      this.loading = true;
-      this.error = null;
+      this.loading = true; this.error = null;
       try {
-        console.log("[Auth Store] 📩 Registering mobile:", this.mobileNumber);
-
+        console.log("[Auth Store] 📝 Registering:", this.mobileNumber);
         const res = await $fetch("http://localhost:4000/register", {
           method: "POST",
-          body: {
-            mobileNumber: this.mobileNumber,
-            email,
-            password,
-            site: "sss",
-            checkout: false,
-          },
+          body: { mobileNumber: this.mobileNumber, email, password, site: "sss", checkout: false },
         });
-
-        this.setCustomer(res); // persist session in cookies only
-        console.log("[Auth Store] ✅ Registration successful:", res);
+        console.log("[Auth Store] 🔄 API Response (register):", res);
+        this.setCustomer(res);
         return res;
       } catch (err) {
         this.error = err?.data?.error || "Register failed";
         console.error("[Auth Store] ❌ Register Error:", err);
         throw err;
-      } finally {
-        this.loading = false;
-      }
+      } finally { this.loading = false; }
     },
   },
 });
