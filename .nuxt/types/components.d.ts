@@ -29,6 +29,7 @@ interface _GlobalComponents {
     'CommonProductHorizontalList': typeof import("../../components/common/ProductHorizontalList.vue")['default']
     'CommonScrollToTopButton': typeof import("../../components/common/ScrollToTopButton.vue")['default']
     'CommonVideoCard': typeof import("../../components/common/VideoCard.vue")['default']
+    'CommonElectricBorder': typeof import("../../components/common/electricBorder.vue")['default']
     'CommonErrorHandler': typeof import("../../components/common/errorHandler.vue")['default']
     'HomeBannerComponent': typeof import("../../components/home/BannerComponent.vue")['default']
     'HomeCategorySlider': typeof import("../../components/home/CategorySlider.vue")['default']
@@ -36,7 +37,9 @@ interface _GlobalComponents {
     'HomeHeadline': typeof import("../../components/home/Headline.vue")['default']
     'HomeHeadline2': typeof import("../../components/home/Headline2.vue")['default']
     'HomeHeroSection': typeof import("../../components/home/HeroSection.vue")['default']
+    'HomeInstaGallery': typeof import("../../components/home/InstaGallery.vue")['default']
     'HomePremiumCategories': typeof import("../../components/home/PremiumCategories.vue")['default']
+    'HomeRecentlyViewedProducts': typeof import("../../components/home/RecentlyViewedProducts.vue")['default']
     'HomeShopBy': typeof import("../../components/home/ShopBy.vue")['default']
     'HomeTrendingProducts': typeof import("../../components/home/TrendingProducts.vue")['default']
     'HomeVisitStore': typeof import("../../components/home/VisitStore.vue")['default']
@@ -45,10 +48,13 @@ interface _GlobalComponents {
     'LoginOtpInput': typeof import("../../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../../components/login/PhoneNumberInput.vue")['default']
     'ProductDetailHotSelling': typeof import("../../components/productDetail/HotSelling.vue")['default']
+    'ProductDetailT&C': typeof import("../../components/productDetail/T&C.vue")['default']
+    'ProductDetailPincode': typeof import("../../components/productDetail/pincode.vue")['default']
     'ProductDetailReviews&rating': typeof import("../../components/productDetail/reviews&rating.vue")['default']
     'ProfileAddressCard': typeof import("../../components/profile/AddressCard.vue")['default']
     'ProfilePastOrders': typeof import("../../components/profile/PastOrders.vue")['default']
     'ProfileSavedAddresses': typeof import("../../components/profile/SavedAddresses.vue")['default']
+    'SearchNoResults': typeof import("../../components/search/NoResults.vue")['default']
     'NuxtWelcome': typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
     'NuxtLayout': typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
     'NuxtErrorBoundary': typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -88,6 +94,7 @@ interface _GlobalComponents {
     'LazyCommonProductHorizontalList': LazyComponent<typeof import("../../components/common/ProductHorizontalList.vue")['default']>
     'LazyCommonScrollToTopButton': LazyComponent<typeof import("../../components/common/ScrollToTopButton.vue")['default']>
     'LazyCommonVideoCard': LazyComponent<typeof import("../../components/common/VideoCard.vue")['default']>
+    'LazyCommonElectricBorder': LazyComponent<typeof import("../../components/common/electricBorder.vue")['default']>
     'LazyCommonErrorHandler': LazyComponent<typeof import("../../components/common/errorHandler.vue")['default']>
     'LazyHomeBannerComponent': LazyComponent<typeof import("../../components/home/BannerComponent.vue")['default']>
     'LazyHomeCategorySlider': LazyComponent<typeof import("../../components/home/CategorySlider.vue")['default']>
@@ -95,7 +102,9 @@ interface _GlobalComponents {
     'LazyHomeHeadline': LazyComponent<typeof import("../../components/home/Headline.vue")['default']>
     'LazyHomeHeadline2': LazyComponent<typeof import("../../components/home/Headline2.vue")['default']>
     'LazyHomeHeroSection': LazyComponent<typeof import("../../components/home/HeroSection.vue")['default']>
+    'LazyHomeInstaGallery': LazyComponent<typeof import("../../components/home/InstaGallery.vue")['default']>
     'LazyHomePremiumCategories': LazyComponent<typeof import("../../components/home/PremiumCategories.vue")['default']>
+    'LazyHomeRecentlyViewedProducts': LazyComponent<typeof import("../../components/home/RecentlyViewedProducts.vue")['default']>
     'LazyHomeShopBy': LazyComponent<typeof import("../../components/home/ShopBy.vue")['default']>
     'LazyHomeTrendingProducts': LazyComponent<typeof import("../../components/home/TrendingProducts.vue")['default']>
     'LazyHomeVisitStore': LazyComponent<typeof import("../../components/home/VisitStore.vue")['default']>
@@ -104,10 +113,13 @@ interface _GlobalComponents {
     'LazyLoginOtpInput': LazyComponent<typeof import("../../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../../components/login/PhoneNumberInput.vue")['default']>
     'LazyProductDetailHotSelling': LazyComponent<typeof import("../../components/productDetail/HotSelling.vue")['default']>
+    'LazyProductDetailT&C': LazyComponent<typeof import("../../components/productDetail/T&C.vue")['default']>
+    'LazyProductDetailPincode': LazyComponent<typeof import("../../components/productDetail/pincode.vue")['default']>
     'LazyProductDetailReviews&rating': LazyComponent<typeof import("../../components/productDetail/reviews&rating.vue")['default']>
     'LazyProfileAddressCard': LazyComponent<typeof import("../../components/profile/AddressCard.vue")['default']>
     'LazyProfilePastOrders': LazyComponent<typeof import("../../components/profile/PastOrders.vue")['default']>
     'LazyProfileSavedAddresses': LazyComponent<typeof import("../../components/profile/SavedAddresses.vue")['default']>
+    'LazySearchNoResults': LazyComponent<typeof import("../../components/search/NoResults.vue")['default']>
     'LazyNuxtWelcome': LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
     'LazyNuxtLayout': LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
     'LazyNuxtErrorBoundary': LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>

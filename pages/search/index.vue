@@ -1,135 +1,301 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 p-4 md:p-8">
+  <div class="min-h-screen bg-gray-50 p-4 md:p-8" @scroll.passive="handleScroll" ref="scrollContainer">
 
     <!-- Premium Search Bar -->
     <div
-      class="flex items-center bg-white/80 backdrop-blur-md border border-gray-300 rounded-3xl shadow-lg px-5 py-3 mb-6 transition-transform hover:scale-105">
+      class="flex items-center bg-white border border-gray-300 rounded-3xl shadow-lg px-5 py-3 mb-6 transition-transform hover:scale-105">
       <Search class="w-7 h-7 text-gray-700 mr-3" />
-      <input type="text" v-model="query" placeholder="Search for products..."
+      <input
+        type="text"
+        v-model="query"
+        placeholder="Search for products..."
         class="flex-1 bg-transparent focus:outline-none placeholder-gray-400 text-gray-900 text-base"
-        @focus="showSuggestions = true" @keydown.enter="searchItem(query)" />
-      <button @click="triggerFileUpload"
-        class="ml-3 p-2 rounded-full hover:bg-gray-200 transition">
+      />
+      <button
+        @click="triggerFileUpload"
+        class="ml-3 p-2 rounded-full hover:bg-gray-200 transition"
+      >
         <Camera class="w-6 h-6 text-gray-700" />
       </button>
-      <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleImageUpload" />
+      <input
+        type="file"
+        ref="fileInput"
+        class="hidden"
+        accept="image/*"
+        @change="handleImageUpload"
+      />
     </div>
 
-    <!-- Suggestions Dropdown -->
-    <transition name="fade-slide">
-      <div v-if="showSuggestions && filteredSuggestions.length"
-        class="bg-white rounded-xl shadow-md p-3 mb-6 max-h-60 overflow-y-auto border border-gray-200">
-        <p class="text-gray-500 text-sm mb-2 font-medium">Suggestions</p>
-        <ul>
-          <li v-for="item in filteredSuggestions" :key="item"
-            class="py-2 px-3 rounded-lg hover:bg-gray-100 cursor-pointer transition"
-            @mousedown.prevent="searchItem(item)">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-    </transition>
-
     <!-- Recently Searched -->
-    <div class="mb-6">
-      <h2 class="font-bold text-lg mb-2 text-gray-800">Recently Searched</h2>
+    <div
+      class="mb-6"
+      v-if="recentSearches && recentSearches.length && products && products.length"
+    >
+      <h2 class="font-bold text-lg mb-2 text-gray-900">Recently Searched</h2>
       <div class="flex flex-wrap gap-2">
-        <span v-for="item in recentSearches" :key="item"
-          class="bg-gray-200 text-gray-900 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-300 transition transform hover:scale-105"
-          @click="searchItem(item)">{{ item }}</span>
+        <span
+          v-for="(item, index) in recentSearches"
+          :key="item"
+          :class="[ 'flex items-center bg-gray-200 text-gray-900 px-3 py-1 rounded-full cursor-pointer hover:bg-gray-300 transition transform hover:scale-105', index >= 7 ? 'hidden sm:flex' : '' ]"
+        >
+          <span @click="searchItem(item)">{{ item }}</span>
+          <button
+            class="ml-2 text-gray-600 hover:text-red-500"
+            @click.stop="removeRecent(item)"
+          >
+            ✕
+          </button>
+        </span>
       </div>
     </div>
 
     <!-- Popular Searches -->
-    <div class="mb-6">
-      <h2 class="font-bold text-lg mb-2 text-gray-800">Popular Searches</h2>
+    <div
+      class="mb-6"
+      v-if="products && products.length"
+    >
+      <h2 class="font-bold text-lg mb-2 text-gray-900">Popular Searches</h2>
       <div class="flex flex-wrap gap-2">
-        <span v-for="item in popularSearches" :key="item"
-          class="bg-black text-white px-3 py-1 rounded-full cursor-pointer hover:bg-gray-400 transition transform hover:scale-110"
-          @click="searchItem(item)">{{ item }}</span>
+        <span
+          v-for="(item, index) in popularSearches"
+          :key="item"
+          :class="[
+            'bg-black text-white px-3 py-1 rounded-full cursor-pointer hover:bg-gray-700 transition transform hover:scale-110',
+            index >= 14 ? 'hidden sm:flex' : '' // show only first 14 items on mobile (~2 rows)
+          ]"
+          @click="searchItem(item)"
+        >
+          {{ item }}
+        </span>
       </div>
     </div>
 
-    <!-- Trending Products -->
-    <div class="mb-6">
-      <h2 class="font-bold text-lg mb-4 text-gray-800">Trending Products</h2>
-      <div class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-        <div v-for="item in trendingItems" :key="item.id"
-          class="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:scale-105 transform transition w-52 flex-shrink-0">
-          <img :src="item.image" :alt="item.name" class="w-full h-44 object-cover" />
-          <div class="p-3">
-            <p class="text-sm font-semibold truncate text-gray-900">{{ item.name }}</p>
-            <p class="text-xs text-gray-500">₹{{ item.price }}</p>
-          </div>
-        </div>
+    <!-- Search Results -->
+    <div class="mb-6" v-if="loading">
+      <p class="text-gray-500">Searching...</p>
+    </div>
+
+    <div v-if="products && products.length && !loading">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-lg text-gray-900">
+          {{ query.trim() ? 'Search Results' : 'You may like' }}
+        </h2>
+        <span class="text-gray-500 font-medium">
+          ({{ totalResults }} items)
+        </span>
+      </div>
+
+      <!-- Grid layout for search results -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <ProductCard
+          v-for="item in products"
+          :key="item.id"
+          :id="item.product_id"
+          :image="item.image"
+          :hoverImage="item.alternate_img"
+          :title="item.name"
+          :price="item.real_selling_price"
+          :mrp="item.selling_price > item.real_selling_price ? item.selling_price : null"
+          :productUrl="item.product_url"
+          class="w-full"
+        />
+      </div>
+
+      <div v-if="loadingMore" class="mt-4 text-center text-gray-500">
+        Loading more products...
       </div>
     </div>
 
-    <!-- You Might Be Looking For -->
-    <div class="mb-6">
-      <h2 class="font-bold text-lg mb-4 text-gray-800">You Might Be Looking For</h2>
-      <div class="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-        <div v-for="item in recommendedItems" :key="item.id"
-          class="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:scale-105 transform transition w-52 flex-shrink-0">
-          <img :src="item.image" :alt="item.name" class="w-full h-44 object-cover" />
-          <div class="p-3">
-            <p class="text-sm font-semibold truncate text-gray-900">{{ item.name }}</p>
-            <p class="text-xs text-gray-500">₹{{ item.price }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- No Results Component -->
+    <NoResults
+      v-if="!loading && (!products || !products.length)"
+      :query="query"
+      :suggestedProducts="suggestedProducts"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Search, Camera } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
+import ProductCard from '@/components/common/ProductCard.vue'
+import NoResults from '@/components/search/NoResults.vue'
 
-const router = useRouter()
+const route = useRoute()
+
 const query = ref('')
-const showSuggestions = ref(false)
 const fileInput = ref(null)
+const scrollContainer = ref(null)
+const activeCategories = ref([])
+const products = ref([]) 
+const suggestedProducts = ref([])
+const loading = ref(false)
+const loadingMore = ref(false)
+const recentSearches = ref([])
+const popularSearches = ref([
+  "Tops","Crop Top","Crop","Round Neck","Sleeveless","Half Sleeve","Bodycon",
+  "Shirt","Full Sleeves","White","Long Sleeve","Graphic","Summer","Oversize",
+  "Mini","Floral","Midi","Maxi","Strapless","Jumpsuit","Lavender"
+]);
 
-const recentSearches = ref(['Crop Tops','Black Jeans','Sneakers'])
-const popularSearches = ref(['Maxi Dress','Sunglasses','Flats','Belts'])
+const totalResults = ref(0)
+let page = ref(1)
+const perPage = 250
 
-const trendingItems = ref([
-  {id:1,name:'White Shirt',price:1200,image:'https://i.pinimg.com/1200x/11/92/cc/1192cc157f0f8877702538fd82f87118.jpg',slug:'white-shirt'},
-  {id:2,name:'Black Jeans',price:2200,image:'https://i.pinimg.com/1200x/b4/5d/44/b45d440b3cdd53f8dc8a928287ddd9e8.jpg',slug:'black-jeans'},
-  {id:3,name:'Red Dress',price:3200,image:'https://i.pinimg.com/736x/03/e7/fa/03e7fa63d7126cfa1b20de7f364bbbc1.jpg',slug:'red-dress'},
-])
+// --- Cookie helpers ---
+const setCookie = (name, value, days) => {
+  let expires = ''
+  if (days) {
+    const d = new Date()
+    d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000)
+    expires = '; expires=' + d.toUTCString()
+  }
+  document.cookie = name + '=' + encodeURIComponent(value || '') + expires + '; path=/'
+}
 
-const recommendedItems = ref([
-  {id:4,name:'Leather Bag',price:1500,image:'https://i.pinimg.com/1200x/24/30/39/243039692713e4c3d2e1c278b47d8502.jpg',slug:'leather-bag'},
-  {id:5,name:'Sneakers',price:1800,image:'https://i.pinimg.com/736x/48/3d/c2/483dc2ff71b4970b83e9e9143d19db1f.jpg',slug:'sneakers'},
-])
+const getCookie = (name) => {
+  const nameEQ = name + '='
+  const ca = document.cookie.split(';')
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i].trim()
+    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length))
+  }
+  return null
+}
 
-const suggestions = computed(()=>[...recentSearches.value,...popularSearches.value])
-const filteredSuggestions = computed(()=>query.value?suggestions.value.filter(i=>i.toLowerCase().includes(query.value.toLowerCase())):[])
+// --- Fetch active categories ---
+const fetchActiveCategories = async () => {
+  try {
+    const res = await fetch(
+      "https://api.streetstylestore.com/collections/sss_config/documents/sss-active-categories?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
+    )
+    const data = await res.json()
+    activeCategories.value = JSON.parse(data.data)
+  } catch (err) {
+    console.error("Error fetching active categories:", err)
+  }
+}
 
-const searchItem = item=>{
-  query.value=item
-  router.push(`/search-results?query=${encodeURIComponent(item)}`)
-  showSuggestions.value=false
+// --- Fetch products ---
+const searchProducts = async (reset = true) => {
+  if (!activeCategories.value || !activeCategories.value.length) return
+  if (reset) {
+    products.value = []
+    page.value = 1
+    totalResults.value = 0
+  }
+  loading.value = reset
+  loadingMore.value = !reset
+
+  try {
+    let queries = []
+    if (query.value.trim()) {
+      queries.push(query.value.trim())
+    } else if (recentSearches.value && recentSearches.value.length) {
+      queries = recentSearches.value.slice(0, 3)
+    } else {
+      queries = popularSearches.value.slice(0, 3)
+    }
+
+    let allResults = []
+
+    for (const q of queries) {
+      const url = `https://api.streetstylestore.com/collections/products/documents/search?q=${encodeURIComponent(q)}&filter_by=categories:=[${activeCategories.value.join(",")}]
+&query_by=tags,name,product_id&filter_by=active:=1&sort_by=date_updated_unix:desc&per_page=${perPage}&page=${page.value}&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`.replace(/\s+/g, '')
+      const res = await fetch(url)
+      const data = await res.json()
+      allResults.push(...data.hits.map(h => ({
+        id: h.document.id,
+        product_id: h.document.product_id,
+        name: h.document.name,
+        selling_price: Number(h.document.selling_price),
+        real_selling_price: Number(h.document.real_selling_price),
+        image: h.document.img || h.document.images?.[0],
+        alternate_img: h.document.alternate_img,
+        product_url: h.document.product_url
+      })))
+      totalResults.value = data.found || allResults.length
+    }
+
+    products.value.push(...allResults)
+  } catch (err) {
+    console.error("Error fetching products:", err)
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
+}
+
+// --- Infinite scroll ---
+const handleScroll = () => {
+  const container = scrollContainer.value
+  if (!container || loadingMore.value) return
+
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
+    if (products.value && products.value.length < totalResults.value) {
+      page.value += 1
+      searchProducts(false)
+    }
+  }
+}
+
+// --- Manage recent searches ---
+const addToRecent = (term) => {
+  if (!term) return
+  term = term.trim()
+  if (!term) return
+
+  recentSearches.value = recentSearches.value.filter(item => item !== term)
+  recentSearches.value.unshift(term)
+  if (recentSearches.value.length > 10) recentSearches.value.pop()
+
+  setCookie("recentSearches", JSON.stringify(recentSearches.value), 7)
+}
+
+const searchItem = (item) => {
+  query.value = item
+  addToRecent(item)
+  searchProducts(true)
+}
+
+const removeRecent = (item) => {
+  recentSearches.value = recentSearches.value.filter(i => i !== item)
+  setCookie("recentSearches", JSON.stringify(recentSearches.value), 7)
 }
 
 const triggerFileUpload = () => fileInput.value.click()
-const handleImageUpload = e => {
-  const file = e.target.files[0]; 
-  if(!file) return
+const handleImageUpload = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
   alert(`Image search triggered 📷`)
-  router.push({path:'/search',query:{q:query.value}})
 }
+
+// --- Watch input from header or local ---
+let debounceTimer
+watch(query, (newVal) => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    if (!newVal.trim()) return
+    addToRecent(newVal)
+    searchProducts(true)
+  }, 800)
+})
+
+// --- On mount ---
+onMounted(async () => {
+  const saved = getCookie("recentSearches")
+  if (saved) {
+    try {
+      recentSearches.value = JSON.parse(saved)
+    } catch {
+      recentSearches.value = []
+    }
+  }
+
+  if (route.query.query) query.value = route.query.query
+
+  await fetchActiveCategories()
+  searchProducts(true)
+})
 </script>
-
-<style scoped>
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-.fade-slide-enter-active,.fade-slide-leave-active{transition:all 0.25s ease}
-.fade-slide-enter-from,.fade-slide-leave-to{opacity:0;transform:translateY(-5px)}
-.fade-slide-enter-to,.fade-slide-leave-from{opacity:1;transform:translateY(0)}
-</style>

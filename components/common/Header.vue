@@ -5,9 +5,13 @@
       <button @click="mobileSidebarOpen = true" class="focus:outline-none">
         <Menu class="w-6 h-6"/>
       </button>
+
+      <!-- Centered Logo -->
       <div class="cursor-pointer" @click="navigateTo('/')">
         <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
       </div>
+
+      <!-- Search & Cart Icons -->
       <div class="flex items-center space-x-4 relative">
         <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors">
           <SearchIcon class="w-6 h-6"/>
@@ -26,32 +30,30 @@
 
     <!-- Desktop Header -->
     <div class="hidden md:flex items-center justify-between px-6 py-3 relative">
+
       <div class="cursor-pointer" @click="navigateTo('/')">
-        <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-12 object-contain"/>
+        <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
       </div>
 
-      <div class="flex items-center space-x-6 w-full max-w-3xl">
-        <nav class="flex space-x-4 flex-1">
-          <div v-for="menu in menus" :key="menu.name" class="relative cursor-pointer">
-            <button 
-              class="font-medium hover:text-gray-600 transition-colors"
-              @click="navigateToCategory(menu.name)"
-            >
-              {{ menu.name }}
-            </button>
-          </div>
-        </nav>
-        <HeaderSearch v-if="isClient" class="flex-1" :recent-searches="recentSearches" :popular-searches="popularSearches"
-          @search="navigateToSearch" @image-search="handleImageSearch"/>
-      </div>
+      <!-- Centered Menu Heading -->
+      <nav class="flex-1 flex justify-center space-x-6">
+        <div v-for="menu in menus" :key="menu.name" class="relative cursor-pointer">
+          <button 
+            class="font-medium hover:text-gray-600 transition-colors"
+            @click="navigateToCategory(menu.name)"
+          >
+            {{ menu.name }}
+          </button>
+        </div>
+      </nav>
 
-      <!-- Desktop Cart Icon with Mini-Cart Dropdown -->
-      <div class="flex items-center space-x-4 relative">
-        <div
-          class="relative cursor-pointer"
-          @mouseenter="showMiniCart = true"
-          @mouseleave="showMiniCart = false"
-        >
+      <!-- Right-side Icons -->
+      <div class="flex items-center space-x-4">
+        <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors">
+          <SearchIcon class="w-6 h-6"/>
+        </button>
+
+        <div class="relative cursor-pointer" @mouseenter="showMiniCart = true" @mouseleave="showMiniCart = false">
           <ShoppingCart class="w-6 h-6 hover:text-gray-600 transition-colors"/>
           <span v-if="totalCartItems > 0"
             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
@@ -61,20 +63,16 @@
           <!-- Mini-Cart Dropdown -->
           <transition name="fade-scale">
             <div
-              v-if="showMiniCart && cart.items.length > 0"
+              v-if="showMiniCart && Array.isArray(cart.items) && cart.items.length > 0"
               class="absolute right-0 mt-2 w-80 bg-white shadow-lg border rounded-xl p-4 z-50"
             >
               <div class="max-h-64 overflow-y-auto space-y-4">
                 <div 
                   v-for="item in cart.items" 
-                  :key="item.id + '-' + (item.size ?? 'default')" 
+                  :key="item._key"
                   class="flex items-center justify-between"
                 >
-                  <!-- Clickable product part -->
-                  <div 
-                    class="flex items-center space-x-3 cursor-pointer"
-                    @click="navigateToProduct(item)"
-                  >
+                  <div class="flex items-center space-x-3 cursor-pointer" @click="navigateToProduct(item)">
                     <img :src="item.image" alt="Product" class="w-12 h-16 object-cover rounded-lg"/>
                     <div>
                       <h4 class="font-semibold text-sm">{{ item.name }}</h4>
@@ -82,7 +80,6 @@
                       <p class="font-bold text-sm">₹{{ item.price }}</p>
                     </div>
                   </div>
-                  <!-- Quantity controls -->
                   <div class="flex items-center space-x-1">
                     <button @click.stop="decreaseQty(item)" class="px-1 py-0.5 border rounded hover:bg-gray-100">-</button>
                     <span class="text-sm font-medium">{{ item.quantity }}</span>
@@ -102,7 +99,7 @@
       </div>
     </div>
 
-    <!-- Mobile Sidebar -->
+    <!-- Mobile Sidebar (unchanged) -->
     <transition name="slide">
       <div v-if="mobileSidebarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click.self="mobileSidebarOpen=false">
         <div class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg z-50 flex flex-col overflow-y-auto">
@@ -134,7 +131,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ShoppingCart, User, Heart, Menu, X, SearchIcon } from 'lucide-vue-next'
-import HeaderSearch from './HeaderSearch.vue'
 import { useCartStore } from '@/stores/cartStore'
 import slugify from 'slugify'
 
@@ -156,7 +152,10 @@ const openMenus = ref([])
 const isClient = ref(false)
 const showMiniCart = ref(false)
 
-onMounted(()=>{ isClient.value=true })
+onMounted(() => { 
+  isClient.value = true
+  cart.loadCart() // load cart safely on client only
+})
 
 const toggleMenu = name => {
   if(openMenus.value.includes(name)){
@@ -197,12 +196,12 @@ const navigateToSearch = query => {
 }
 
 // Mini-cart quantity controls
-const increaseQty = (item) => cart.updateQuantity(item.id, item.size, item.quantity + 1)
-const decreaseQty = (item) => { if(item.quantity>1) cart.updateQuantity(item.id, item.size, item.quantity - 1) }
+const increaseQty = (item) => cart.updateQuantity(item, item.quantity + 1)
+const decreaseQty = (item) => { if(item.quantity>1) cart.updateQuantity(item, item.quantity - 1) }
 
-// Compute total items in cart dynamically
+// Compute total items in cart safely
 const totalCartItems = computed(() => {
-  return cart.items.reduce((total, item) => total + item.quantity, 0)
+  return Array.isArray(cart.items) ? cart.items.reduce((total, item) => total + (item.quantity || 0), 0) : 0
 })
 
 // Image search handler
@@ -210,8 +209,6 @@ const handleImageSearch = file => console.log('Image uploaded for search:', file
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-.font-great-vibes{font-family:'Great Vibes',cursive;font-weight:700}
 .slide-enter-active,.slide-leave-active{transition:all 0.3s ease}
 .slide-enter-from{transform:translateX(-100%)}
 .slide-enter-to{transform:translateX(0)}

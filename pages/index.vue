@@ -24,6 +24,8 @@
 
       <!-- Shop By Section -->
       <ShopBy /> 
+
+      <InstaGallery />
  <!-- <BannerComponent
         image="https://www.fablestreet.com/_next/image?url=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0486%2F0634%2F7416%2Ffiles%2FStore-Banner.gif%3Fv%3D1754042561&w=1920&q=75"
         heading="Curated Collection"
@@ -34,6 +36,8 @@
 <div class="py-4">
 <BannerComponent image="influencer.jpg" aspect="1200/563" link="/influencer" />
 </div>
+
+<recently-viewed-products />
       <!-- Banner: Curated Collection -->
       <!-- <FitsSection /> -->
      
@@ -77,6 +81,8 @@ import VisitStore from '~/components/home/VisitStore.vue'
 import TrendingProducts from '~/components/home/TrendingProducts.vue'
 import ShopBy from '~/components/home/ShopBy.vue'
 import Headline2 from '../components/home/Headline2.vue'
+import RecentlyViewedProducts from '../components/home/RecentlyViewedProducts.vue'
+import InstaGallery from '../components/home/InstaGallery.vue'
 </script>
 
 <style>

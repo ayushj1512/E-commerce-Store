@@ -6,14 +6,14 @@
       <section class="bg-white p-6 rounded-2xl shadow-md">
         <h2 class="text-xl font-bold mb-4">Your Cart</h2>
 
-        <div v-if="cart.items.length === 0" class="text-center py-6">
+        <div v-if="!Array.isArray(cart.items) || cart.items.length === 0" class="text-center py-6">
           <p class="text-gray-600 text-sm sm:text-base">Your cart is empty.</p>
         </div>
 
         <div v-else class="space-y-4">
           <div
             v-for="item in cart.items"
-            :key="item.id + (item.size || '')"
+            :key="item._key || item.id + (item.size || '')"
             class="flex justify-between items-center border-b pb-3"
           >
             <div class="flex items-center gap-3">
@@ -24,7 +24,7 @@
                 <p class="text-gray-900 font-semibold">₹{{ item.price }} x {{ item.quantity }}</p>
               </div>
             </div>
-            <p class="font-semibold text-gray-900">₹{{ item.price * item.quantity }}</p>
+            <p class="font-semibold text-gray-900">₹{{ (item.price || 0) * (item.quantity || 0) }}</p>
           </div>
 
           <!-- small inline summary at top (optional) -->
@@ -42,8 +42,7 @@
         </div>
       </section>
 
-    <div>    <CheckoutAddressSelector /> </div>
-    
+      <div><CheckoutAddressSelector /></div>
 
       <!-- 3) PAYMENT OPTIONS -->
       <section class="bg-white p-6 rounded-2xl shadow-md">
@@ -187,7 +186,6 @@ import { useAddressStore } from "~/stores/address";
 import { useRouter } from "vue-router";
 import CheckoutAddressSelector from "~/components/checkout/CheckoutAddressSelector.vue";
 
-// lucide icons (using the 'Lucide*' prefixed components)
 import {
   LucideCreditCard,
   LucideArrowRight,
@@ -205,7 +203,6 @@ const addressStore = useAddressStore();
 const router = useRouter();
 
 const mounted = ref(false);
-const showAddressSelector = ref(false);
 const selectedPayment = ref("cod");
 
 const deliveryCharge = 40;
@@ -213,71 +210,46 @@ const discount = 0;
 
 onMounted(async () => {
   mounted.value = true;
-  console.log("[Checkout] mounted, cart items:", cart.items.length);
-  console.log("[Checkout] addressStore before init:", addressStore.addresses?.length ?? "no-store");
-
-  // fetch addresses (safe init)
+  // Ensure cart.items is always an array
+  if (!Array.isArray(cart.items)) cart.items = [];
+  // Fetch addresses safely
   try {
     await addressStore.init();
-    console.log("[Checkout] addressStore after init, addresses:", addressStore.addresses);
   } catch (err) {
     console.error("[Checkout] addressStore.init() failed:", err);
   }
 });
 
-// expose selected address reactively
 const selectedAddress = computed(() => {
   const a = addressStore.deliveryAddress ?? addressStore.getDeliveryAddress ?? {};
-  console.log("[Checkout] computed selectedAddress:", a && Object.keys(a).length ? a.id_address ?? "has-id" : "none");
   return a;
 });
 
 // totals
 const subtotal = computed(() =>
-  cart.items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0)
+  Array.isArray(cart.items)
+    ? cart.items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0)
+    : 0
 );
 const totalItems = computed(() =>
-  cart.items.reduce((acc, item) => acc + (item.quantity || 0), 0)
+  Array.isArray(cart.items)
+    ? cart.items.reduce((acc, item) => acc + (item.quantity || 0), 0)
+    : 0
 );
 const total = computed(() => subtotal.value + deliveryCharge - discount);
 
 const bnplNow = computed(() => Math.round(total.value / 3));
 const bnplLater = computed(() => bnplNow.value);
 
-// helper actions
-function openAddressSelector() {
-  console.log("[Checkout] openAddressSelector toggle:", !showAddressSelector.value);
-  showAddressSelector.value = !showAddressSelector.value;
-  // ensure store addresses are loaded
-  if (!addressStore.addresses.length) {
-    addressStore.init().then(() => console.log("[Checkout] addresses loaded via toggle"));
-  }
-}
-
-function goToAddAddress() {
-  console.log("[Checkout] navigating to add-address");
-  router.push("/profile/add-address");
-}
-
-function confirmUseAddress() {
-  console.log("[Checkout] confirmUseAddress:", selectedAddress.value);
-  // Highlight action — already selected in store by selector component, so just log
-  alert("Using selected address for this order.");
-}
-
 function proceedToPayment() {
-  console.log("[Checkout] proceedToPayment called. Selected address:", selectedAddress.value);
   if (!selectedAddress.value || Object.keys(selectedAddress.value).length === 0 || !selectedAddress.value.id_address) {
     alert("Please select a delivery address before proceeding.");
     return;
   }
-  console.log("[Checkout] selectedPayment:", selectedPayment.value, "total:", total.value);
   router.push("/checkout/payment");
 }
 
-// debug watchers (optional)
 watch(selectedPayment, (v) => console.log("[Checkout] payment changed to:", v));
-
 </script>
 
 <style scoped>

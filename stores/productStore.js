@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRoute } from "#app";
 import { ofetch } from "ofetch";
+import { useCookie } from "#app"; // Nuxt 4 built-in
 
 export const useProductStore = defineStore("productStore", () => {
   // State
@@ -15,6 +16,10 @@ export const useProductStore = defineStore("productStore", () => {
   const loading = ref(false);
   const error = ref(null);
 
+  // Recent searched product IDs
+  const recentSearchIds = useCookie("recentSearchIds", { default: () => [] });
+  const recentProducts = ref([]); // Stores actual product objects
+
   const API_URL = "https://api.streetstylestore.com";
   const API_KEY = "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx";
 
@@ -22,15 +27,65 @@ export const useProductStore = defineStore("productStore", () => {
 
   // Utilities
   const safeParseJSON = (str, fallback = {}) => {
-    try {
-      return JSON.parse(str);
-    } catch {
-      return fallback;
-    }
+    try { return JSON.parse(str); } catch { return fallback; }
   };
 
   const slugify = (str) =>
     str?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+  // Add recently searched product
+// Function to add a product ID to recentSearchIds cookie without any limit
+function addToRecentProducts(productId) {
+  if (!recentSearchIds.value.includes(productId)) {
+    recentSearchIds.value.push(productId);
+    console.log("✅ Added product ID to recentSearchIds:", productId);
+  } else {
+    console.log("ℹ️ Product ID already exists in recentSearchIds:", productId);
+  }
+
+  console.log("📌 Current recentSearchIds cookie:", recentSearchIds.value);
+}
+
+// Fetch recent products
+const fetchRecentProducts = async () => {
+  if (recentSearchIds.value.length === 0) {
+    recentProducts.value = [];
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const fetched = await Promise.all(
+      recentSearchIds.value.map(async (id) => {
+        const res = await ofetch(`${API_URL}/collections/products/documents/${id}`, {
+          headers: { "x-typesense-api-key": API_KEY },
+        });
+        const doc = res.document ?? res;
+        const parsed = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
+
+        return {
+          ...doc,
+          id: doc.id,
+          name: doc.name || parsed["0"]?.name || "",
+          selling_price: doc.real_selling_price ?? doc.selling_price ?? parsed["0"]?.selling_price ?? 0,
+          discount_price: doc.discount_price ?? parsed["0"]?.discount_price ?? 0,
+          images: parsed.images || [{ img: doc.img }],
+          product_size_array: doc.product_size_array || parsed["0"]?.product_size_array || [],
+          tags: doc.tags || [],
+          productUrl: `/category/subcategory/product/${doc.id}`,
+        };
+      })
+    );
+
+    recentProducts.value = fetched;
+    console.log("📦 Recently Viewed Products:", recentProducts.value);
+  } catch (err) {
+    console.error("❌ Error fetching recently viewed products:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
 
   // Fetch products by category
   const fetchProducts = async (options = {}) => {
@@ -117,19 +172,16 @@ export const useProductStore = defineStore("productStore", () => {
           })
         : [];
 
-      // Initialize category if not present
       if (!productLists.value[resolvedCatId]) {
         productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
       }
 
-      // Append or replace products
       productLists.value[resolvedCatId].products =
         page === 1 ? data : [...productLists.value[resolvedCatId].products, ...data];
 
       productLists.value[resolvedCatId].currentPage = page;
       productLists.value[resolvedCatId].total = res.found || data.length;
 
-      // Update filters dynamically
       generateFilters();
     } catch (err) {
       console.error("❌ Fetch error:", err);
@@ -148,16 +200,9 @@ export const useProductStore = defineStore("productStore", () => {
 
     Object.values(productLists.value).forEach((cat) => {
       cat.products.forEach((p) => {
-        // Categories
         p.displayCategories?.forEach((c) => allCategories.add(c));
-
-        // Sizes
         p.sizes?.forEach((s) => allSizes.add(s));
-
-        // Brands
         if (p.brand) allBrands.add(p.brand);
-
-        // Max Price
         if (p.displayPrice > maxPrice) maxPrice = p.displayPrice;
       });
     });
@@ -178,17 +223,9 @@ export const useProductStore = defineStore("productStore", () => {
   };
 
   // Getters
-  const getProductsByCategory = (categoryId) => {
-    return productLists.value[categoryId]?.products || [];
-  };
-
-  const getCurrentPage = (categoryId) => {
-    return productLists.value[categoryId]?.currentPage || 1;
-  };
-
-  const getTotalProducts = (categoryId) => {
-    return productLists.value[categoryId]?.total || 0;
-  };
+  const getProductsByCategory = (categoryId) => productLists.value[categoryId]?.products || [];
+  const getCurrentPage = (categoryId) => productLists.value[categoryId]?.currentPage || 1;
+  const getTotalProducts = (categoryId) => productLists.value[categoryId]?.total || 0;
 
   const availableTags = computed(() => {
     const tags = new Set();
@@ -210,8 +247,11 @@ export const useProductStore = defineStore("productStore", () => {
     filters,
     loading,
     error,
+    recentSearchIds,
+    recentProducts,
     fetchProducts,
     fetchFilters,
+    fetchRecentProducts,
     getProductsByCategory,
     getCurrentPage,
     getTotalProducts,

@@ -1,12 +1,12 @@
 <template>
   <div class="bg-white text-black min-h-screen p-4 md:p-8">
-    <!-- Top bar: Filters + Sorting Tags -->
+    <!-- Top bar: Filters + Sorting Tags + Results count -->
     <div class="flex flex-wrap gap-2 mb-4 items-center">
-      <!-- Filters Drawer (left side) -->
+      <!-- Filters Drawer -->
       <FilterDrawer />
 
-      <!-- Sorting tags (next to filters) -->
-      <div class="flex flex-wrap gap-2 overflow-x-auto flex-1">
+      <!-- Sorting tags -->
+      <div class="flex flex-wrap gap-2 overflow-x-auto flex-1 items-center">
         <button 
           v-for="option in sortOptions" 
           :key="option.value" 
@@ -20,15 +20,42 @@
         >
           {{ option.label }}
         </button>
+
+        <!-- Results found -->
+        <span class="ml-auto text-gray-700 text-sm">
+          Results found: {{ filteredProducts.length }}
+        </span>
       </div>
     </div>
+
+    <!-- Voucher Eligibility Header with Electric Border -->
+  <transition name="fade-scale">
+  <ElectricBorder
+    v-if="eligibleVoucher"
+    :color="'rgb(255,0,0)'"  
+    :thickness="2"
+    class="mb-6 w-full flex justify-center"
+  >
+    <div
+      class="relative z-10 flex flex-col items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-transparent w-full max-w-2xl text-center"
+    >
+      <!-- Text -->
+      <span
+        class="font-bold text-base md:text-lg tracking-wide text-red-600 uppercase"
+      >
+        Eligible for {{ eligibleVoucher.category_name }}
+      </span>
+    </div>
+  </ElectricBorder>
+</transition>
+
 
     <!-- Products Grid -->
     <transition-group 
       name="fade-slide" 
       tag="div"
       :class="[ 
-        'grid gap-6',
+        'grid gap-6 mt-10',
         'grid-cols-2 sm:grid-cols-2',   // mobile always 2
         'md:grid-cols-5 lg:grid-cols-5' // desktop always 5
       ]"
@@ -58,12 +85,15 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "#app";
 import { useProductStore } from "@/stores/productStore.js";
 import ProductCard from "@/components/common/ProductCard.vue";
-import FilterDrawer from "@/components/collection/FilterDrawer.vue"; // 👈 import drawer
+import FilterDrawer from "@/components/collection/FilterDrawer.vue";
+import ElectricBorder from "@/components/common/electricBorder.vue";
+import { ofetch } from "ofetch";
 
+// --- Stores & Route ---
 const store = useProductStore();
 const route = useRoute();
 
-// Sorting
+// --- Sorting ---
 const selectedSort = ref("default");
 const sortOptions = [
   { label: "Price: Low to High", value: "lowtohigh" },
@@ -72,23 +102,25 @@ const sortOptions = [
   { label: "Trending", value: "trending" },
   { label: "Rating", value: "rating" },
 ];
+const applySort = (option) => (selectedSort.value = option.value);
 
-// Helper
+// --- Helper Slugify ---
 const slugify = (text) =>
   text?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
-// --- Products for current route/category ---
+// --- Category Id from Route ---
 const categoryIdFromRoute = computed(() => {
   const subCategoryParam = route.params.child || "";
   const match = subCategoryParam.match(/(\d+)$/);
   return match ? match[1] : route.params.parent;
 });
 
+// --- Products for Current Category ---
 const productsForCategory = computed(() =>
   store.getProductsByCategory(categoryIdFromRoute.value)
 );
 
-// Filtered products
+// --- Filtered Products ---
 const filteredProducts = computed(() => {
   return productsForCategory.value
     .map((p, index) => {
@@ -134,17 +166,62 @@ const filteredProducts = computed(() => {
     });
 });
 
-const applySort = (option) => (selectedSort.value = option.value);
-
-// --- Fetch products for route/category ---
+// --- Fetch Products ---
 const fetchProductsFromRoute = async () => {
   await store.fetchProducts({
     categoryId: categoryIdFromRoute.value,
     page: 1,
-    perPage: 100,
+    perPage: 250,
   });
 };
 
-onMounted(fetchProductsFromRoute);
-watch(() => [route.params.parent, route.params.child], fetchProductsFromRoute);
+// --- Voucher Logic ---
+const vouchers = ref([]);
+const eligibleVoucher = ref(null);
+const remainingToApply = ref(0);
+
+const fetchVouchers = async () => {
+  try {
+    const res = await ofetch(
+      "https://api.streetstylestore.com/collections/sss_config/documents/voucher-listing?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
+    );
+    const data = JSON.parse(res.data || "[]");
+    vouchers.value = data;
+
+    const voucher = data.find(v => Number(v.id_category) === Number(categoryIdFromRoute.value));
+    if (voucher) {
+      eligibleVoucher.value = voucher;
+      remainingToApply.value = voucher.quantity;
+    }
+  } catch (err) {
+    console.error("Failed to fetch vouchers", err);
+  }
+};
+
+onMounted(async () => {
+  await fetchProductsFromRoute();
+  await fetchVouchers();
+});
+
+watch(() => [route.params.parent, route.params.child], async () => {
+  await fetchProductsFromRoute();
+  await fetchVouchers();
+});
 </script>
+
+<style scoped>
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from { opacity: 0; transform: translateY(20px); }
+.fade-slide-enter-to { opacity: 1; transform: translateY(0); }
+.fade-slide-leave-from { opacity: 1; transform: translateY(0); }
+.fade-slide-leave-to { opacity: 0; transform: translateY(20px); }
+
+.fade-scale-enter-active { transition: all 0.4s ease; }
+.fade-scale-leave-active { transition: all 0.3s ease; }
+.fade-scale-enter-from { opacity: 0; transform: scale(0.95); }
+.fade-scale-enter-to { opacity: 1; transform: scale(1); }
+.fade-scale-leave-from { opacity: 1; transform: scale(1); }
+.fade-scale-leave-to { opacity: 0; transform: scale(0.95); }
+</style>

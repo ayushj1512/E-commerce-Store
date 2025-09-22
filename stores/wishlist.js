@@ -36,7 +36,6 @@ export const useWishlistStore = defineStore('wishlist', {
     // Check if a product is in wishlist
     isFavorite(productId) {
       const exists = this.favoriteProducts.includes(productId)
-      console.log(`[Wishlist] Check product ID ${productId}:`, exists)
       return exists
     },
 

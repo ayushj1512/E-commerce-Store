@@ -46,29 +46,38 @@
             VIP Customer
           </p>
 
-          <div class="flex flex-wrap items-center gap-2 justify-center md:justify-start mt-2">
-            <button 
-              @click="router.push('/profile/vouchers')"
-              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
-            >
-              See Available Vouchers
-            </button>
-            
-            <button 
-              @click="router.push('/profile/refunds')"
-              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
-            >
-              View Refunds
-            </button>
+         <div class="flex flex-wrap items-center gap-2 justify-center md:justify-start mt-2">
+  <button 
+    @click="router.push('/profile/vouchers')"
+    class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+  >
+    See Available Vouchers
+  </button>
+  
+  <button 
+    @click="router.push('/profile/refunds')"
+    class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+  >
+    View Refunds
+  </button>
 
-            <!-- ✅ My Earnings -->
-            <button 
-              @click="router.push('/profile/stats')"
-              class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
-            >
-              My Earnings
-            </button>
-          </div>
+  <!-- ✅ My Earnings -->
+  <button 
+    @click="router.push('/profile/stats')"
+    class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+  >
+    My Earnings
+  </button>
+
+  <!-- ✅ Recently Viewed -->
+  <button 
+    @click="router.push('/profile/recently-viewed')"
+    class="bg-black text-white px-3 py-1 rounded-full hover:bg-gray-800 transition text-xs sm:text-sm whitespace-nowrap"
+  >
+    Recently Viewed
+  </button>
+</div>
+
 
           <p class="mt-2 text-gray-600 italic text-sm sm:text-base break-words">
             "{{ randomQuote }}"
