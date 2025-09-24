@@ -88,108 +88,97 @@ const fetchRecentProducts = async () => {
 
 
   // Fetch products by category
-  const fetchProducts = async (options = {}) => {
-    loading.value = true;
-    error.value = null;
+const fetchProducts = async (options = {}) => {
+  loading.value = true;
+  error.value = null;
 
-    try {
-      const { categoryId, page = 1, perPage = 30, city, idBrand, shop, type } = options;
+  try {
+    const { categoryId, page = 1, perPage = 30, city, idBrand, shop, type, tags = [], maxPrice } = options;
+    const childParam = route?.params?.child || "";
+    const parentParam = route?.params?.parent || "";
 
-      const childParam = route?.params?.child || "";
-      const parentParam = route?.params?.parent || "";
-
-      let resolvedCatId = categoryId;
-      if (!resolvedCatId) {
-        const match = (childParam !== "all" ? childParam : parentParam).match(/(\d+)$/);
-        resolvedCatId = match ? match[1] : "default";
-      }
-
-      const filterParts = [];
-      if (resolvedCatId && !isNaN(Number(resolvedCatId))) filterParts.push(`categories:=${resolvedCatId}`);
-      if (city) filterParts.push(`deal_cities:=[${city}]`);
-      if (idBrand) filterParts.push(`id_brand:=${idBrand}`);
-      if (shop) filterParts.push(`sss_shops:=[${shop}]`);
-      if (type) filterParts.push(`product_type:=${type}`);
-
-      const filterStr = filterParts.join(",");
-      const safeFilterStr = encodeURIComponent(filterStr);
-
-      const url = `${API_URL}/collections/products/documents/search?q=*${
-        filterParts.length ? "&filter_by=" + safeFilterStr : ""
-      }&per_page=${perPage}&filter_by=active:=1&page=${page}`;
-
-      console.log("📦 Fetching products from URL:", url);
-
-      const res = await ofetch(url, {
-        method: "GET",
-        headers: { "x-typesense-api-key": API_KEY },
-        retry: 1,
-      });
-
-      const data = Array.isArray(res.hits)
-        ? res.hits.map((hit) => {
-            const doc = hit.document ?? hit;
-            const parsedData = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
-            const firstData = parsedData["0"] || {};
-
-            const sizes =
-              (parsedData.shoeSize || []).map((s) => s.Size).filter(Boolean) ||
-              (doc.product_all_sizes || []).filter(Boolean) ||
-              ["N/A"];
-
-            const categories = firstData.categories
-              ? firstData.categories.split("^").map((c) => c.split("*")[0])
-              : doc.categories?.map((c) => c.toString()) || [];
-
-            const brand = doc.brand || firstData.brand || "";
-
-            const resolvedId =
-              doc.product_id || firstData.id || doc.id || `product-${Math.random().toString(36).substring(2, 9)}`;
-
-            const productSlug = slugify(doc.name || firstData.name || resolvedId);
-
-            return {
-              id: String(resolvedId),
-              displayName: firstData.name || doc.name || "",
-              displayPrice:
-                Number(firstData.selling_price) ||
-                Number(doc.real_selling_price) ||
-                Number(doc.selling_price) ||
-                0,
-              displayDiscount:
-                Number(firstData.discount_price) ||
-                Number(doc.discount_price) ||
-                0,
-              sizes,
-              brand,
-              displayCategories: categories,
-              tags: doc.tags || [],
-              slug: productSlug,
-              images: parsedData.images || [{ img: doc.img }],
-              quantity_available: firstData.product_quantity || doc.quantity_available || 0,
-              rawData: doc,
-            };
-          })
-        : [];
-
-      if (!productLists.value[resolvedCatId]) {
-        productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
-      }
-
-      productLists.value[resolvedCatId].products =
-        page === 1 ? data : [...productLists.value[resolvedCatId].products, ...data];
-
-      productLists.value[resolvedCatId].currentPage = page;
-      productLists.value[resolvedCatId].total = res.found || data.length;
-
-      generateFilters();
-    } catch (err) {
-      console.error("❌ Fetch error:", err);
-      error.value = err?.message || "Failed to fetch products";
-    } finally {
-      loading.value = false;
+    // Resolve category ID
+    let resolvedCatId = categoryId;
+    if (!resolvedCatId) {
+      const match = (childParam !== "all" ? childParam : parentParam).match(/(\d+)$/);
+      resolvedCatId = match ? match[1] : "default";
     }
-  };
+
+    // Build filter_by params
+    const filterParams = [];
+    if (resolvedCatId && !isNaN(Number(resolvedCatId))) filterParams.push(`categories:=${resolvedCatId}`);
+    if (city) filterParams.push(`deal_cities:=[${city}]`);
+    if (idBrand) filterParams.push(`id_brand:=${idBrand}`);
+    if (shop) filterParams.push(`sss_shops:=[${shop}]`);
+    if (type) filterParams.push(`product_type:=${type}`);
+    if (tags.length) filterParams.push(`tags:=[${tags.join(",")}]`);
+    filterParams.push("active:=1");
+
+    const filterQuery = filterParams.map(f => `filter_by=${encodeURIComponent(f)}`).join("&");
+    const url = `${API_URL}/collections/products/documents/search?q=*&${filterQuery}&per_page=${perPage}&page=${page}`;
+
+    const res = await ofetch(url, { method: "GET", headers: { "x-typesense-api-key": API_KEY }, retry: 1 });
+
+    const data = Array.isArray(res.hits)
+      ? res.hits.map(hit => {
+          const doc = hit.document ?? hit;
+          const parsedData = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
+          const firstData = parsedData["0"] || {};
+          const sizes =
+            (parsedData.shoeSize || []).map(s => s.Size).filter(Boolean) ||
+            (doc.product_all_sizes || []).filter(Boolean) ||
+            ["N/A"];
+          const categories = firstData.categories
+            ? firstData.categories.split("^").map(c => c.split("*")[0])
+            : doc.categories?.map(c => c.toString()) || [];
+          const brand = doc.brand || firstData.brand || "";
+          const resolvedId = doc.product_id || firstData.id || doc.id || `product-${Math.random().toString(36).substring(2, 9)}`;
+          const productSlug = slugify(doc.name || firstData.name || resolvedId);
+          const price = Number(firstData.selling_price) || Number(doc.real_selling_price) || Number(doc.selling_price) || 0;
+          if (maxPrice != null && price > maxPrice) return null;
+
+          return {
+            id: String(resolvedId),
+            displayName: firstData.name || doc.name || "",
+            displayPrice: price,
+            displayDiscount: Number(firstData.discount_price) || Number(doc.discount_price) || 0,
+            sizes,
+            brand,
+            displayCategories: categories,
+            tags: doc.tags || [],
+            slug: productSlug,
+            images: parsedData.images || [{ img: doc.img }],
+            quantity_available: firstData.product_quantity || doc.quantity_available || 0,
+            rawData: doc
+          };
+        }).filter(Boolean)
+      : [];
+
+    // ✅ Ensure deep reactivity by mutating object directly
+    if (!productLists.value[resolvedCatId]) {
+      productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
+    }
+
+    productLists.value[resolvedCatId].products =
+      page === 1 ? data : [...productLists.value[resolvedCatId].products, ...data];
+    productLists.value[resolvedCatId].currentPage = page;
+    productLists.value[resolvedCatId].total = res.found || data.length;
+
+    generateFilters();
+  } catch (err) {
+    console.error("❌ Fetch error:", err);
+    error.value = err?.message || "Failed to fetch products";
+  } finally {
+    loading.value = false;
+  }
+};
+
+
+
+
+
+
+
 
   // Generate filters dynamically
   const generateFilters = () => {

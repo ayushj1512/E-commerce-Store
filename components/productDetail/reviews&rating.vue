@@ -23,9 +23,7 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path
-                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.947a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.947c.3.921-.755 1.688-1.538 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.783.57-1.838-.197-1.538-1.118l1.286-3.947a1 1 0 00-.364-1.118L2.075 9.374c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.947z"
-                />
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.947a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.947c.3.921-.755 1.688-1.538 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.783.57-1.838-.197-1.538-1.118l1.286-3.947a1 1 0 00-.364-1.118L2.075 9.374c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.947z"/>
               </svg>
               <svg
                 v-else
@@ -34,9 +32,7 @@
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
-                <path
-                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.947a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.947c.3.921-.755 1.688-1.538 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.783.57-1.838-.197-1.538-1.118l1.286-3.947a1 1 0 00-.364-1.118L2.075 9.374c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.947z"
-                />
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.947a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.947c.3.921-.755 1.688-1.538 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.783.57-1.838-.197-1.538-1.118l1.286-3.947a1 1 0 00-.364-1.118L2.075 9.374c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.947z"/>
               </svg>
             </template>
           </div>
@@ -98,8 +94,8 @@
           </div>
         </template>
 
-        <!-- Real reviews -->
-        <template v-else-if="reviews.length">
+        <!-- Real reviews with messages or images -->
+        <template v-else-if="displayReviews.length">
           <div
             class="flex flex-col gap-4 min-w-[300px]"
             v-for="(chunk, idx) in displayReviewChunks"
@@ -118,8 +114,9 @@
                   {{ '★'.repeat(r.rating) }}
                 </span>
               </div>
+
               <p class="text-gray-700 text-xs sm:text-sm mb-2 sm:mb-3">
-                {{ r.review_description || r.review_heading || "No review text provided." }}
+                {{ r.review_description || r.review_heading || "" }}
               </p>
 
               <!-- Review Images -->
@@ -135,13 +132,6 @@
               </div>
             </div>
           </div>
-        </template>
-
-        <!-- No reviews fallback -->
-        <template v-else>
-          <!-- <div class="text-center text-gray-500 w-full">
-            No reviews available.
-          </div> -->
         </template>
       </div>
     </div>
@@ -191,17 +181,14 @@ const getPercentage = star =>
     ? (reviews.value.filter(r => r.rating === star).length / reviews.value.length) * 100
     : 0
 
-const sortedReviews = computed(() => {
-  return [...reviews.value].sort((a, b) => {
-    const aHasImage = a.review_images && a.review_images.length > 0
-    const bHasImage = b.review_images && b.review_images.length > 0
-    return aHasImage === bHasImage ? 0 : aHasImage ? -1 : 1
-  })
+// Display reviews that have messages or images, images first
+const displayReviews = computed(() => {
+  const withImages = reviews.value.filter(r => r.review_images?.length)
+  const withoutImages = reviews.value.filter(
+    r => !r.review_images?.length && (r.review_description || r.review_heading)
+  )
+  return [...withImages, ...withoutImages]
 })
-
-const displayReviews = computed(() =>
-  sortedReviews.value.filter(r => r.review_description || r.review_heading)
-)
 
 const displayReviewChunks = computed(() => {
   const chunks = []
