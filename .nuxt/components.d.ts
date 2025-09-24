@@ -18,6 +18,7 @@ export const TopBar: typeof import("../components/TopBar.vue")['default']
 export const CartEmptyCart: typeof import("../components/cart/EmptyCart.vue")['default']
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CheckoutAddressSelector: typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']
+export const CollectionAvailableVoucher: typeof import("../components/collection/AvailableVoucher.vue")['default']
 export const CollectionFilterDrawer: typeof import("../components/collection/FilterDrawer.vue")['default']
 export const CollectionFilterSidebar: typeof import("../components/collection/FilterSidebar.vue")['default']
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
@@ -83,6 +84,7 @@ export const LazyTopBar: LazyComponent<typeof import("../components/TopBar.vue")
 export const LazyCartEmptyCart: LazyComponent<typeof import("../components/cart/EmptyCart.vue")['default']>
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCheckoutAddressSelector: LazyComponent<typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']>
+export const LazyCollectionAvailableVoucher: LazyComponent<typeof import("../components/collection/AvailableVoucher.vue")['default']>
 export const LazyCollectionFilterDrawer: LazyComponent<typeof import("../components/collection/FilterDrawer.vue")['default']>
 export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>

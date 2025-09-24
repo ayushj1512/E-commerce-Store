@@ -18,6 +18,7 @@ interface _GlobalComponents {
     'CartEmptyCart': typeof import("../../components/cart/EmptyCart.vue")['default']
     'CartRelatedProducts': typeof import("../../components/cart/relatedProducts.vue")['default']
     'CheckoutAddressSelector': typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']
+    'CollectionAvailableVoucher': typeof import("../../components/collection/AvailableVoucher.vue")['default']
     'CollectionFilterDrawer': typeof import("../../components/collection/FilterDrawer.vue")['default']
     'CollectionFilterSidebar': typeof import("../../components/collection/FilterSidebar.vue")['default']
     'CollectionPage': typeof import("../../components/collection/collectionPage.vue")['default']
@@ -83,6 +84,7 @@ interface _GlobalComponents {
     'LazyCartEmptyCart': LazyComponent<typeof import("../../components/cart/EmptyCart.vue")['default']>
     'LazyCartRelatedProducts': LazyComponent<typeof import("../../components/cart/relatedProducts.vue")['default']>
     'LazyCheckoutAddressSelector': LazyComponent<typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']>
+    'LazyCollectionAvailableVoucher': LazyComponent<typeof import("../../components/collection/AvailableVoucher.vue")['default']>
     'LazyCollectionFilterDrawer': LazyComponent<typeof import("../../components/collection/FilterDrawer.vue")['default']>
     'LazyCollectionFilterSidebar': LazyComponent<typeof import("../../components/collection/FilterSidebar.vue")['default']>
     'LazyCollectionPage': LazyComponent<typeof import("../../components/collection/collectionPage.vue")['default']>

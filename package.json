@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "lint": "eslint . --ext .js,.ts,.vue",
     "format": "prettier --write .",
-      "postinstall": "chmod +x node_modules/.bin/nuxt"
+    "postinstall": "chmod +x node_modules/.bin/nuxt"
   },
   "dependencies": {
     "@pinia-plugin-persistedstate/nuxt": "^1.2.1",

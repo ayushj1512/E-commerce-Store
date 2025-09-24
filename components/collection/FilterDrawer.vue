@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Button to toggle drawer -->
+    <!-- Toggle Drawer Button -->
     <button
       @click="toggleDrawer"
       class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
@@ -33,8 +33,9 @@
 
         <!-- Filter Content -->
         <div class="p-4 space-y-4">
-          <!-- Example: Category filter -->
-          <div>
+
+          <!-- Categories -->
+          <div v-if="categories.length">
             <h3 class="font-medium mb-2">Category</h3>
             <ul class="space-y-2">
               <li v-for="cat in categories" :key="cat">
@@ -46,18 +47,44 @@
             </ul>
           </div>
 
-          <!-- Example: Price filter -->
-          <div>
-            <h3 class="font-medium mb-2">Price</h3>
-            <input
-              type="range"
-              min="0"
-              max="5000"
-              step="100"
-              v-model="priceRange"
-              class="w-full"
-            />
-            <p class="text-sm text-gray-600">Up to ₹{{ priceRange }}</p>
+          <!-- Popular Tags -->
+          <div v-if="popularTags.length">
+            <h3 class="font-medium mb-2">Popular Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="tag in popularTags"
+                :key="tag"
+                @click="toggleTag(tag)"
+                :class="[
+                  selectedTags.includes(tag) 
+                    ? 'bg-black text-white scale-105 shadow-md' 
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+                  'px-3 py-1 rounded-full border text-sm'
+                ]"
+              >
+                {{ tag }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Other Tags -->
+          <div v-if="tags.length">
+            <h3 class="font-medium mb-2">Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="tag in tags"
+                :key="tag"
+                @click="toggleTag(tag)"
+                :class="[
+                  selectedTags.includes(tag) 
+                    ? 'bg-black text-white scale-105 shadow-md' 
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+                  'px-3 py-1 rounded-full border text-sm'
+                ]"
+              >
+                {{ tag }}
+              </button>
+            </div>
           </div>
 
           <!-- Apply Button -->
@@ -74,46 +101,52 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, defineProps, defineEmits, watch } from "vue";
+
+const props = defineProps({
+  categories: { type: Array, default: () => [] },
+  tags: { type: Array, default: () => [] },
+  popularTags: { type: Array, default: () => ["prom", "formal", "casual", "boutique"] },
+});
+
+const emit = defineEmits(["apply", "update:isOpen"]);
 
 const isOpen = ref(false);
-const categories = ["Shoes", "Bags", "Clothing", "Accessories"];
 const selectedCategories = ref([]);
-const priceRange = ref(2500);
+const selectedTags = ref([]);
 
 const toggleDrawer = () => {
   isOpen.value = !isOpen.value;
+  emit("update:isOpen", isOpen.value);
 };
-
 const closeDrawer = () => {
   isOpen.value = false;
+  emit("update:isOpen", false);
+};
+
+const toggleTag = (tag) => {
+  selectedTags.value.includes(tag)
+    ? selectedTags.value = selectedTags.value.filter(t => t !== tag)
+    : selectedTags.value.push(tag);
 };
 
 const applyFilters = () => {
-  console.log("Selected Categories:", selectedCategories.value);
-  console.log("Price Range:", priceRange.value);
+  emit("apply", {
+    categories: selectedCategories.value,
+    tags: selectedTags.value
+  });
   closeDrawer();
 };
+
+// Optional: reset selected filters if props change
+watch(() => props.categories, () => selectedCategories.value = []);
+watch(() => props.tags, () => selectedTags.value = []);
 </script>
 
 <style scoped>
-/* Overlay animation */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* Drawer slide animation */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(-100%);
-}
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
+.slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
 </style>

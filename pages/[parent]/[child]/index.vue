@@ -1,9 +1,17 @@
 <template>
   <div class="bg-white text-black min-h-screen p-4 md:p-8">
-    <!-- Top bar: Filters + Sorting Tags + Results count -->
+    <!-- Top bar: Filters Drawer + Sorting Tags + Results count -->
     <div class="flex flex-wrap gap-2 mb-4 items-center">
+      
       <!-- Filters Drawer -->
-      <FilterDrawer />
+      <div class="flex items-center">
+        <button
+          @click="toggleDrawer"
+          class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+        >
+          Filters
+        </button>
+      </div>
 
       <!-- Sorting tags -->
       <div class="flex flex-wrap gap-2 overflow-x-auto flex-1 items-center">
@@ -21,44 +29,103 @@
           {{ option.label }}
         </button>
 
-        <!-- Results found -->
         <span class="ml-auto text-gray-700 text-sm">
           Results found: {{ filteredProducts.length }}
         </span>
       </div>
     </div>
 
-    <!-- Voucher Eligibility Header with Electric Border -->
-  <transition name="fade-scale">
-  <ElectricBorder
-    v-if="eligibleVoucher"
-    :color="'rgb(255,0,0)'"  
-    :thickness="2"
-    class="mb-6 w-full flex justify-center"
-  >
-    <div
-      class="relative z-10 flex flex-col items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-transparent w-full max-w-2xl text-center"
-    >
-      <!-- Text -->
-      <span
-        class="font-bold text-base md:text-lg tracking-wide text-red-600 uppercase"
-      >
-        Eligible for {{ eligibleVoucher.category_name }}
-      </span>
-    </div>
-  </ElectricBorder>
-</transition>
+    <!-- Drawer Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 bg-black/40 z-40"
+        @click="closeDrawer"
+      ></div>
+    </transition>
 
+    <!-- Drawer -->
+    <transition name="slide">
+      <aside
+        v-if="isOpen"
+        class="fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 overflow-y-auto"
+      >
+        <div class="flex justify-between items-center p-4 border-b">
+          <h2 class="text-lg font-semibold">Filters</h2>
+          <button @click="closeDrawer" class="text-gray-500 hover:text-black">
+            ✕
+          </button>
+        </div>
+
+        <div class="p-4 space-y-4">
+          <!-- Categories -->
+          <div v-if="availableCategories.length">
+            <h3 class="font-medium mb-2">Category</h3>
+            <ul class="space-y-2">
+              <li v-for="cat in availableCategories" :key="cat">
+                <label class="flex items-center space-x-2">
+                  <input type="checkbox" v-model="selectedCategories" :value="cat" />
+                  <span>{{ cat }}</span>
+                </label>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Popular Tags -->
+          <div v-if="popularTags.length">
+            <h3 class="font-medium mb-2">Popular Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="tag in popularTags"
+                :key="tag"
+                @click="toggleTag(tag)"
+                :class="[ selectedTags.includes(tag) 
+                    ? 'bg-black text-white scale-105 shadow-md' 
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+                  'px-3 py-1 rounded-full border text-sm']"
+              >
+                {{ tag }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Other Tags -->
+          <div v-if="availableTags.length">
+            <h3 class="font-medium mb-2">Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="tag in availableTags"
+                :key="tag"
+                @click="toggleTag(tag)"
+                :class="[ selectedTags.includes(tag) 
+                    ? 'bg-black text-white scale-105 shadow-md' 
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+                  'px-3 py-1 rounded-full border text-sm']"
+              >
+                {{ tag }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Apply Button -->
+          <button
+            @click="applyFilters"
+            class="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800"
+          >
+            Apply Filters
+          </button>
+        </div>
+      </aside>
+    </transition>
+
+    <!-- AVAILABLE VOUCHER COMPONENT -->
+    <AvailableVoucher :category-id="categoryIdFromRoute" class="mb-6" />
 
     <!-- Products Grid -->
     <transition-group 
       name="fade-slide" 
       tag="div"
-      :class="[ 
-        'grid gap-6 mt-10',
-        'grid-cols-2 sm:grid-cols-2',   // mobile always 2
-        'md:grid-cols-5 lg:grid-cols-5' // desktop always 5
-      ]"
+      class="grid gap-6 mt-10 grid-cols-2 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5"
     >
       <ProductCard 
         v-for="(product, index) in filteredProducts" 
@@ -68,9 +135,9 @@
         :image="product.imageUrl"
         :hoverImage="product.hoverImageUrl" 
         :price="product.displayPrice" 
-        :mrp="product.displayDiscount"
+        :mrp="product.displayDiscount + product.displayPrice"
         :showCartBtn="true"
-        :productUrl="`/${route.params.parent || 'products'}/${product.categorySlug}/${product.productSlug}/${product.id}`" 
+        :productUrl="`/${route.params.parent || 'products'}/${product.displayCategories?.[0] || 'category'}/${product.slug}/${product.id}`" 
       />
     </transition-group>
 
@@ -81,17 +148,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute } from "#app";
 import { useProductStore } from "@/stores/productStore.js";
 import ProductCard from "@/components/common/ProductCard.vue";
-import FilterDrawer from "@/components/collection/FilterDrawer.vue";
-import ElectricBorder from "@/components/common/electricBorder.vue";
-import { ofetch } from "ofetch";
+import AvailableVoucher from "@/components/collection/AvailableVoucher.vue";
 
-// --- Stores & Route ---
 const store = useProductStore();
 const route = useRoute();
+
+// --- Drawer ---
+const isOpen = ref(false);
+const toggleDrawer = () => (isOpen.value = !isOpen.value);
+const closeDrawer = () => (isOpen.value = false);
 
 // --- Sorting ---
 const selectedSort = ref("default");
@@ -104,124 +173,86 @@ const sortOptions = [
 ];
 const applySort = (option) => (selectedSort.value = option.value);
 
-// --- Helper Slugify ---
-const slugify = (text) =>
-  text?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-
-// --- Category Id from Route ---
+// --- Category ID ---
 const categoryIdFromRoute = computed(() => {
   const subCategoryParam = route.params.child || "";
   const match = subCategoryParam.match(/(\d+)$/);
   return match ? match[1] : route.params.parent;
 });
 
-// --- Products for Current Category ---
-const productsForCategory = computed(() =>
-  store.getProductsByCategory(categoryIdFromRoute.value)
-);
+// --- Filters ---
+const availableCategories = ref(["Men", "Women", "Shoes"]);
+const availableTags = ref(["T-Shirts", "Jackets", "Hoodies"]);
+const popularTags = ref(["prom", "formal", "casual", "boutique"]);
+
+const selectedCategories = ref([]);
+const selectedTags = ref([]);
+
+const toggleTag = (tag) => {
+  selectedTags.value.includes(tag)
+    ? (selectedTags.value = selectedTags.value.filter((t) => t !== tag))
+    : selectedTags.value.push(tag);
+};
+
+const applyFilters = async () => {
+  await fetchProducts();
+  closeDrawer();
+};
+
+// --- Fetch Products ---
+const fetchProducts = async () => {
+  const catId = categoryIdFromRoute.value;
+  if (!catId) return;
+
+  await store.fetchProducts({
+    categoryId: catId,
+    page: 1,
+    perPage: 250,
+    tags: selectedTags.value,
+  });
+
+  await nextTick();
+};
 
 // --- Filtered Products ---
 const filteredProducts = computed(() => {
-  return productsForCategory.value
-    .map((p, index) => {
-      const parsedData = p.rawData?.product_data ? JSON.parse(p.rawData.product_data) : {};
-      const firstData = parsedData["0"] || {};
+  const products = store.productLists[categoryIdFromRoute.value]?.products || [];
+  const mapped = products.map((p) => ({
+    ...p,
+    imageUrl: p.images?.[0]?.img || "",
+    hoverImageUrl: p.images?.[1]?.img || p.images?.[0]?.img || "",
+    slug: p.slug || `product-${p.id}`,
+    displayCategories: p.displayCategories || ["category"],
+    tags: Array.isArray(p.tags) ? p.tags : [],
+    displayPrice: Number(p.displayPrice ?? p.price ?? 0),
+    displayDiscount: Number(p.displayDiscount ?? 0),
+  }));
 
-      const images = parsedData.images || [];
-      const imageUrl = images[0]?.img || p.images[0]?.img || "";
-      const hoverImageUrl = images[1]?.img || images[0]?.img || null;
-
-      const categoriesFromData = firstData.categories
-        ? firstData.categories.split("^").map((c) => c.split("*")[0])
-        : p.displayCategories || [];
-
-      const allSizes =
-        (parsedData.shoeSize || []).map((s) => s.Size).filter(Boolean) ||
-        (p.product_all_sizes || []).filter(Boolean) ||
-        ["N/A"];
-
-      return {
-        ...p,
-        id: p.id || p.product_id || firstData.id || `product-${index}`,
-        displayName: firstData.name || p.displayName || "",
-        displayPrice: Number(firstData.selling_price) || Number(p.displayPrice) || 0,
-        displayDiscount: Number(firstData.discount_price) || Number(p.displayDiscount) || 0,
-        displayCategories: categoriesFromData,
-        imageUrl,
-        hoverImageUrl,
-        categorySlug: slugify(categoriesFromData[0] || "general"),
-        productSlug: slugify(firstData.name || p.displayName || "item"),
-        product_all_sizes: allSizes,
-      };
-    })
-    .sort((a, b) => {
-      switch (selectedSort.value) {
-        case "lowtohigh": return a.displayPrice - b.displayPrice;
-        case "hightolow": return b.displayPrice - a.displayPrice;
-        case "latest": return (new Date(b.rawData?.date_added)) - (new Date(a.rawData?.date_added));
-        case "rating": return (b.rawData?.avg_rating ?? 0) - (a.rawData?.avg_rating ?? 0);
-        case "trending": return (b.rawData?.sales ?? 0) - (a.rawData?.sales ?? 0);
-        default: return 0;
-      }
-    });
-});
-
-// --- Fetch Products ---
-const fetchProductsFromRoute = async () => {
-  await store.fetchProducts({
-    categoryId: categoryIdFromRoute.value,
-    page: 1,
-    perPage: 250,
+  const filtered = mapped.filter((p) => {
+    if (selectedTags.value.length && !p.tags.some((t) => selectedTags.value.includes(t)))
+      return false;
+    return true;
   });
-};
 
-// --- Voucher Logic ---
-const vouchers = ref([]);
-const eligibleVoucher = ref(null);
-const remainingToApply = ref(0);
-
-const fetchVouchers = async () => {
-  try {
-    const res = await ofetch(
-      "https://api.streetstylestore.com/collections/sss_config/documents/voucher-listing?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
-    );
-    const data = JSON.parse(res.data || "[]");
-    vouchers.value = data;
-
-    const voucher = data.find(v => Number(v.id_category) === Number(categoryIdFromRoute.value));
-    if (voucher) {
-      eligibleVoucher.value = voucher;
-      remainingToApply.value = voucher.quantity;
+  return filtered.sort((a, b) => {
+    switch (selectedSort.value) {
+      case "lowtohigh":
+        return a.displayPrice - b.displayPrice;
+      case "hightolow":
+        return b.displayPrice - a.displayPrice;
+      case "latest":
+        return (new Date(b.rawData?.date_added) || 0) - (new Date(a.rawData?.date_added) || 0);
+      case "rating":
+        return (b.rawData?.avg_rating ?? 0) - (a.rawData?.avg_rating ?? 0);
+      case "trending":
+        return (b.rawData?.sales ?? 0) - (a.rawData?.sales ?? 0);
+      default:
+        return 0;
     }
-  } catch (err) {
-    console.error("Failed to fetch vouchers", err);
-  }
-};
-
-onMounted(async () => {
-  await fetchProductsFromRoute();
-  await fetchVouchers();
+  });
 });
 
-watch(() => [route.params.parent, route.params.child], async () => {
-  await fetchProductsFromRoute();
-  await fetchVouchers();
-});
+// --- Lifecycle ---
+onMounted(fetchProducts);
+watch([() => route.params.parent, () => route.params.child], fetchProducts);
 </script>
-
-<style scoped>
-.fade-slide-enter-active, .fade-slide-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-slide-enter-from { opacity: 0; transform: translateY(20px); }
-.fade-slide-enter-to { opacity: 1; transform: translateY(0); }
-.fade-slide-leave-from { opacity: 1; transform: translateY(0); }
-.fade-slide-leave-to { opacity: 0; transform: translateY(20px); }
-
-.fade-scale-enter-active { transition: all 0.4s ease; }
-.fade-scale-leave-active { transition: all 0.3s ease; }
-.fade-scale-enter-from { opacity: 0; transform: scale(0.95); }
-.fade-scale-enter-to { opacity: 1; transform: scale(1); }
-.fade-scale-leave-from { opacity: 1; transform: scale(1); }
-.fade-scale-leave-to { opacity: 0; transform: scale(0.95); }
-</style>
