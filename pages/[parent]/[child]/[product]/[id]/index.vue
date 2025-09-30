@@ -4,7 +4,11 @@
     <div v-if="loading" class="space-y-6">
       <div class="w-full h-[450px] bg-gray-200 rounded-xl animate-pulse"></div>
       <div class="flex gap-4 overflow-x-auto">
-        <div v-for="n in 6" :key="n" class="h-40 w-40 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"></div>
+        <div
+          v-for="n in 6"
+          :key="n"
+          class="h-40 w-40 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"
+        ></div>
       </div>
       <div class="space-y-4 max-w-md">
         <div class="h-8 bg-gray-200 rounded w-3/4 animate-pulse"></div>
@@ -25,122 +29,141 @@
     <!-- Product -->
     <div v-else class="flex flex-col md:flex-row gap-12">
       <!-- Images -->
-      <div class="md:w-1/2 flex flex-col gap-4">
-        <div class="w-full h-[450px] p-4 bg-gray-50 rounded-xl flex items-center justify-center relative">
-          <img :src="selectedImage" alt="Selected Product" class="rounded-lg w-full h-full object-contain transition-transform duration-300"/>
-        </div>
-        <div v-if="product.images.length > 1" class="flex gap-4 overflow-x-auto mt-4">
-          <div v-for="(img, i) in product.images" :key="i" @click="selectImage(i)" 
-               :class="['p-2 rounded-xl flex items-center justify-center cursor-pointer flex-shrink-0 border-2', selectedIndex===i?'border-black':'border-gray-200']"
-               style="width:140px;height:140px">
-            <img :src="img.img" alt="Thumb" class="rounded-lg w-full h-full object-contain"/>
-          </div>
-        </div>
+      <div class="md:w-1/2">
+        <ImageGallery v-model="selectedImage" :images="product.images" />
       </div>
 
       <!-- Info -->
       <div class="md:w-1/2 flex flex-col justify-between gap-6">
         <div>
-          <h1 class="text-3xl md:text-4xl font-bold tracking-tight">{{ product.name }}</h1>
+          <!-- Product Name + Share Button -->
+          <div class="flex items-start justify-between">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight">
+              {{ product.name }}
+            </h1>
+            <ShareButton />
+          </div>
+
+          <!-- Price -->
           <div class="flex items-baseline gap-4 mt-2">
             <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
-            <p v-if="product.selling_price > product.real_selling_price" class="text-base line-through text-gray-500">
+            <p
+              v-if="product.selling_price > product.real_selling_price"
+              class="text-base line-through text-gray-500"
+            >
               ₹{{ product.selling_price }}
             </p>
           </div>
 
           <!-- Wishlist + Voucher -->
           <div class="flex gap-4 mt-4 w-full items-center">
-            <button @click="toggleWishlist(product.id)"
+            <button
+              @click="toggleWishlist(product.id)"
               class="px-4 py-2 rounded-full border-2 font-medium transition-all flex items-center gap-2 whitespace-nowrap"
-              :class="isWishlisted ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' 
-                                     : 'bg-white border-gray-300 text-black hover:border-black hover:bg-gray-100'">
+              :class="
+                isWishlisted
+                  ? 'bg-red-500 border-red-500 text-white hover:bg-red-600'
+                  : 'bg-white border-gray-300 text-black hover:border-black hover:bg-gray-100'
+              "
+            >
               <span v-if="isWishlisted">❤️ In Wishlist</span>
               <span v-else>🤍 Add to Wishlist</span>
             </button>
 
-            <transition name="fade-scale">
-              <div v-if="eligibleVoucher" class="flex-1 flex justify-center mb-4">
-                <div class="relative z-10 flex items-center justify-center px-6 py-3 rounded-lg bg-black text-white w-full max-w-xl text-center shadow-md border border-dashed border-white font-bold text-xs md:text-sm">
-                  Part of {{ formatText(eligibleVoucher.category_name) }}
-                  <div class="w-8 h-8 bg-white rounded-full absolute top-1/2 -translate-y-1/2 left-0 -ml-4"></div>
-                  <div class="w-8 h-8 bg-white rounded-full absolute top-1/2 -translate-y-1/2 right-0 -mr-4"></div>
-                </div>
-              </div>
-            </transition>
+           <EligibleVoucher :voucher="eligibleVoucher" />
+
           </div>
 
-          <!-- Sizes -->
-          <div v-if="filteredSizes.length" class="mt-4">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-semibold text-sm">Available Sizes:</h3>
-              <button v-if="product.customSizeChartArr" @click="showSizeChart=true"
-                class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:border-black hover:text-black hover:bg-gray-100 transition-all">
-                <Ruler class="w-4 h-4"/> Size Guide
-              </button>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button v-for="(size, idx) in filteredSizes" :key="idx" @click="selectedSize=size"
-                      :class="['px-3 py-1 border rounded-full text-sm transition hover:scale-105', 
-                               selectedSize===size?'bg-black text-white border-black':'bg-white text-black border-gray-300']">
-                {{ size }}
-              </button>
-            </div>
-          </div>
 
-          <p v-if="product.description_short" class="text-gray-600 leading-relaxed mt-3">{{ product.description_short }}</p>
-          <div class="flex justify-start mt-4"><PincodeCheck/></div>
+
+<!-- ✅ Size Guide Modal -->
+<!-- ✅ Size Guide Modal -->
+<SizeGuide
+  :sizes="filteredSizes"
+  :selected-size="selectedSize"
+  :show-size-chart="showSizeChart"
+  :custom-size-chart="product.customSizeChartArr"
+  @select-size="selectedSize = $event"
+  @open-size-chart="showSizeChart = true"
+  @close-size-chart="showSizeChart = false"
+/>
+
+
+
+          <!-- Short Description -->
+          <p
+            v-if="product.description_short"
+            class="text-gray-600 leading-relaxed mt-3"
+          >
+            {{ product.description_short }}
+          </p>
+          <div class="flex justify-start mt-4"><PincodeCheck /></div>
 
           <!-- Buy + Cart / Notify -->
           <div class="flex flex-col sm:flex-row gap-4 mt-6 sticky top-24 z-10">
             <template v-if="requiresSizeLogic">
               <template v-if="filteredSizes.length">
-                <button @click="buyNow" class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">Buy Now</button>
-                <button @click="addToCart" class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">Add to Cart</button>
+                <button
+                  @click="buyNow"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition"
+                >
+                  Buy Now
+                </button>
+                <button
+                  @click="addToCart"
+                  class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition"
+                >
+                  Add to Cart
+                </button>
               </template>
               <template v-else>
-                <button @click="notifyMe" class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">Notify Me</button>
+                <button
+                  @click="notifyMe"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md"
+                >
+                  Notify Me
+                </button>
               </template>
             </template>
             <template v-else>
-              <!-- Other categories always show Buy + Cart -->
-              <button @click="buyNow" class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">Buy Now</button>
-              <button @click="addToCart" class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">Add to Cart</button>
+              <button
+                @click="buyNow"
+                class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition"
+              >
+                Buy Now
+              </button>
+              <button
+                @click="addToCart"
+                class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition"
+              >
+                Add to Cart
+              </button>
             </template>
           </div>
-
         </div>
       </div>
     </div>
 
     <!-- Reviews & Recommendations -->
-    <ReviewsRating 
-      v-if="product && product.id" 
-      :product-id="product.id" 
+    <ReviewsRating
+      v-if="product && product.id"
+      :product-id="product.id"
       class="mt-10"
     />
-    <div v-if="product.fbt_items?.length" class="mt-8">
-      <h3 class="text-xl md:text-2xl font-bold mb-4 text-black relative inline-block">
-        People Also Picked
-        <span class="absolute left-0 bottom-0 w-12 h-1 bg-gray-500 rounded-full"></span>
-      </h3>
-      <div class="flex gap-4 overflow-x-auto py-2">
-        <div v-for="item in product.fbt_items" :key="item.product_id" 
-             class="flex-shrink-0 w-48 bg-white shadow rounded-xl p-3 transition hover:shadow-lg hover:-translate-y-1 cursor-pointer"
-             @click="goToProduct(item.product_id)">
-          <img :src="item.hover && item.alternate_img ? item.alternate_img : item.img" alt="FBT Item" 
-               class="w-full h-48 object-contain rounded-lg transition duration-300"
-               @mouseover="item.hover=true" @mouseleave="item.hover=false"/>
-          <p class="text-sm font-medium mt-2 truncate">{{ item.name }}</p>
-          <p class="text-lg font-semibold mt-1">₹{{ item.selling_price }}</p>
-        </div>
-      </div>
-    </div>
 
-    <hot-selling/>
-    <TnC class="mt-10"/>
+    <!-- ✅ Replaced People Also Picked with component -->
+    <PeopleAlsoPicked
+      v-if="product.fbt_items?.length"
+      :items="product.fbt_items"
+      @select="goToProduct"
+      class="mt-8"
+    />
+
+    <hot-selling />
+    <TnC class="mt-10" />
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
@@ -148,12 +171,19 @@ import { useRoute, useRouter } from "vue-router";
 import { ofetch } from "ofetch";
 import { useCartStore } from "@/stores/cartStore";
 import { useWishlistStore } from "@/stores/wishlist";
-import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth";
-import { Ruler } from "lucide-vue-next";
+import { useToast } from "vue-toastification";
+import { useRecentlyViewStore } from "@/stores/recentlyViewStore";
+
 import TnC from "@/components/productDetail/T&C.vue";
 import PincodeCheck from "@/components/productDetail/pincode.vue";
 import ReviewsRating from "@/components/productDetail/reviews&rating.vue";
+import ShareButton from "@/components/common/ShareButton.vue";
+import ImageGallery from "@/components/productDetail/ImageGallery.vue";
+import PeopleAlsoPicked from "@/components/productDetail/FrequentlyBoughtTogether.vue";
+import SizeGuide from "@/components/productDetail/SizeGuide.vue";
+import EligibleVoucher from "@/components/productDetail/EligibleVoucher.vue";
+import HotSelling from "@/components/productDetail/HotSelling.vue"
 
 const route = useRoute();
 const router = useRouter();
@@ -161,35 +191,36 @@ const cartStore = useCartStore();
 const wishlistStore = useWishlistStore();
 const authStore = useAuthStore();
 const toast = useToast();
+const recentlyViewStore = useRecentlyViewStore();
 
+// State
 const product = ref({});
 const selectedSize = ref("");
-const selectedIndex = ref(0);
 const selectedImage = ref("");
 const eligibleVoucher = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const showSizeChart = ref(false);
 
+// Computed
 const filteredSizes = computed(() =>
   (product.value.product_size_array || product.value.product_all_sizes || []).filter(Boolean)
 );
 
 const isWishlisted = computed(() => wishlistStore.isFavorite(product.value.id));
 
-// Check if product belongs to category 16 or 18
 const requiresSizeLogic = computed(() => {
   const categoryIds = (product.value.categories || []).map(Number);
   return categoryIds.includes(16) || categoryIds.includes(18);
 });
 
-const selectImage = (idx) => {
-  selectedIndex.value = idx;
-  selectedImage.value = product.value.images[idx]?.bigImg || "";
-};
-
+// Wishlist toggle
 const toggleWishlist = (id) => {
+  const isAdding = !wishlistStore.isFavorite(id);
   wishlistStore.toggleFavorite(id);
+
+  if (isAdding) console.log(`[Wishlist] Added product ID: ${id}`);
+
   toast?.success(
     wishlistStore.isFavorite(id) ? "Added to Wishlist ❤️" : "Removed from Wishlist 🤍",
     { timeout: 2000 }
@@ -214,11 +245,9 @@ const addToCart = () => {
     quantity: 1
   };
 
-  // Apply voucher
   if (eligibleVoucher.value) {
     const voucherCatId = String(eligibleVoucher.value.id_category || "");
     const matchesCategory = cartProduct.categories.map(String).includes(voucherCatId);
-
     if (matchesCategory) {
       if (eligibleVoucher.value.discount_type === "percent") {
         cartProduct.price =
@@ -226,7 +255,6 @@ const addToCart = () => {
       } else if (eligibleVoucher.value.discount_type === "fixed") {
         cartProduct.price = Math.max(cartProduct.realPrice - (eligibleVoucher.value.discount || 0), 0);
       }
-
       cartProduct.voucherApplied = true;
       cartProduct.voucherId = eligibleVoucher.value.id;
     }
@@ -238,15 +266,14 @@ const addToCart = () => {
 
 // Buy now
 const buyNow = () => {
-  // For categories 16/18, size selection required
   if (requiresSizeLogic.value && filteredSizes.value.length && !selectedSize.value) {
     return toast?.warning("Select a size first");
   }
-
   addToCart();
   router.push("/cart");
 };
 
+// Notify Me
 const notifyMe = async () => {
   try {
     const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -300,12 +327,16 @@ const fetchProduct = async () => {
       product_size_array: doc.product_size_array || firstData.product_size_array || [],
       product_all_sizes: doc.product_all_sizes || [],
       customSizeChartArr: parsed.customSizeChartArr || null,
-      fbt_items: (parsed.fbt || []).map(i => ({ ...i, hover: false })),
+      fbt_items: (parsed.fbt || []).map((i) => ({ ...i, hover: false })),
       categories: doc.categories || []
     };
 
+    recentlyViewStore.addProduct(product.value.id);
+    console.log(`[Recently Viewed] Added product ID: ${product.value.id}`);
+
     selectedImage.value = product.value.images[0]?.bigImg || "";
-    selectedIndex.value = 0;
+
+
 
     // Fetch vouchers
     const voucherRes = await ofetch(
@@ -315,7 +346,7 @@ const fetchProduct = async () => {
     const vouchers = JSON.parse(voucherRes.data || "[]");
     const productCatIds = (product.value.categories || []).map(String);
 
-    eligibleVoucher.value = vouchers.find(v => {
+    eligibleVoucher.value = vouchers.find((v) => {
       const voucherCatId = String(v.id_category || "").trim();
       return productCatIds.includes(voucherCatId);
     });
@@ -328,6 +359,7 @@ const fetchProduct = async () => {
   }
 };
 
+// Load wishlist and product on mount
 onMounted(() => {
   wishlistStore.loadWishlist();
   fetchProduct();

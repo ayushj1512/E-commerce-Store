@@ -1,15 +1,9 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-6 md:p-12">
     <!-- Header with Sort -->
-    <div
-      class="flex flex-col md:flex-row md:items-center md:justify-between mb-8"
-    >
-      <div
-        class="flex flex-col md:block w-full md:w-auto mb-4 md:mb-0"
-      >
-        <h1
-          class="text-2xl md:text-3xl font-bold text-gray-900 text-center md:text-left"
-        >
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div class="flex flex-col md:block w-full md:w-auto mb-4 md:mb-0">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 text-center md:text-left">
           Your Recently Viewed Picks
         </h1>
         <p class="text-gray-600 md:text-lg text-center md:text-left">
@@ -17,24 +11,18 @@
         </p>
       </div>
 
-      <!-- Custom Sort Dropdown -->
-      <div
-        class="relative w-56 self-end md:self-auto md:ml-auto"
-      >
+      <!-- Sort Dropdown -->
+      <div class="relative w-56 self-end md:self-auto md:ml-auto">
         <button
-          @click="toggleDropdown"
+          @click="dropdownOpen = !dropdownOpen"
           class="w-full bg-white text-gray-800 border border-gray-300 rounded-xl px-4 py-2 font-medium shadow-sm hover:shadow-md transition flex items-center justify-between focus:outline-none"
         >
           <span>{{ getSortLabel(sortBy) }}</span>
           <ChevronDown
-            :class="[
-              'w-4 h-4 ml-2 transition-transform',
-              dropdownOpen ? 'rotate-180' : 'rotate-0',
-            ]"
+            :class="['w-4 h-4 ml-2 transition-transform', dropdownOpen ? 'rotate-180' : 'rotate-0']"
           />
         </button>
 
-        <!-- Dropdown Menu -->
         <transition name="fade">
           <ul
             v-if="dropdownOpen"
@@ -51,10 +39,7 @@
                 <component :is="option.icon" class="w-4 h-4 text-gray-500" />
                 <span>{{ option.label }}</span>
               </div>
-              <Check
-                v-if="sortBy === option.value"
-                class="w-4 h-4 text-gray-700"
-              />
+              <Check v-if="sortBy === option.value" class="w-4 h-4 text-gray-700" />
             </li>
           </ul>
         </transition>
@@ -66,181 +51,143 @@
       Loading your recently viewed products...
     </div>
 
-    <!-- Empty state -->
-    <div
-      v-else-if="recentProducts.length === 0"
-      class="text-center py-10 text-gray-500"
-    >
+    <!-- Empty State -->
+    <div v-else-if="recentProducts.length === 0" class="text-center py-10 text-gray-500">
       You haven't viewed any products yet.
     </div>
 
     <!-- Products Grid -->
-    <div
-      v-else
-      class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
-    >
-      <div
-        v-for="product in sortedProducts"
-        :key="product.id"
-        @click="goToProduct(product.productUrl)"
-        class="bg-white shadow-sm rounded-xl p-4 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
+    <div v-else>
+      <transition-group
+        name="fade"
+        tag="div"
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
+        move-class="move"
       >
         <div
-          class="w-full h-44 md:h-56 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden"
+          v-for="product in paginatedProducts"
+          :key="product.id"
+          class="cursor-pointer relative"
+          @click="goToProduct(product)"
         >
-          <img
-            :src="
-              product.images?.[0]?.bigImg ||
-              product.images?.[0]?.img ||
-              product.img ||
-              ''
-            "
-            alt="Product"
-            class="w-full h-full object-contain"
-            loading="lazy"
+          <ProductCard
+            :id="product.id"
+            :title="product.name"
+            :image="product.images?.[0]?.bigImg || product.images?.[0]?.img || product.img"
+            :hoverImage="product.images?.[1]?.bigImg || product.images?.[1]?.img"
+            :price="product.selling_price"
+            :mrp="product.mrp"
+            :tags="product.tags || []"
+            :avgRating="product.avgRating || 0"
+            :sizes="product.sizes || []"
+            :productUrl="product.productUrl || ''"
           />
         </div>
-        <p
-          class="text-sm md:text-base font-medium mt-3 truncate text-gray-800"
+      </transition-group>
+
+      <!-- Pagination -->
+      <div class="flex justify-center items-center gap-3 mt-8">
+        <button
+          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+          :disabled="currentPage === 1"
+          @click="prevPage"
         >
-          {{ product.name }}
-        </p>
-        <p
-          class="text-sm md:text-base font-semibold mt-1 text-gray-900"
+          Prev
+        </button>
+
+        <span class="text-gray-700 font-medium">Page {{ currentPage }} of {{ totalPages }}</span>
+
+        <button
+          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+          :disabled="currentPage === totalPages"
+          @click="nextPage"
         >
-          ₹{{ product.selling_price }}
-        </p>
+          Next
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useCookie } from "#app";
-import { ofetch } from "ofetch";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import { ChevronDown, ArrowDown, ArrowUp, Check } from "lucide-vue-next";
+import { useRecentlyViewStore } from "@/stores/recentlyViewStore";
+import ProductCard from "@/components/common/ProductCard.vue";
 
-// ✅ use the same cookie key as your first component
-const recentIds = useCookie("recentProducts", { default: () => [] });
-const recentProducts = ref([]);
-const loading = ref(true);
+const router = useRouter();
+const recentlyViewStore = useRecentlyViewStore();
+recentlyViewStore.loadRecentlyViewed();
+
 const sortBy = ref("latest");
 const dropdownOpen = ref(false);
+const loading = ref(true);
+const currentPage = ref(1);
+const itemsPerPage = 20;
 
-// Sort options (name sort removed)
 const sortOptions = [
   { value: "latest", label: "Recently Viewed", icon: ArrowDown },
   { value: "priceLowHigh", label: "Price: Low to High", icon: ArrowDown },
   { value: "priceHighLow", label: "Price: High to Low", icon: ArrowUp },
 ];
 
-const getSortLabel = (value) => {
-  const opt = sortOptions.find((o) => o.value === value);
-  return opt ? opt.label : "Sort By";
-};
+const getSortLabel = (value) => sortOptions.find(o => o.value === value)?.label || "Sort By";
+const setSort = (value) => { sortBy.value = value; dropdownOpen.value = false; currentPage.value = 1; };
 
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value;
-};
+const recentProducts = ref([]);
 
-const setSort = (value) => {
-  sortBy.value = value;
-  dropdownOpen.value = false;
-};
-
-const API_KEY = "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx";
-const API_URL = "https://api.streetstylestore.com";
-
-// Safe JSON parser
-const safeParseJSON = (str, fallback = {}) => {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return fallback;
-  }
-};
-
-// Fetch recently viewed products
 const fetchRecentProducts = async () => {
-  if (!recentIds.value || recentIds.value.length === 0) {
-    recentProducts.value = [];
-    loading.value = false;
-    return;
-  }
-
   loading.value = true;
   try {
-    const fetched = await Promise.all(
-      recentIds.value.map(async (id) => {
-        try {
-          const res = await ofetch(
-            `${API_URL}/collections/products/documents/${id}`,
-            {
-              headers: { "x-typesense-api-key": API_KEY },
-            }
-          );
-          const doc = res.document ?? res;
-          const parsed = doc.product_data
-            ? safeParseJSON(doc.product_data, {})
-            : {};
-          const firstData = parsed["0"] || {};
-
-          return {
-            ...doc,
-            id: doc.id,
-            name: doc.name || firstData.name || "Untitled",
-            selling_price:
-              doc.real_selling_price ??
-              doc.selling_price ??
-              firstData.selling_price ??
-              0,
-            discount_price: doc.discount_price ?? firstData.discount_price ?? 0,
-            images: parsed.images || [{ bigImg: doc.img }],
-            productUrl: `/category/subcategory/product/${doc.id}`,
-          };
-        } catch (err) {
-          console.error(`❌ Failed fetching product ${id}:`, err);
-          return null;
-        }
-      })
-    );
-
-    recentProducts.value = fetched.filter((p) => p !== null);
+    const products = await recentlyViewStore.getProducts();
+    recentProducts.value = products || [];
   } catch (err) {
-    console.error("❌ Error fetching recently viewed products:", err);
+    recentProducts.value = [];
+    console.error("Error fetching recently viewed products:", err);
   } finally {
     loading.value = false;
   }
 };
 
-const goToProduct = (url) => {
-  window.location.href = url;
-};
-
-// Computed: sorted products
 const sortedProducts = computed(() => {
   const products = [...recentProducts.value];
   switch (sortBy.value) {
-    case "priceLowHigh":
-      return products.sort((a, b) => a.selling_price - b.selling_price);
-    case "priceHighLow":
-      return products.sort((a, b) => b.selling_price - a.selling_price);
-    default:
-      return products; // latest (no extra sorting)
+    case "priceLowHigh": return products.sort((a, b) => a.selling_price - b.selling_price);
+    case "priceHighLow": return products.sort((a, b) => b.selling_price - a.selling_price);
+    default: return products;
   }
 });
 
+const totalPages = computed(() => Math.ceil(sortedProducts.value.length / itemsPerPage));
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return sortedProducts.value.slice(start, start + itemsPerPage);
+});
+
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
+const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
+
+watch(() => recentlyViewStore.recentlyViewed, fetchRecentProducts, { deep: true });
 onMounted(fetchRecentProducts);
+
+const goToProduct = (product) => {
+  const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  router.push(`/parent/child/${slug}/${product.id}`).catch(() => {});
+};
 </script>
 
 <style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.3s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Move animation for rearrangement */
+.move {
+  transition: transform 0.3s ease;
 }
 </style>

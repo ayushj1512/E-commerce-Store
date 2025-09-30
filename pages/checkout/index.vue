@@ -4,13 +4,15 @@
 
       <!-- 1) CART (TOP) -->
       <section class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-xl font-bold mb-4">Your Cart</h2>
+        <div class="bg-black rounded-t-2xl -mx-6 -mt-6 p-3">
+          <h2 class="text-xl font-bold text-white">YOUR CART</h2>
+        </div>
 
         <div v-if="!Array.isArray(cart.items) || cart.items.length === 0" class="text-center py-6">
           <p class="text-gray-600 text-sm sm:text-base">Your cart is empty.</p>
         </div>
 
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-4 pt-2">
           <div
             v-for="item in cart.items"
             :key="item._key || item.id + (item.size || '')"
@@ -27,29 +29,35 @@
             <p class="font-semibold text-gray-900">₹{{ (item.price || 0) * (item.quantity || 0) }}</p>
           </div>
 
-          <!-- small inline summary at top (optional) -->
+          <!-- small inline summary -->
           <div class="mt-4 flex justify-between items-center text-gray-700">
             <div>
               <div class="text-sm">Total items: <span class="font-semibold">{{ totalItems }}</span></div>
               <div class="text-sm">Subtotal: <span class="font-semibold">₹{{ subtotal }}</span></div>
             </div>
             <div class="text-right">
-              <div class="text-sm">Delivery: ₹{{ deliveryCharge }}</div>
               <div class="text-sm">Discount: -₹{{ discount }}</div>
               <div class="text-lg font-bold mt-1">Total: ₹{{ total }}</div>
             </div>
           </div>
+
+          <!-- Friendly savings message -->
+          <div class="mt-2 p-3 bg-yellow-100 rounded-lg text-center text-yellow-800 font-medium">
+            🎉 Can't miss this! You're saving ₹{{ discount }} on this order.
+          </div>
         </div>
       </section>
 
+      <!-- 2) DELIVERY ADDRESS -->
       <div><CheckoutAddressSelector /></div>
 
       <!-- 3) PAYMENT OPTIONS -->
       <section class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-xl font-bold mb-4">Payment Options</h2>
+        <div class="bg-black rounded-t-2xl -mx-6 -mt-6 p-4">
+          <h2 class="text-xl font-bold text-white">PAYMENT OPTIONS</h2>
+        </div>
 
-        <div class="grid grid-cols-1 gap-4">
-          <!-- COD -->
+        <div class="grid grid-cols-1 gap-4 mt-4">
           <label
             class="flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"
             :class="selectedPayment === 'cod' ? 'border-black shadow-md' : 'border-gray-300'"
@@ -61,10 +69,8 @@
                 <p class="text-xs text-gray-500">Not available on this order. ₹99 COD charge if applicable.</p>
               </div>
             </div>
-            <LucideAlertCircle class="w-5 h-5 text-gray-500" />
           </label>
 
-          <!-- BNPL -->
           <label
             class="flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"
             :class="selectedPayment === 'bnpl' ? 'border-black shadow-md' : 'border-gray-300'"
@@ -76,10 +82,8 @@
                 <p class="text-xs text-gray-500">Pay ₹{{ bnplNow }} now + 2 monthly payments of ₹{{ bnplLater }} later</p>
               </div>
             </div>
-            <LucideClock class="w-5 h-5 text-gray-500" />
           </label>
 
-          <!-- UPI -->
           <label
             class="flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"
             :class="selectedPayment === 'upi' ? 'border-black shadow-md' : 'border-gray-300'"
@@ -88,10 +92,8 @@
               <input type="radio" value="upi" v-model="selectedPayment" class="accent-black" />
               <span class="font-medium">UPI (GooglePay / PhonePe / PayTM)</span>
             </div>
-            <LucideSmartphone class="w-5 h-5 text-gray-500" />
           </label>
 
-          <!-- Card -->
           <label
             class="flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"
             :class="selectedPayment === 'card' ? 'border-black shadow-md' : 'border-gray-300'"
@@ -100,10 +102,8 @@
               <input type="radio" value="card" v-model="selectedPayment" class="accent-black" />
               <span class="font-medium">Credit / Debit Card (Visa / Master / Amex)</span>
             </div>
-            <LucideCreditCard class="w-5 h-5 text-gray-500" />
           </label>
 
-          <!-- Net Banking -->
           <label
             class="flex items-center justify-between cursor-pointer border rounded-xl p-3 hover:shadow-md transition"
             :class="selectedPayment === 'netbanking' ? 'border-black shadow-md' : 'border-gray-300'"
@@ -112,16 +112,17 @@
               <input type="radio" value="netbanking" v-model="selectedPayment" class="accent-black" />
               <span class="font-medium">Net Banking</span>
             </div>
-            <LucideBriefcase class="w-5 h-5 text-gray-500" />
           </label>
         </div>
       </section>
 
-      <!-- 4) ORDER SUMMARY (end) -->
+      <!-- 4) ORDER SUMMARY -->
       <section class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+        <div class="bg-black rounded-t-2xl -mx-6 -mt-6 p-4">
+          <h2 class="text-xl font-bold text-white">ORDER SUMMARY</h2>
+        </div>
 
-        <div class="space-y-3 text-gray-700">
+        <div class="space-y-3 text-gray-700 mt-4">
           <div class="flex justify-between font-medium">
             <span>Total Items</span>
             <span>{{ totalItems }}</span>
@@ -133,17 +134,12 @@
           </div>
 
           <div class="flex justify-between font-medium">
-            <span>Delivery</span>
-            <span>₹{{ deliveryCharge }}</span>
-          </div>
-
-          <div class="flex justify-between font-medium">
             <span>Discount</span>
             <span>-₹{{ discount }}</span>
           </div>
 
           <div class="flex justify-between font-bold text-lg border-t pt-2">
-            <span>Total Payment</span>
+            <span>TOTAL PAYMENT</span>
             <span>₹{{ total }}</span>
           </div>
 
@@ -167,7 +163,7 @@
               <button @click="proceedToPayment"
                 class="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
                 <LucideCreditCard class="w-5 h-5" />
-                <span>Proceed to Payment • ₹{{ total }}</span>
+                <span>PROCEED TO PAYMENT • ₹{{ total }}</span>
                 <LucideArrowRight class="w-5 h-5" />
               </button>
             </div>
@@ -176,27 +172,30 @@
       </section>
 
     </div>
+
+    <!-- Leave Modal -->
+    <div v-if="showLeaveModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-80 text-center shadow-lg">
+        <h3 class="text-lg font-bold mb-2">Hold on!</h3>
+        <p class="text-gray-700 mb-4">
+          You have items in your cart. Are you sure you want to leave this page?
+        </p>
+        <div class="flex justify-center gap-3">
+          <button @click="stayOnPage" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">Stay</button>
+          <button @click="leavePage" class="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800">Leave</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useCartStore } from "~/stores/cartStore";
 import { useAddressStore } from "~/stores/address";
-import { useRouter } from "vue-router";
+import { useRouter, onBeforeRouteLeave } from "vue-router";
 import CheckoutAddressSelector from "~/components/checkout/CheckoutAddressSelector.vue";
-
-import {
-  LucideCreditCard,
-  LucideArrowRight,
-  LucideAlertCircle,
-  LucideSmartphone,
-  LucideClock,
-  LucideBriefcase,
-  LucideShield,
-  LucideRepeat,
-  LucideRefreshCw,
-} from "lucide-vue-next";
 
 const cart = useCartStore();
 const addressStore = useAddressStore();
@@ -204,26 +203,10 @@ const router = useRouter();
 
 const mounted = ref(false);
 const selectedPayment = ref("cod");
+const showLeaveModal = ref(false);
+let pendingNavigationNext = null; // store the next() function
 
-const deliveryCharge = 40;
-const discount = 0;
-
-onMounted(async () => {
-  mounted.value = true;
-  // Ensure cart.items is always an array
-  if (!Array.isArray(cart.items)) cart.items = [];
-  // Fetch addresses safely
-  try {
-    await addressStore.init();
-  } catch (err) {
-    console.error("[Checkout] addressStore.init() failed:", err);
-  }
-});
-
-const selectedAddress = computed(() => {
-  const a = addressStore.deliveryAddress ?? addressStore.getDeliveryAddress ?? {};
-  return a;
-});
+const discount = 199; // example discount
 
 // totals
 const subtotal = computed(() =>
@@ -236,20 +219,47 @@ const totalItems = computed(() =>
     ? cart.items.reduce((acc, item) => acc + (item.quantity || 0), 0)
     : 0
 );
-const total = computed(() => subtotal.value + deliveryCharge - discount);
+const total = computed(() => subtotal.value - discount);
 
 const bnplNow = computed(() => Math.round(total.value / 3));
 const bnplLater = computed(() => bnplNow.value);
 
 function proceedToPayment() {
-  if (!selectedAddress.value || Object.keys(selectedAddress.value).length === 0 || !selectedAddress.value.id_address) {
+  if (!addressStore.deliveryAddress) {
     alert("Please select a delivery address before proceeding.");
     return;
   }
   router.push("/checkout/payment");
 }
 
-watch(selectedPayment, (v) => console.log("[Checkout] payment changed to:", v));
+// --- LEAVE CONFIRM MODAL LOGIC ---
+function stayOnPage() {
+  showLeaveModal.value = false;
+  pendingNavigationNext = null;
+}
+
+function leavePage() {
+  showLeaveModal.value = false;
+  if (pendingNavigationNext) {
+    pendingNavigationNext(); // resume the canceled navigation
+    pendingNavigationNext = null;
+  }
+}
+
+// Vue Router navigation guard
+onBeforeRouteLeave((to, from, next) => {
+  if (cart.items.length > 0) {
+    showLeaveModal.value = true;
+    pendingNavigationNext = next; // save next()
+    next(false); // cancel navigation for now
+  } else {
+    next();
+  }
+});
+
+onMounted(() => {
+  mounted.value = true;
+});
 </script>
 
 <style scoped>

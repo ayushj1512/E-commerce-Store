@@ -54,11 +54,9 @@ const HOT_ITEMS_API =
 async function fetchHotItems() {
   loading.value = true;
   error.value = null;
-  console.log("[HotSelling] Fetching hot items...");
 
   try {
     const res = await ofetch(HOT_ITEMS_API);
-    console.log("[HotSelling] Raw API response:", res);
 
     // Parse the 'data' string from the response
     const dataStr = res.data;
@@ -68,7 +66,6 @@ async function fetchHotItems() {
     if (!Array.isArray(dataArr)) throw new Error("Parsed data is not an array");
 
     hotItems.value = dataArr.map(item => ({ ...item, hover: false }));
-    console.log("[HotSelling] Hot items set:", hotItems.value);
   } catch (err) {
     console.error("[HotSelling] Failed to fetch hot items:", err);
     error.value = "Failed to load hot selling items.";

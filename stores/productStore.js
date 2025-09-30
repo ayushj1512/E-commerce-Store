@@ -33,51 +33,68 @@ export const useProductStore = defineStore("productStore", () => {
   const slugify = (str) =>
     str?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
-  // Add recently searched product
-// Function to add a product ID to recentSearchIds cookie without any limit
+// Function to add a product ID to recentSearchIds cookie (max 48 items)
 function addToRecentProducts(productId) {
-  if (!recentSearchIds.value.includes(productId)) {
-    recentSearchIds.value.push(productId);
-    console.log("✅ Added product ID to recentSearchIds:", productId);
-  } else {
-    console.log("ℹ️ Product ID already exists in recentSearchIds:", productId);
+  // Remove the ID if it already exists to move it to the front
+  const existingIndex = recentSearchIds.value.indexOf(productId);
+  if (existingIndex !== -1) {
+    recentSearchIds.value.splice(existingIndex, 1);
+    console.log("ℹ️ Product ID already exists, moved to front:", productId);
   }
 
+  // Add the new ID at the start to make it the latest
+  recentSearchIds.value.unshift(productId);
+
+  // Keep only the latest 48 items
+  if (recentSearchIds.value.length > 48) {
+    recentSearchIds.value = recentSearchIds.value.slice(0, 48);
+  }
+
+  console.log("✅ Added product ID to recentSearchIds:", productId);
   console.log("📌 Current recentSearchIds cookie:", recentSearchIds.value);
 }
 
 // Fetch recent products
 const fetchRecentProducts = async () => {
-  if (recentSearchIds.value.length === 0) {
+  if (!recentSearchIds.value.length) {
     recentProducts.value = [];
     return;
   }
 
   try {
     loading.value = true;
+
+    // Fetch all products based on IDs
     const fetched = await Promise.all(
       recentSearchIds.value.map(async (id) => {
-        const res = await ofetch(`${API_URL}/collections/products/documents/${id}`, {
-          headers: { "x-typesense-api-key": API_KEY },
-        });
-        const doc = res.document ?? res;
-        const parsed = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
+        try {
+          const res = await ofetch(`${API_URL}/collections/products/documents/${id}`, {
+            headers: { "x-typesense-api-key": API_KEY },
+          });
+          const doc = res.document ?? res;
+          const parsed = doc.product_data ? safeParseJSON(doc.product_data, {}) : {};
 
-        return {
-          ...doc,
-          id: doc.id,
-          name: doc.name || parsed["0"]?.name || "",
-          selling_price: doc.real_selling_price ?? doc.selling_price ?? parsed["0"]?.selling_price ?? 0,
-          discount_price: doc.discount_price ?? parsed["0"]?.discount_price ?? 0,
-          images: parsed.images || [{ img: doc.img }],
-          product_size_array: doc.product_size_array || parsed["0"]?.product_size_array || [],
-          tags: doc.tags || [],
-          productUrl: `/category/subcategory/product/${doc.id}`,
-        };
+          return {
+            ...doc,
+            id: doc.id,
+            name: doc.name || parsed["0"]?.name || "",
+            selling_price: doc.real_selling_price ?? doc.selling_price ?? parsed["0"]?.selling_price ?? 0,
+            discount_price: doc.discount_price ?? parsed["0"]?.discount_price ?? 0,
+            images: parsed.images || [{ img: doc.img }],
+            product_size_array: doc.product_size_array || parsed["0"]?.product_size_array || [],
+            tags: doc.tags || [],
+            productUrl: `/category/subcategory/product/${doc.id}`,
+          };
+        } catch (err) {
+          console.error(`❌ Failed fetching product ${id}:`, err);
+          return null;
+        }
       })
     );
 
-    recentProducts.value = fetched;
+    // Filter out null results (failed fetches) and keep latest first
+    recentProducts.value = fetched.filter((p) => p !== null);
+
     console.log("📦 Recently Viewed Products:", recentProducts.value);
   } catch (err) {
     console.error("❌ Error fetching recently viewed products:", err);
@@ -85,6 +102,8 @@ const fetchRecentProducts = async () => {
     loading.value = false;
   }
 };
+
+
 
 
   // Fetch products by category
@@ -173,14 +192,7 @@ const fetchProducts = async (options = {}) => {
   }
 };
 
-
-
-
-
-
-
-
-  // Generate filters dynamically
+// Generate filters dynamically
   const generateFilters = () => {
     const allCategories = new Set();
     const allSizes = new Set();
@@ -245,5 +257,6 @@ const fetchProducts = async (options = {}) => {
     getCurrentPage,
     getTotalProducts,
     availableTags,
+    addToRecentProducts
   };
 });

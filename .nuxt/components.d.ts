@@ -15,7 +15,9 @@ type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}
 
 
 export const TopBar: typeof import("../components/TopBar.vue")['default']
+export const CartCard: typeof import("../components/cart/CartCard.vue")['default']
 export const CartEmptyCart: typeof import("../components/cart/EmptyCart.vue")['default']
+export const CartConfetti: typeof import("../components/cart/confetti.vue")['default']
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CheckoutAddressSelector: typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']
 export const CollectionAvailableVoucher: typeof import("../components/collection/AvailableVoucher.vue")['default']
@@ -24,14 +26,17 @@ export const CollectionFilterSidebar: typeof import("../components/collection/Fi
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
 export const CommonFooter: typeof import("../components/common/Footer.vue")['default']
 export const CommonGlobalNotification: typeof import("../components/common/GlobalNotification.vue")['default']
+export const CommonGlobalToast: typeof import("../components/common/GlobalToast.vue")['default']
 export const CommonHeader: typeof import("../components/common/Header.vue")['default']
 export const CommonHeaderSearch: typeof import("../components/common/HeaderSearch.vue")['default']
 export const CommonProductCard: typeof import("../components/common/ProductCard.vue")['default']
 export const CommonProductHorizontalList: typeof import("../components/common/ProductHorizontalList.vue")['default']
 export const CommonScrollToTopButton: typeof import("../components/common/ScrollToTopButton.vue")['default']
+export const CommonShareButton: typeof import("../components/common/ShareButton.vue")['default']
 export const CommonVideoCard: typeof import("../components/common/VideoCard.vue")['default']
 export const CommonElectricBorder: typeof import("../components/common/electricBorder.vue")['default']
 export const CommonErrorHandler: typeof import("../components/common/errorHandler.vue")['default']
+export const HeaderWishlistIcon: typeof import("../components/header/wishlistIcon.vue")['default']
 export const HomeBannerComponent: typeof import("../components/home/BannerComponent.vue")['default']
 export const HomeCategorySlider: typeof import("../components/home/CategorySlider.vue")['default']
 export const HomeFitsSection: typeof import("../components/home/FitsSection.vue")['default']
@@ -48,7 +53,11 @@ export const HomeStars: typeof import("../components/home/stars.vue")['default']
 export const LoginNewUserForm: typeof import("../components/login/NewUserForm.vue")['default']
 export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['default']
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
+export const ProductDetailEligibleVoucher: typeof import("../components/productDetail/EligibleVoucher.vue")['default']
+export const ProductDetailFrequentlyBoughtTogether: typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']
 export const ProductDetailHotSelling: typeof import("../components/productDetail/HotSelling.vue")['default']
+export const ProductDetailImageGallery: typeof import("../components/productDetail/ImageGallery.vue")['default']
+export const ProductDetailSizeGuide: typeof import("../components/productDetail/SizeGuide.vue")['default']
 export const ProductDetailT&C: typeof import("../components/productDetail/T&C.vue")['default']
 export const ProductDetailPincode: typeof import("../components/productDetail/pincode.vue")['default']
 export const ProductDetailReviews&rating: typeof import("../components/productDetail/reviews&rating.vue")['default']
@@ -81,7 +90,9 @@ export const Body: typeof import("../node_modules/nuxt/dist/head/runtime/compone
 export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components/nuxt-island")['default']
 export const NuxtRouteAnnouncer: typeof import("../node_modules/nuxt/dist/app/components/server-placeholder")['default']
 export const LazyTopBar: LazyComponent<typeof import("../components/TopBar.vue")['default']>
+export const LazyCartCard: LazyComponent<typeof import("../components/cart/CartCard.vue")['default']>
 export const LazyCartEmptyCart: LazyComponent<typeof import("../components/cart/EmptyCart.vue")['default']>
+export const LazyCartConfetti: LazyComponent<typeof import("../components/cart/confetti.vue")['default']>
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCheckoutAddressSelector: LazyComponent<typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']>
 export const LazyCollectionAvailableVoucher: LazyComponent<typeof import("../components/collection/AvailableVoucher.vue")['default']>
@@ -90,14 +101,17 @@ export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../compon
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
 export const LazyCommonFooter: LazyComponent<typeof import("../components/common/Footer.vue")['default']>
 export const LazyCommonGlobalNotification: LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>
+export const LazyCommonGlobalToast: LazyComponent<typeof import("../components/common/GlobalToast.vue")['default']>
 export const LazyCommonHeader: LazyComponent<typeof import("../components/common/Header.vue")['default']>
 export const LazyCommonHeaderSearch: LazyComponent<typeof import("../components/common/HeaderSearch.vue")['default']>
 export const LazyCommonProductCard: LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
 export const LazyCommonProductHorizontalList: LazyComponent<typeof import("../components/common/ProductHorizontalList.vue")['default']>
 export const LazyCommonScrollToTopButton: LazyComponent<typeof import("../components/common/ScrollToTopButton.vue")['default']>
+export const LazyCommonShareButton: LazyComponent<typeof import("../components/common/ShareButton.vue")['default']>
 export const LazyCommonVideoCard: LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
 export const LazyCommonElectricBorder: LazyComponent<typeof import("../components/common/electricBorder.vue")['default']>
 export const LazyCommonErrorHandler: LazyComponent<typeof import("../components/common/errorHandler.vue")['default']>
+export const LazyHeaderWishlistIcon: LazyComponent<typeof import("../components/header/wishlistIcon.vue")['default']>
 export const LazyHomeBannerComponent: LazyComponent<typeof import("../components/home/BannerComponent.vue")['default']>
 export const LazyHomeCategorySlider: LazyComponent<typeof import("../components/home/CategorySlider.vue")['default']>
 export const LazyHomeFitsSection: LazyComponent<typeof import("../components/home/FitsSection.vue")['default']>
@@ -114,7 +128,11 @@ export const LazyHomeStars: LazyComponent<typeof import("../components/home/star
 export const LazyLoginNewUserForm: LazyComponent<typeof import("../components/login/NewUserForm.vue")['default']>
 export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login/OtpInput.vue")['default']>
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
+export const LazyProductDetailEligibleVoucher: LazyComponent<typeof import("../components/productDetail/EligibleVoucher.vue")['default']>
+export const LazyProductDetailFrequentlyBoughtTogether: LazyComponent<typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']>
 export const LazyProductDetailHotSelling: LazyComponent<typeof import("../components/productDetail/HotSelling.vue")['default']>
+export const LazyProductDetailImageGallery: LazyComponent<typeof import("../components/productDetail/ImageGallery.vue")['default']>
+export const LazyProductDetailSizeGuide: LazyComponent<typeof import("../components/productDetail/SizeGuide.vue")['default']>
 export const LazyProductDetailT&C: LazyComponent<typeof import("../components/productDetail/T&C.vue")['default']>
 export const LazyProductDetailPincode: LazyComponent<typeof import("../components/productDetail/pincode.vue")['default']>
 export const LazyProductDetailReviews&rating: LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>

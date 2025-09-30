@@ -57,7 +57,7 @@
     </div>
 
     <!-- Tags -->
-    <div v-if="tags && tags.length" class="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
+    <div v-if="tags && tags.length" class="absolute top-10 left-2 flex flex-wrap gap-1 z-10">
       <span
         v-for="(tag, index) in tags"
         :key="index"
@@ -68,7 +68,7 @@
     </div>
 
     <!-- Product info -->
-    <div class="p-3 flex flex-col flex-1 justify-between gap-2">
+    <div class="p-3 flex flex-col flex-1 justify-between gap-2 relative">
       <div class="flex flex-col flex-1">
         <h3
           class="text-gray-900 font-medium text-xs sm:text-sm md:text-base break-words leading-snug"
@@ -77,31 +77,32 @@
           {{ title }}
         </h3>
 
-        <div class="mt-1 flex items-center space-x-1 sm:space-x-2">
-          <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
-          <span class="text-gray-900 font-semibold text-sm sm:text-base">₹{{ price }}</span>
-        </div>
-      </div>
+        <!-- Price + Rating Row -->
+        <div class="mt-1 flex items-center justify-between">
+          <div class="flex items-center space-x-1 sm:space-x-2">
+            <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
+            <span class="text-gray-900 font-semibold text-sm sm:text-base">₹{{ price }}</span>
+          </div>
 
-      <!-- Sizes Dropdown -->
-      <div v-if="sizes && sizes.length" class="mt-2">
-        <select
-          v-model="selectedSize"
-          class="border rounded-sm px-2 py-1 text-sm w-full focus:outline-none focus:ring-1 focus:ring-black"
-        >
-          <option v-for="(s, idx) in sizes" :key="idx" :value="s">Size: {{ s }}</option>
-        </select>
+          <!-- Rating badge -->
+          <div v-if="avgRating > 0" class="bg-yellow-400 text-black text-xs font-semibold px-2 py-1 rounded shadow flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.946a1 1 0 00.95.69h4.148c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.946c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.784.57-1.838-.197-1.539-1.118l1.285-3.946a1 1 0 00-.364-1.118l-3.36-2.44c-.784-.57-.38-1.81.588-1.81h4.148a1 1 0 00.951-.69l1.285-3.946z" />
+            </svg>
+            {{ avgRating.toFixed(1) }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue"
+import { ref, computed } from "vue"
 import { useRouter } from "#app"
-import { useToast } from "vue-toastification"
 import { useCartStore } from "@/stores/cartStore"
-import { useWishlistStore } from "@/stores/wishlist"   // ✅ Import Wishlist Store
+import { useWishlistStore } from "@/stores/wishlist"
+import { addToast } from "@/components/common/GlobalToast.vue"
 
 const props = defineProps({
   id: { type: [String, Number], required: true },
@@ -111,27 +112,18 @@ const props = defineProps({
   tags: { type: Array, default: () => [] },
   price: { type: Number, required: true },
   mrp: { type: Number, default: null },
-  showCartBtn: { type: Boolean, default: true },
   productUrl: { type: String, required: true },
-  sizes: { type: Array, default: () => [] },
+  avgRating: { type: Number, default: 0 }
 })
 
 const currentImage = ref(props.image)
-const selectedSize = ref(props.sizes?.[0] ?? null)
 const router = useRouter()
 const cart = useCartStore()
-const wishlist = useWishlistStore()   // ✅ Pinia Wishlist Store
-let toast = null
-
-// ✅ Reactive computed check (comes from store, not local state)
-const isWishlisted = computed(() => wishlist.isFavorite(props.id))
+const wishlist = useWishlistStore()
 const animating = ref(false)
 
-onMounted(() => {
-  toast = useToast()
-})
+const isWishlisted = computed(() => wishlist.isFavorite(props.id))
 
-// Navigate to product details
 const goToDetail = () => {
   if (!props.productUrl) return
   if (props.productUrl.startsWith("/")) {
@@ -141,56 +133,35 @@ const goToDetail = () => {
   }
 }
 
-// Add product to cart
 const addToCart = () => {
   const productToAdd = {
     id: props.id,
     name: props.title,
     price: props.price,
     quantity: 1,
-    size: selectedSize.value,
     image: props.image,
   }
-
   cart.addToCart(productToAdd)
-
-  toast?.success(`${props.title} has been added to your cart`, {
-    timeout: 2000,
-    icon: "🛒",
-  })
+  addToast('product-added', `${props.title} added to cart 🛒`)
 }
 
-// ✅ Toggle wishlist using store
 const toggleWishlist = () => {
   wishlist.toggleFavorite(props.id)
   animating.value = true
-
-  setTimeout(() => {
-    animating.value = false
-  }, 400)
-
+  setTimeout(() => (animating.value = false), 400)
   if (wishlist.isFavorite(props.id)) {
-    toast?.success(`${props.title} added to Wishlist ❤️`, { timeout: 1500 })
+    addToast('success', `${props.title} added to Wishlist ❤️`)
   } else {
-    toast?.info(`${props.title} removed from Wishlist`, { timeout: 1500 })
+    addToast('product-removed', `${props.title} removed from Wishlist ❌`)
   }
 }
 </script>
 
-
 <style scoped>
 @keyframes pingonce {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
-.animate-pingonce {
-  animation: pingonce 0.4s ease-in-out;
-}
+.animate-pingonce { animation: pingonce 0.4s ease-in-out; }
 </style>
