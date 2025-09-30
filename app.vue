@@ -16,6 +16,9 @@
 
     <!-- Scroll to Top Button -->
     <ScrollToTopButton />
+
+    <!-- Global Toast Notifications -->
+    <GlobalToast />
   </div>
 </template>
 
@@ -24,6 +27,7 @@ import Header from '~/components/common/Header.vue'
 import Footer from '~/components/common/Footer.vue'
 import TopBar from '~/components/TopBar.vue'
 import ScrollToTopButton from '~/components/common/ScrollToTopButton.vue'
+import GlobalToast from '~/components/common/GlobalToast.vue' // Added for notifications
 
 const { vueApp } = useNuxtApp()
 </script>

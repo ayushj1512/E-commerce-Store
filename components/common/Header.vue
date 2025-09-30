@@ -11,11 +11,12 @@
         <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
       </div>
 
-      <!-- Search & Cart Icons -->
+      <!-- Search, Cart, User, Wishlist -->
       <div class="flex items-center space-x-4 relative">
         <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors">
           <SearchIcon class="w-6 h-6"/>
         </button>
+
         <div class="relative cursor-pointer" @click="navigateTo('/cart')">
           <ShoppingCart class="w-6 h-6 hover:text-gray-600 transition-colors"/>
           <span v-if="totalCartItems > 0"
@@ -23,19 +24,22 @@
             {{ totalCartItems }}
           </span>
         </div>
+
         <User class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/profile')"/>
-        <Heart class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/wishlist')"/>
+
+        <!-- ✅ Reusable WishlistIcon -->
+        <WishlistIcon />
       </div>
     </div>
 
     <!-- Desktop Header -->
     <div class="hidden md:flex items-center justify-between px-6 py-3 relative">
-
+      <!-- Logo -->
       <div class="cursor-pointer" @click="navigateTo('/')">
         <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
       </div>
 
-      <!-- Centered Menu Heading -->
+      <!-- Centered Menu -->
       <nav class="flex-1 flex justify-center space-x-6">
         <div v-for="menu in menus" :key="menu.name" class="relative cursor-pointer">
           <button 
@@ -53,6 +57,7 @@
           <SearchIcon class="w-6 h-6"/>
         </button>
 
+        <!-- Mini-Cart -->
         <div class="relative cursor-pointer" @mouseenter="showMiniCart = true" @mouseleave="showMiniCart = false">
           <ShoppingCart class="w-6 h-6 hover:text-gray-600 transition-colors"/>
           <span v-if="totalCartItems > 0"
@@ -60,7 +65,6 @@
             {{ totalCartItems }}
           </span>
 
-          <!-- Mini-Cart Dropdown -->
           <transition name="fade-scale">
             <div
               v-if="showMiniCart && Array.isArray(cart.items) && cart.items.length > 0"
@@ -95,11 +99,13 @@
         </div>
 
         <User class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/profile')"/>
-        <Heart class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/wishlist')"/>
+
+        <!-- ✅ Reusable WishlistIcon -->
+        <WishlistIcon />
       </div>
     </div>
 
-    <!-- Mobile Sidebar (unchanged) -->
+    <!-- Mobile Sidebar -->
     <transition name="slide">
       <div v-if="mobileSidebarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click.self="mobileSidebarOpen=false">
         <div class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg z-50 flex flex-col overflow-y-auto">
@@ -130,11 +136,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShoppingCart, User, Heart, Menu, X, SearchIcon } from 'lucide-vue-next'
+import { ShoppingCart, User, Menu, X, SearchIcon } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cartStore'
+import { useWishlistStore } from '@/stores/wishlist'
 import slugify from 'slugify'
+import WishlistIcon from '@/components/header/WishlistIcon.vue'
 
 const cart = useCartStore()
+const wishlist = useWishlistStore()
 const router = useRouter()
 
 const menus = [
@@ -145,16 +154,13 @@ const menus = [
   { name:"Footwear", items:["Flats","Heels","Sneakers","Sandals"] }
 ]
 
-const recentSearches = ref(['Crop Tops','Black Jeans','Sneakers'])
-const popularSearches = ref(['Maxi Dress','Sunglasses','Flats','Belts'])
 const mobileSidebarOpen = ref(false)
 const openMenus = ref([])
-const isClient = ref(false)
 const showMiniCart = ref(false)
 
 onMounted(() => { 
-  isClient.value = true
-  cart.loadCart() // load cart safely on client only
+  cart.loadCart()
+  wishlist.loadWishlist()
 })
 
 const toggleMenu = name => {
@@ -167,13 +173,11 @@ const toggleMenu = name => {
 
 const navigateTo = path => { router.push(path); mobileSidebarOpen.value=false }
 
-// Category navigation
 const navigateToCategory = (category) => {
   const slug = slugify(category, { lower: true })
   router.push(`/collection/${slug}`)
 }
 
-// Sub-category navigation (mobile sidebar)
 const navigateToSubCategory = (parent, sub) => {
   const parentSlug = slugify(parent, { lower: true })
   const subSlug = slugify(sub, { lower: true })
@@ -181,7 +185,6 @@ const navigateToSubCategory = (parent, sub) => {
   mobileSidebarOpen.value = false
 }
 
-// Product navigation (mini-cart click)
 const navigateToProduct = (item) => {
   const parentSlug = slugify(item.parentCategory || 'collection', { lower: true })
   const subSlug = slugify(item.subCategory || 'products', { lower: true })
@@ -195,17 +198,12 @@ const navigateToSearch = query => {
   else router.push('/search') 
 }
 
-// Mini-cart quantity controls
 const increaseQty = (item) => cart.updateQuantity(item, item.quantity + 1)
 const decreaseQty = (item) => { if(item.quantity>1) cart.updateQuantity(item, item.quantity - 1) }
 
-// Compute total items in cart safely
 const totalCartItems = computed(() => {
   return Array.isArray(cart.items) ? cart.items.reduce((total, item) => total + (item.quantity || 0), 0) : 0
 })
-
-// Image search handler
-const handleImageSearch = file => console.log('Image uploaded for search:', file)
 </script>
 
 <style scoped>
@@ -215,9 +213,7 @@ const handleImageSearch = file => console.log('Image uploaded for search:', file
 .slide-leave-from{transform:translateX(0)}
 .slide-leave-to{transform:translateX(-100%)}
 
-/* Mini-cart dropdown animation */
 .fade-scale-enter-active, .fade-scale-leave-active { transition: all 0.2s ease; }
 .fade-scale-enter-from, .fade-scale-leave-to { opacity: 0; transform: scale(0.95); }
 .fade-scale-enter-to, .fade-scale-leave-from { opacity: 1; transform: scale(1); }
 </style>
-et

@@ -76,8 +76,8 @@
             <h3 class="font-medium mb-2">Popular Tags</h3>
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="tag in popularTags"
-                :key="tag"
+                v-for="tag in popularTags" 
+                :key="tag" 
                 @click="toggleTag(tag)"
                 :class="[ selectedTags.includes(tag) 
                     ? 'bg-black text-white scale-105 shadow-md' 
@@ -131,12 +131,13 @@
         v-for="(product, index) in filteredProducts" 
         :key="product.id || `product-${index}`"
         :id="product.id || `product-${index}`" 
-        :title="product.displayName" 
-        :image="product.imageUrl"
-        :hoverImage="product.hoverImageUrl" 
-        :price="product.displayPrice" 
-        :mrp="product.displayDiscount + product.displayPrice"
+        :title="product.displayName || 'Product'" 
+        :image="product.imageUrl || ''"
+        :hoverImage="product.hoverImageUrl || ''" 
+        :price="product.displayPrice || 0" 
+        :mrp="(product.displayDiscount || 0) + (product.displayPrice || 0)"
         :showCartBtn="true"
+        :avgRating="product.rawData?.avg_rating ?? 0"  
         :productUrl="`/${route.params.parent || 'products'}/${product.displayCategories?.[0] || 'category'}/${product.slug}/${product.id}`" 
       />
     </transition-group>
@@ -176,8 +177,10 @@ const applySort = (option) => (selectedSort.value = option.value);
 // --- Category ID ---
 const categoryIdFromRoute = computed(() => {
   const subCategoryParam = route.params.child || "";
-  const match = subCategoryParam.match(/(\d+)$/);
-  return match ? match[1] : route.params.parent;
+  const match = subCategoryParam?.match(/(\d+)$/);
+  const id = match ? match[1] : route.params.parent;
+  console.log("Category ID:", id);
+  return id;
 });
 
 // --- Filters ---
@@ -202,14 +205,25 @@ const applyFilters = async () => {
 // --- Fetch Products ---
 const fetchProducts = async () => {
   const catId = categoryIdFromRoute.value;
-  if (!catId) return;
+  if (!catId) {
+    console.warn("No category ID found!");
+    return;
+  }
 
-  await store.fetchProducts({
-    categoryId: catId,
-    page: 1,
-    perPage: 250,
-    tags: selectedTags.value,
-  });
+  try {
+    await store.fetchProducts({
+      categoryId: catId,
+      page: 1,
+      perPage: 250,
+      tags: selectedTags.value,
+    });
+    console.log(
+      "Fetched products:",
+      store.productLists[catId]?.products?.length || 0
+    );
+  } catch (err) {
+    console.error("Error fetching products:", err);
+  }
 
   await nextTick();
 };
@@ -217,37 +231,39 @@ const fetchProducts = async () => {
 // --- Filtered Products ---
 const filteredProducts = computed(() => {
   const products = store.productLists[categoryIdFromRoute.value]?.products || [];
-  const mapped = products.map((p) => ({
-    ...p,
-    imageUrl: p.images?.[0]?.img || "",
-    hoverImageUrl: p.images?.[1]?.img || p.images?.[0]?.img || "",
-    slug: p.slug || `product-${p.id}`,
-    displayCategories: p.displayCategories || ["category"],
-    tags: Array.isArray(p.tags) ? p.tags : [],
-    displayPrice: Number(p.displayPrice ?? p.price ?? 0),
-    displayDiscount: Number(p.displayDiscount ?? 0),
-  }));
+
+  const mapped = (products || []).map((p) => {
+    const avgRating = p.details?.avg_rating ?? 0;
+    console.log(`Product ID: ${p.id}, Avg Rating: ${avgRating}`);
+    return {
+      ...p,
+      imageUrl: p.images?.[0]?.img || "",
+      hoverImageUrl: p.images?.[1]?.img || p.images?.[0]?.img || "",
+      slug: p.slug || `product-${p.id}`,
+      displayCategories: p.displayCategories || ["category"],
+      tags: Array.isArray(p.tags) ? p.tags : [],
+      displayPrice: Number(p.displayPrice ?? p.price ?? 0),
+      displayDiscount: Number(p.displayDiscount ?? 0),
+      rawData: p,
+      avgRating
+    };
+  });
 
   const filtered = mapped.filter((p) => {
-    if (selectedTags.value.length && !p.tags.some((t) => selectedTags.value.includes(t)))
+    if (selectedTags.value.length && !p.tags.some((t) => selectedTags.value.includes(t))) {
       return false;
+    }
     return true;
   });
 
   return filtered.sort((a, b) => {
     switch (selectedSort.value) {
-      case "lowtohigh":
-        return a.displayPrice - b.displayPrice;
-      case "hightolow":
-        return b.displayPrice - a.displayPrice;
-      case "latest":
-        return (new Date(b.rawData?.date_added) || 0) - (new Date(a.rawData?.date_added) || 0);
-      case "rating":
-        return (b.rawData?.avg_rating ?? 0) - (a.rawData?.avg_rating ?? 0);
-      case "trending":
-        return (b.rawData?.sales ?? 0) - (a.rawData?.sales ?? 0);
-      default:
-        return 0;
+      case "lowtohigh": return a.displayPrice - b.displayPrice;
+      case "hightolow": return b.displayPrice - a.displayPrice;
+      case "latest": return (new Date(b.rawData?.date_added) || 0) - (new Date(a.rawData?.date_added) || 0);
+      case "rating": return (b.rawData?.avg_rating ?? 0) - (a.rawData?.avg_rating ?? 0);
+      case "trending": return (b.rawData?.sales ?? 0) - (a.rawData?.sales ?? 0);
+      default: return 0;
     }
   });
 });

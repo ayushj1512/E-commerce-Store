@@ -4,15 +4,18 @@
 
       <!-- 📍 ADDRESS -->
       <section class="bg-white p-6 rounded-2xl shadow-md">
-        <h2 class="text-xl font-bold mb-4">Delivery Address</h2>
+        <!-- Full-width black header -->
+        <div class="bg-black rounded-t-2xl -mx-6 -mt-6 p-4">
+          <h2 class="text-xl font-bold text-white">DELIVERY ADDRESS</h2>
+        </div>
 
         <!-- shimmer -->
-        <div v-if="loading" class="space-y-3">
+        <div v-if="loading" class="space-y-3 mt-4">
           <div v-for="n in 2" :key="n" class="h-20 bg-gray-100 rounded-lg animate-pulse"></div>
         </div>
 
         <!-- no addresses -->
-        <div v-else-if="!addresses.length" class="text-center py-6">
+        <div v-else-if="!addresses.length" class="text-center py-6 mt-4">
           <p class="text-gray-600 mb-3">No addresses found.</p>
           <button @click="goToAddAddress" class="bg-black text-white px-4 py-2 rounded-full">
             Add Address
@@ -20,7 +23,7 @@
         </div>
 
         <!-- show addresses -->
-        <div v-else class="space-y-3">
+        <div v-else class="space-y-3 mt-4">
           <div
             v-for="addr in addresses"
             :key="addr.id_address"
@@ -101,14 +104,11 @@ onMounted(async () => {
   mounted.value = true;
   loading.value = true;
 
-  // 1️⃣ Initialize auth first
   authStore.initAuth();
 
-  // 2️⃣ Wait until user is authenticated before fetching addresses
   if (authStore.isAuthenticated && authStore.key) {
     await addressStore.fetchAddresses();
 
-    // Auto-select first address if available
     if (addressStore.addresses.length > 0) {
       const a = addressStore.addresses[0];
       selectedAddress.value = {
