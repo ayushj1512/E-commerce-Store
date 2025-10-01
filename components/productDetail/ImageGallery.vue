@@ -3,7 +3,7 @@
     <!-- 🔄 Loading Shimmer -->
     <template v-if="loading">
       <div class="w-full h-[450px] bg-gray-200 rounded-xl animate-pulse"></div>
-      <div class="flex gap-4 overflow-x-auto mt-4">
+      <div class="flex gap-4 overflow-x-auto mt-4 no-scrollbar">
         <div
           v-for="n in 4"
           :key="n"
@@ -20,16 +20,34 @@
         @touchstart="onTouchStart"
         @touchend="onTouchEnd"
       >
+        <!-- Left Arrow -->
+        <button
+          v-if="images.length > 1"
+          @click="prevImage"
+          class="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black rounded-full p-2 shadow"
+        >
+          ‹
+        </button>
+
         <img
           :src="selectedImage"
           alt="Selected Product"
           class="rounded-lg w-full h-full object-contain transition-transform duration-300"
           :style="{ transform: `translateX(${slideOffset}px)` }"
         />
+
+        <!-- Right Arrow -->
+        <button
+          v-if="images.length > 1"
+          @click="nextImage"
+          class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-black rounded-full p-2 shadow"
+        >
+          ›
+        </button>
       </div>
 
       <!-- Thumbnails -->
-      <div v-if="images.length > 1" class="flex gap-4 overflow-x-auto mt-4">
+      <div v-if="images.length > 1" class="flex gap-4 overflow-x-auto mt-4 no-scrollbar">
         <div
           v-for="(img, i) in images"
           :key="i"
@@ -63,7 +81,7 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const selectedIndex = ref(0);
-const selectedImage = ref(props.modelValue || (props.images[0]?.bigImg || ""));
+const selectedImage = ref(props.modelValue || (props.images[0]?.bigImg || props.images[0]?.img || ""));
 
 // Swipe tracking
 let startX = 0;
@@ -77,7 +95,7 @@ const onTouchEnd = (e) => {
   const endX = e.changedTouches[0].clientX;
   const diff = endX - startX;
 
-  if (Math.abs(diff) > 50) { // minimum swipe distance
+  if (Math.abs(diff) > 50 && props.images.length > 1) {
     if (diff < 0) nextImage();
     else prevImage();
   }
@@ -86,25 +104,19 @@ const onTouchEnd = (e) => {
 
 const selectImage = (idx) => {
   selectedIndex.value = idx;
-  selectedImage.value = props.images[idx]?.bigImg || "";
+  selectedImage.value = props.images[idx]?.bigImg || props.images[idx]?.img || "";
   emit("update:modelValue", selectedImage.value);
 };
 
 const nextImage = () => {
-  if (selectedIndex.value < props.images.length - 1) {
-    selectedIndex.value++;
-  } else {
-    selectedIndex.value = 0; // loop to first
-  }
+  if (props.images.length <= 1) return;
+  selectedIndex.value = (selectedIndex.value + 1) % props.images.length;
   selectImage(selectedIndex.value);
 };
 
 const prevImage = () => {
-  if (selectedIndex.value > 0) {
-    selectedIndex.value--;
-  } else {
-    selectedIndex.value = props.images.length - 1; // loop to last
-  }
+  if (props.images.length <= 1) return;
+  selectedIndex.value = (selectedIndex.value - 1 + props.images.length) % props.images.length;
   selectImage(selectedIndex.value);
 };
 
@@ -116,3 +128,14 @@ watch(
   }
 );
 </script>
+
+<style>
+/* ✅ Hide scrollbar for thumbnails */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE */
+  scrollbar-width: none; /* Firefox */
+}
+</style>

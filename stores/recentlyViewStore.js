@@ -4,38 +4,47 @@ import { ofetch } from 'ofetch';
 
 export const useRecentlyViewStore = defineStore('recentlyView', {
   state: () => ({
-    recentlyViewed: [], // array of product IDs
+    recentlyViewed: [], // Array of product IDs
   }),
 
   actions: {
+    // Load recently viewed product IDs from cookie
     loadRecentlyViewed() {
       const cookie = useCookie('recently_viewed_ids', { default: () => [] });
-      this.recentlyViewed = cookie.value || [];
+      this.recentlyViewed = Array.isArray(cookie.value) ? cookie.value : [];
       console.log('[Recently Viewed] Loaded from cookie:', this.recentlyViewed);
     },
 
+    // Add a product ID to recently viewed
     addProduct(productId) {
+      if (!productId) return;
+
       // Remove if already exists
       const index = this.recentlyViewed.indexOf(productId);
       if (index !== -1) this.recentlyViewed.splice(index, 1);
 
-      // Add to beginning
+      // Add to the beginning
       this.recentlyViewed.unshift(productId);
+
+      // Limit to 20 items
       if (this.recentlyViewed.length > 20) this.recentlyViewed.pop();
 
+      // Update cookie
       const cookie = useCookie('recently_viewed_ids', { sameSite: 'lax' });
       cookie.value = this.recentlyViewed;
+
       console.log('[Recently Viewed] Updated cookie:', this.recentlyViewed);
     },
 
+    // Fetch product details from API
     async getProducts() {
       if (!this.recentlyViewed.length) return [];
 
       try {
-        // Build IDs string
         const idsString = this.recentlyViewed.join(',');
 
-        const url = `https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=product_id:[${idsString}]&filter_by=active:=1&sort_by=date_updated_unix:desc&per_page=100&page=1`;
+        // Fixed filter_by syntax
+        const url = `https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=product_id:=[${idsString}] && active:=1&sort_by=date_updated_unix:desc&per_page=100&page=1`;
 
         const res = await ofetch(url, {
           headers: {
@@ -43,22 +52,28 @@ export const useRecentlyViewStore = defineStore('recentlyView', {
           },
         });
 
-        if (!res?.hits?.length) return [];
+        if (!res?.hits?.length) {
+          console.warn('[Recently Viewed] No products found in API response.');
+          return [];
+        }
 
-        // Normalize each product
+        // Normalize products
         const products = res.hits.map(hit => {
-          const doc = hit.document;
+          const doc = hit.document || {};
           return {
             id: doc.id || doc.product_id,
-            name: doc.name,
+            name: doc.name || 'Unnamed Product',
+            actual_selling_price: doc.selling_price || doc.real_selling_price || 0,
             selling_price: doc.selling_price || doc.real_selling_price || 0,
-            images: doc.images?.length
+            images: Array.isArray(doc.images) && doc.images.length
               ? doc.images.map(img => ({
-                  img: img.img,
-                  bigImg: img.bigImg || img.img,
+                  img: img.img || '/fallback.jpg',
+                  bigImg: img.bigImg || img.img || '/fallback.jpg',
                 }))
-              : [{ img: doc.img, bigImg: doc.img }],
-            productUrl: doc.product_url || `/product/${doc.id}`,
+              : [{ img: doc.img || '/fallback.jpg', bigImg: doc.img || '/fallback.jpg' }],
+            productUrl: doc.product_url || `/product/${doc.id || doc.product_id}`,
+            tags: doc.tags || [],
+            sizes: doc.sizes || [],
           };
         });
 

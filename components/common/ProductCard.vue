@@ -5,44 +5,20 @@
   >
     <!-- Wishlist Button -->
     <button
-      class="absolute top-2 right-2 z-20 p-1 bg-white/80 backdrop-blur-sm rounded-full shadow hover:scale-110 transition"
+      class="absolute top-2 right-2 z-20 p-0 w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200"
       @click.stop="toggleWishlist"
     >
-      <svg
+      <Heart
         v-if="isWishlisted"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="currentColor"
         class="w-5 h-5 text-red-500 transition-transform transform"
         :class="{ 'scale-125 animate-pingonce': animating }"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 
-             5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 
-             2.09C13.09 3.81 14.76 3 16.5 
-             3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 
-             6.86-8.55 11.54L12 21.35z"
-        />
-      </svg>
-      <svg
+        fill="currentColor"
+      />
+      <Heart
         v-else
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        stroke="currentColor"
         class="w-5 h-5 text-gray-600"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4.318 6.318a4.5 4.5 0 000 
-             6.364L12 20.364l7.682-7.682a4.5 
-             4.5 0 00-6.364-6.364L12 
-             7.636l-1.318-1.318a4.5 4.5 
-             0 00-6.364 0z"
-        />
-      </svg>
+        stroke="currentColor"
+      />
     </button>
 
     <!-- Product Image -->
@@ -54,17 +30,35 @@
         @mouseover="hoverImage && (currentImage = hoverImage)"
         @mouseleave="currentImage = image"
       />
-    </div>
 
-    <!-- Tags -->
-    <div v-if="tags && tags.length" class="absolute top-10 left-2 flex flex-wrap gap-1 z-10">
+      <!-- Minimal Discount Badge -->
       <span
-        v-for="(tag, index) in tags"
-        :key="index"
-        class="bg-black text-white text-[10px] sm:text-xs px-2 py-0.5 font-semibold rounded"
+        v-if="discountPercent > 0"
+        class="absolute top-2 left-2 bg-red-500 text-white text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1 animate-discount-entry shadow-sm"
       >
-        {{ tag }}
+        <Tag class="h-3 w-3" />
+        {{ discountPercent }}% OFF
       </span>
+
+      <!-- Minimal Fancy Rating Badge (Right Bottom) -->
+      <div
+        v-if="avgRating > 0"
+        class="absolute bottom-2 right-2 bg-yellow-400 text-black text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-sm flex items-center gap-1 opacity-0 animate-fade-in group-hover:scale-105 transition-transform duration-300"
+      >
+        <Star class="h-3 w-3" />
+        {{ avgRating.toFixed(1) }}
+      </div>
+
+      <!-- Tags -->
+      <div v-if="tags && tags.length" class="absolute top-10 left-2 flex flex-wrap gap-1 z-10">
+        <span
+          v-for="(tag, index) in tags"
+          :key="index"
+          class="bg-black text-white text-[10px] sm:text-xs px-2 py-0.5 font-semibold rounded"
+        >
+          {{ tag }}
+        </span>
+      </div>
     </div>
 
     <!-- Product info -->
@@ -77,20 +71,10 @@
           {{ title }}
         </h3>
 
-        <!-- Price + Rating Row -->
-        <div class="mt-1 flex items-center justify-between">
-          <div class="flex items-center space-x-1 sm:space-x-2">
-            <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
-            <span class="text-gray-900 font-semibold text-sm sm:text-base">₹{{ price }}</span>
-          </div>
-
-          <!-- Rating badge -->
-          <div v-if="avgRating > 0" class="bg-yellow-400 text-black text-xs font-semibold px-2 py-1 rounded shadow flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.946a1 1 0 00.95.69h4.148c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.286 3.946c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.784.57-1.838-.197-1.539-1.118l1.285-3.946a1 1 0 00-.364-1.118l-3.36-2.44c-.784-.57-.38-1.81.588-1.81h4.148a1 1 0 00.951-.69l1.285-3.946z" />
-            </svg>
-            {{ avgRating.toFixed(1) }}
-          </div>
+        <!-- Price Row -->
+        <div class="mt-1 flex items-center justify-start space-x-2">
+          <span v-if="mrp" class="text-gray-400 line-through text-[10px] sm:text-sm">₹{{ mrp }}</span>
+          <span class="text-gray-900 font-semibold text-sm sm:text-base">₹{{ price }}</span>
         </div>
       </div>
     </div>
@@ -102,7 +86,7 @@ import { ref, computed } from "vue"
 import { useRouter } from "#app"
 import { useCartStore } from "@/stores/cartStore"
 import { useWishlistStore } from "@/stores/wishlist"
-import { addToast } from "@/components/common/GlobalToast.vue"
+import { Heart, Tag, Star } from "lucide-vue-next"
 
 const props = defineProps({
   id: { type: [String, Number], required: true },
@@ -124,6 +108,13 @@ const animating = ref(false)
 
 const isWishlisted = computed(() => wishlist.isFavorite(props.id))
 
+const discountPercent = computed(() => {
+  if (props.mrp && props.mrp > props.price) {
+    return Math.round(((props.mrp - props.price) / props.mrp) * 100)
+  }
+  return 0
+})
+
 const goToDetail = () => {
   if (!props.productUrl) return
   if (props.productUrl.startsWith("/")) {
@@ -133,27 +124,10 @@ const goToDetail = () => {
   }
 }
 
-const addToCart = () => {
-  const productToAdd = {
-    id: props.id,
-    name: props.title,
-    price: props.price,
-    quantity: 1,
-    image: props.image,
-  }
-  cart.addToCart(productToAdd)
-  addToast('product-added', `${props.title} added to cart 🛒`)
-}
-
 const toggleWishlist = () => {
   wishlist.toggleFavorite(props.id)
   animating.value = true
   setTimeout(() => (animating.value = false), 400)
-  if (wishlist.isFavorite(props.id)) {
-    addToast('success', `${props.title} added to Wishlist ❤️`)
-  } else {
-    addToast('product-removed', `${props.title} removed from Wishlist ❌`)
-  }
 }
 </script>
 
@@ -164,4 +138,23 @@ const toggleWishlist = () => {
   100% { transform: scale(1); }
 }
 .animate-pingonce { animation: pingonce 0.4s ease-in-out; }
+
+/* Discount badge entry animation */
+@keyframes discount-entry {
+  0% { transform: scale(0.6) translateY(-5px); opacity: 0; }
+  50% { transform: scale(1.1) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.animate-discount-entry {
+  animation: discount-entry 0.6s ease-out forwards;
+}
+
+/* Rating badge fade-in */
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
 </style>

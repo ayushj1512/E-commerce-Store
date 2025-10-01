@@ -4,11 +4,7 @@
     <div v-if="loading" class="space-y-6">
       <div class="w-full h-[450px] bg-gray-200 rounded-xl animate-pulse"></div>
       <div class="flex gap-4 overflow-x-auto">
-        <div
-          v-for="n in 6"
-          :key="n"
-          class="h-40 w-40 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"
-        ></div>
+        <div v-for="n in 6" :key="n" class="h-40 w-40 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"></div>
       </div>
       <div class="space-y-4 max-w-md">
         <div class="h-8 bg-gray-200 rounded w-3/4 animate-pulse"></div>
@@ -45,97 +41,102 @@
           </div>
 
           <!-- Price -->
-          <div class="flex items-baseline gap-4 mt-2">
+          <div class="flex items-baseline gap-4 mt-2 relative">
+            <!-- Selling Price -->
             <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
-            <p
-              v-if="product.selling_price > product.real_selling_price"
-              class="text-base line-through text-gray-500"
-            >
+
+            <!-- Original Price with line-through -->
+            <p v-if="product.selling_price > product.real_selling_price" class="text-base line-through text-gray-500">
               ₹{{ product.selling_price }}
             </p>
+
+            <!-- Discount Badge -->
+            <span v-if="product.selling_price > product.real_selling_price"
+              class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-bounce"
+              :style="{ animationDuration: '0.8s' }">
+              {{ Math.round(((product.selling_price - product.real_selling_price) / product.selling_price) * 100) }}%
+              OFF
+            </span>
+
+            <!-- Rating -->
+            <div v-if="product.avg_rating && product.avg_rating > 0 && product.total_ratings > 0"
+              class="flex items-center gap-2 mt-2">
+              <!-- Stars -->
+              <div class="flex">
+                <span v-for="i in 5" :key="i" class="text-yellow-400">
+                  <i v-if="i <= Math.round(product.avg_rating)" class="fas fa-star"></i>
+                  <i v-else class="far fa-star text-gray-300"></i>
+                </span>
+              </div>
+
+              <!-- Average + total count -->
+              <span class="text-sm text-gray-600">
+                {{ product.avg_rating.toFixed(1) }} ({{ product.total_ratings }} ratings)
+              </span>
+            </div>
           </div>
 
           <!-- Wishlist + Voucher -->
           <div class="flex gap-4 mt-4 w-full items-center">
-            <button
-              @click="toggleWishlist(product.id)"
+            <button @click="toggleWishlist(product.id)"
               class="px-4 py-2 rounded-full border-2 font-medium transition-all flex items-center gap-2 whitespace-nowrap"
-              :class="
-                isWishlisted
+              :class="isWishlisted
                   ? 'bg-red-500 border-red-500 text-white hover:bg-red-600'
                   : 'bg-white border-gray-300 text-black hover:border-black hover:bg-gray-100'
-              "
-            >
-              <span v-if="isWishlisted">❤️ In Wishlist</span>
+                ">
+              <span v-if="isWishlisted">❤️ Already In Wishlist</span>
               <span v-else>🤍 Add to Wishlist</span>
             </button>
 
-           <EligibleVoucher :voucher="eligibleVoucher" />
+            <EligibleVoucher :voucher="eligibleVoucher" />
 
           </div>
 
 
 
-<!-- ✅ Size Guide Modal -->
-<!-- ✅ Size Guide Modal -->
-<SizeGuide
-  :sizes="filteredSizes"
-  :selected-size="selectedSize"
-  :show-size-chart="showSizeChart"
-  :custom-size-chart="product.customSizeChartArr"
-  @select-size="selectedSize = $event"
-  @open-size-chart="showSizeChart = true"
-  @close-size-chart="showSizeChart = false"
-/>
+          <!-- ✅ Size Guide Modal -->
+          <!-- ✅ Size Guide Modal -->
+          <SizeGuide :sizes="filteredSizes" :selected-size="selectedSize" :show-size-chart="showSizeChart"
+            :custom-size-chart="product.customSizeChartArr" @select-size="selectedSize = $event"
+            @open-size-chart="showSizeChart = true" @close-size-chart="showSizeChart = false" />
 
 
 
           <!-- Short Description -->
-          <p
-            v-if="product.description_short"
-            class="text-gray-600 leading-relaxed mt-3"
-          >
+          <p v-if="product.description_short" class="text-gray-600 leading-relaxed mt-3">
             {{ product.description_short }}
           </p>
-          <div class="flex justify-start mt-4"><PincodeCheck /></div>
+          <div class="flex justify-start mt-4">
+            <PincodeCheck />
+          </div>
 
           <!-- Buy + Cart / Notify -->
           <div class="flex flex-col sm:flex-row gap-4 mt-6 sticky top-24 z-10">
             <template v-if="requiresSizeLogic">
               <template v-if="filteredSizes.length">
-                <button
-                  @click="buyNow"
-                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition"
-                >
+                <button @click="buyNow"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
                   Buy Now
                 </button>
-                <button
-                  @click="addToCart"
-                  class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition"
-                >
+                <button @click="addToCart"
+                  class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
                   Add to Cart
                 </button>
               </template>
               <template v-else>
-                <button
-                  @click="notifyMe"
-                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md"
-                >
+                <button @click="notifyMe"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">
                   Notify Me
                 </button>
               </template>
             </template>
             <template v-else>
-              <button
-                @click="buyNow"
-                class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition"
-              >
+              <button @click="buyNow"
+                class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
                 Buy Now
               </button>
-              <button
-                @click="addToCart"
-                class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition"
-              >
+              <button @click="addToCart"
+                class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
                 Add to Cart
               </button>
             </template>
@@ -145,19 +146,10 @@
     </div>
 
     <!-- Reviews & Recommendations -->
-    <ReviewsRating
-      v-if="product && product.id"
-      :product-id="product.id"
-      class="mt-10"
-    />
+    <ReviewsRating v-if="product && product.id" :product-id="product.id" class="mt-10" />
 
     <!-- ✅ Replaced People Also Picked with component -->
-    <PeopleAlsoPicked
-      v-if="product.fbt_items?.length"
-      :items="product.fbt_items"
-      @select="goToProduct"
-      class="mt-8"
-    />
+    <PeopleAlsoPicked v-if="product.fbt_items?.length" :items="product.fbt_items" @select="goToProduct" class="mt-8" />
 
     <hot-selling />
     <TnC class="mt-10" />
@@ -221,10 +213,10 @@ const toggleWishlist = (id) => {
 
   if (isAdding) console.log(`[Wishlist] Added product ID: ${id}`);
 
-  toast?.success(
-    wishlistStore.isFavorite(id) ? "Added to Wishlist ❤️" : "Removed from Wishlist 🤍",
-    { timeout: 2000 }
-  );
+  // toast?.success(
+  //   wishlistStore.isFavorite(id) ? "Added to Wishlist ❤️" : "Removed from Wishlist 🤍",
+  //   { timeout: 2000 }
+  // );
 };
 
 // Add to cart
@@ -328,8 +320,13 @@ const fetchProduct = async () => {
       product_all_sizes: doc.product_all_sizes || [],
       customSizeChartArr: parsed.customSizeChartArr || null,
       fbt_items: (parsed.fbt || []).map((i) => ({ ...i, hover: false })),
-      categories: doc.categories || []
+      categories: doc.categories || [],
+
+      // ✅ Rating data
+      avg_rating: doc.review_stats?.avg_rating || 0,
+      total_ratings: doc.review_stats?.total_ratings || 0
     };
+
 
     recentlyViewStore.addProduct(product.value.id);
     console.log(`[Recently Viewed] Added product ID: ${product.value.id}`);

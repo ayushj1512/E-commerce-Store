@@ -4,7 +4,8 @@ import { useCookie } from '#app'
 
 export const useWishlistStore = defineStore('wishlist', {
   state: () => ({
-    favoriteProducts: [] // will store product IDs
+    favoriteProducts: [], // will store product IDs
+    lastAddedId: null     // track last added item for animation
   }),
 
   actions: {
@@ -20,9 +21,12 @@ export const useWishlistStore = defineStore('wishlist', {
       const index = this.favoriteProducts.indexOf(productId)
 
       if (index === -1) {
+        // ✅ Add product
         this.favoriteProducts.push(productId)
+        this.lastAddedId = productId // mark for animation
         console.log(`[Wishlist] Added product ID: ${productId}`)
       } else {
+        // ❌ Remove product
         this.favoriteProducts.splice(index, 1)
         console.log(`[Wishlist] Removed product ID: ${productId}`)
       }
@@ -33,10 +37,14 @@ export const useWishlistStore = defineStore('wishlist', {
       console.log('[Wishlist] Saved to cookie:', this.favoriteProducts)
     },
 
+    // Reset last added (after animation is consumed in UI)
+    clearLastAdded() {
+      this.lastAddedId = null
+    },
+
     // Check if a product is in wishlist
     isFavorite(productId) {
-      const exists = this.favoriteProducts.includes(productId)
-      return exists
+      return this.favoriteProducts.includes(productId)
     },
 
     // Return IDs as string (for API calls)

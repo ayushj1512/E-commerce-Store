@@ -43,7 +43,7 @@
         <!-- Product Info -->
         <div class="p-3 flex flex-col gap-1">
           <h3 class="font-semibold text-gray-800 text-sm md:text-base truncate" :title="product.name">{{ product.name }}</h3>
-          <p class="text-gray-900 font-bold text-sm md:text-base">₹{{ Math.round(product.price) }}</p>
+          <p class="text-gray-900 font-bold text-sm md:text-base">₹{{ product.price }}</p>
         </div>
       </div>
     </div>
@@ -57,15 +57,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useWishlistStore } from "~/stores/wishlist";
-import { useRouter } from "vue-router";
+import { ref, onMounted, watch } from "vue"
+import { useWishlistStore } from "~/stores/wishlist"
+import { useRouter } from "vue-router"
 
-const mounted = ref(false);
-const wishlist = useWishlistStore();
-const wishlistProducts = ref([]);
-const loading = ref(false);
-const router = useRouter();
+const mounted = ref(false)
+const wishlist = useWishlistStore()
+const wishlistProducts = ref([])
+const loading = ref(false)
+const router = useRouter()
 
 // Random quotes
 const quotes = [
@@ -74,12 +74,12 @@ const quotes = [
   "In order to be irreplaceable, one must always be different.",
   "Fashion is about dreaming and making other people dream.",
   "Elegance is not standing out, but being remembered."
-];
-const randomQuote = ref(quotes[0]);
+]
+const randomQuote = ref(quotes[0])
 
 // Pagination
-const perPage = ref(100);
-const page = ref(1);
+const perPage = ref(100)
+const page = ref(1)
 
 // Generate URL slug
 const createSlug = (name) => {
@@ -87,20 +87,20 @@ const createSlug = (name) => {
     .toLowerCase()
     .replace(/[^a-z0-9 ]/g, '')
     .trim()
-    .replace(/\s+/g, '-');
-};
+    .replace(/\s+/g, '-')
+}
 
 // Fetch wishlist product details
 const fetchProducts = async () => {
-  if (!wishlist.favoriteProducts.length) {
+  const validIds = wishlist.favoriteProducts.filter(id => id != null && id !== '');
+  if (!validIds.length) {
     wishlistProducts.value = [];
     return;
   }
 
   loading.value = true;
   try {
-    const ids = wishlist.favoriteProducts.join(",");
-
+    const ids = validIds.join(",");
     const res = await fetch(
       `https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=product_id:[${ids}]&filter_by=active:=1&sort_by=date_updated_unix:desc&per_page=${perPage.value}&page=${page.value}`,
       {
@@ -113,33 +113,24 @@ const fetchProducts = async () => {
     if (!res.ok) throw new Error("Failed to fetch wishlist products");
     const data = await res.json();
 
-    wishlistProducts.value = (data.hits || []).map((item) => {
+    wishlistProducts.value = (data.hits || []).map(item => {
       const p = item.document || item;
       const fallbackUrl = `/category/subcategory/${createSlug(p.name)}/${p.product_id || p.id}`;
 
-      // Parse product_data JSON if exists
       let parsedData = {};
       if (p.product_data) {
-        try {
-          parsedData = JSON.parse(p.product_data);
-        } catch (err) {
-          console.warn("Failed to parse product_data JSON", err);
-        }
+        try { parsedData = JSON.parse(p.product_data); } 
+        catch (err) { console.warn("Failed to parse product_data JSON", err); }
       }
 
-      // Determine price: discount_price > 0 ? discount_price : selling_price
-      let price = p.discount_price && Number(p.discount_price) > 0
-        ? p.discount_price
-        : p.selling_price || "N/A";
+      let price = p.discount_price && Number(p.discount_price) > 0 ? p.discount_price : p.selling_price || "N/A";
 
-      // If parsedData contains a price, use it
       if (parsedData[0] && parsedData[0].discount_price && Number(parsedData[0].discount_price) > 0) {
         price = parsedData[0].discount_price;
       } else if (parsedData[0] && parsedData[0].selling_price) {
         price = parsedData[0].selling_price;
       }
 
-      // Convert price to integer
       price = Math.round(Number(price));
 
       return {
@@ -148,7 +139,7 @@ const fetchProducts = async () => {
         price,
         image: (p.img || p.alternate_img || (parsedData.images && parsedData.images[0]?.img) || "https://via.placeholder.com/300x300"),
         product_url: p.product_url && p.product_url.length > 0 ? p.product_url : fallbackUrl
-      };
+      }
     });
   } catch (err) {
     console.error("Error fetching products:", err);
@@ -157,32 +148,33 @@ const fetchProducts = async () => {
   }
 };
 
+
 // Remove product from wishlist
 const removeFromWishlist = (id) => {
-  wishlist.toggleFavorite(id);
-  wishlistProducts.value = wishlistProducts.value.filter((p) => p.id !== id);
-};
+  wishlist.toggleFavorite(id)
+  wishlistProducts.value = wishlistProducts.value.filter((p) => p.id !== id)
+}
 
 // Navigate to product page
 const goToProduct = (product) => {
-  if (!product) return;
-  router.push(product.product_url);
-};
+  if (!product) return
+  router.push(product.product_url).catch(() => {})
+}
 
 // On mounted
 onMounted(() => {
-  mounted.value = true;
-  wishlist.loadWishlist();
-  randomQuote.value = quotes[Math.floor(Math.random() * quotes.length)];
-  fetchProducts();
-});
+  mounted.value = true
+  wishlist.loadWishlist()
+  randomQuote.value = quotes[Math.floor(Math.random() * quotes.length)]
+  fetchProducts()
+})
 
 // Re-fetch on wishlist change
 watch(
   () => wishlist.favoriteProducts,
   () => fetchProducts(),
   { deep: true }
-);
+)
 </script>
 
 <style scoped>
