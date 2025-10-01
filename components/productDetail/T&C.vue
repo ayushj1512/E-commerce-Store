@@ -3,7 +3,6 @@
     <div class="w-full max-w-3xl space-y-6">
       <!-- Delivery Information Card -->
       <div class="shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        <!-- Heading always black -->
         <button
           @click="toggleCard('delivery')"
           class="w-full flex justify-between items-center px-6 py-5 bg-black text-white focus:outline-none rounded-t-xl transition-colors duration-300"
@@ -21,21 +20,19 @@
           />
         </button>
 
-        <!-- Expanded content white -->
         <transition name="smooth-accordion">
           <div
             v-if="openCard === 'delivery'"
             class="px-6 py-5 text-black text-sm sm:text-base leading-relaxed bg-white border-t border-gray-200 rounded-b-xl"
           >
-            Products are generally dispatched in <span class="font-semibold">3-21 days</span> depending upon the product you have ordered.
-            <span class="font-medium">We guarantee that our products are worth the wait!</span> You will surely be amazed by the quality and the design that we offer at our price.
+            Our products are usually dispatched within <span class="font-semibold">3–21 days</span>, depending on availability. 
+            <span class="font-medium">We ensure that every item is worth the wait, delivering quality and design that will delight you!</span>
           </div>
         </transition>
       </div>
 
       <!-- Returns & Exchange Card -->
       <div class="shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        <!-- Heading always black -->
         <button
           @click="toggleCard('returns')"
           class="w-full flex justify-between items-center px-6 py-5 bg-black text-white focus:outline-none rounded-t-xl transition-colors duration-300"
@@ -53,14 +50,44 @@
           />
         </button>
 
-        <!-- Expanded content white -->
         <transition name="smooth-accordion">
           <div
             v-if="openCard === 'returns'"
             class="px-6 py-5 text-black text-sm sm:text-base leading-relaxed bg-white border-t border-gray-200 rounded-b-xl"
           >
-            <span class="font-semibold">Size exchange is free.</span> We do charge a fee of <span class="font-semibold">Rs 100</span> in case you want to change the ordered product with a different product. 
-            <a @click.prevent="navigateToReturns" class="text-black underline cursor-pointer ml-1">Click here for details.</a>
+            <span class="font-semibold">Size exchanges are free of charge.</span> 
+            If you wish to exchange your order for a different product, a nominal fee of <span class="font-semibold">₹100</span> applies. 
+            <a @click.prevent="navigateToReturns" class="text-black underline cursor-pointer ml-1">Click here for full details.</a>
+          </div>
+        </transition>
+      </div>
+
+      <!-- Disclaimer Card -->
+      <div class="shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <button
+          @click="toggleCard('disclaimer')"
+          class="w-full flex justify-between items-center px-6 py-5 bg-black text-white focus:outline-none rounded-t-xl transition-colors duration-300"
+        >
+          <div class="flex items-center gap-3">
+            <Shield
+              class="w-5 h-5 transition-colors duration-300"
+              :class="openCard === 'disclaimer' ? 'text-green-500' : ''"
+            />
+            <span class="text-base sm:text-lg font-semibold">Disclaimer</span>
+          </div>
+          <ChevronDown
+            class="w-5 h-5 transition-transform duration-500 ease-in-out"
+            :class="openCard === 'disclaimer' ? 'rotate-180' : ''"
+          />
+        </button>
+
+        <transition name="smooth-accordion">
+          <div
+            v-if="openCard === 'disclaimer'"
+            class="px-6 py-5 text-black text-sm sm:text-base leading-relaxed bg-white border-t border-gray-200 rounded-b-xl"
+          >
+            Please note that the actual color and appearance of products may slightly differ due to lighting conditions, photographic settings, or your device’s display. 
+            We make every effort to represent each product as accurately as possible for your convenience.
           </div>
         </transition>
       </div>
@@ -71,7 +98,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { Package, RefreshCcw, ChevronDown } from "lucide-vue-next";
+import { Package, RefreshCcw, ChevronDown, Shield } from "lucide-vue-next";
 
 const openCard = ref(null);
 const router = useRouter();

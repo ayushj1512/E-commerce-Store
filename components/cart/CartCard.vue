@@ -8,7 +8,7 @@
         'px-4 py-2 border-b rounded-t-2xl font-medium text-sm flex flex-col sm:flex-row items-center justify-between gap-2 transition-all duration-300',
         v.remainingPerItem[item._key] > 0
           ? 'bg-black text-white border-gray-700'
-          : 'bg-green-400 text-white border-green-500 shadow-md'
+          : 'bg-green-700 text-white border-green-500 shadow-md'
       ]"
     >
       <div class="flex items-center gap-2">

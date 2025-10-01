@@ -67,18 +67,17 @@
         <div
           v-for="product in paginatedProducts"
           :key="product.id"
-          class="cursor-pointer relative"
+          class="cursor-pointer relative transform transition hover:scale-105"
           @click="goToProduct(product)"
         >
           <ProductCard
             :id="product.id"
             :title="product.name"
-            :image="product.images?.[0]?.bigImg || product.images?.[0]?.img || product.img"
-            :hoverImage="product.images?.[1]?.bigImg || product.images?.[1]?.img"
-            :price="product.selling_price"
-            :mrp="product.mrp"
-            :tags="product.tags || []"
-            :avgRating="product.avgRating || 0"
+            :image="product.images[0]?.bigImg || product.images[0]?.img || '/fallback.jpg'"
+            :hoverImage="product.images[1]?.bigImg || product.images[1]?.img || product.images[0]?.bigImg || product.images[0]?.img || '/fallback.jpg'"
+            :price="product.actual_selling_price"
+            :mrp="product.selling_price"
+            :avgRating="0"
             :sizes="product.sizes || []"
             :productUrl="product.productUrl || ''"
           />
@@ -118,6 +117,8 @@ import ProductCard from "@/components/common/ProductCard.vue";
 
 const router = useRouter();
 const recentlyViewStore = useRecentlyViewStore();
+
+// Load from cookie immediately
 recentlyViewStore.loadRecentlyViewed();
 
 const sortBy = ref("latest");
@@ -137,11 +138,19 @@ const setSort = (value) => { sortBy.value = value; dropdownOpen.value = false; c
 
 const recentProducts = ref([]);
 
+// Fetch products using store's getProducts
 const fetchRecentProducts = async () => {
   loading.value = true;
   try {
     const products = await recentlyViewStore.getProducts();
-    recentProducts.value = products || [];
+
+    // Normalize images to always have at least 2 items
+    recentProducts.value = (products || []).map(p => {
+      const images = p.images || [];
+      if (images.length === 1) images.push(images[0]);
+      return { ...p, images };
+    });
+
   } catch (err) {
     recentProducts.value = [];
     console.error("Error fetching recently viewed products:", err);
@@ -150,12 +159,16 @@ const fetchRecentProducts = async () => {
   }
 };
 
+// Computed: sorted and paginated products
 const sortedProducts = computed(() => {
   const products = [...recentProducts.value];
   switch (sortBy.value) {
-    case "priceLowHigh": return products.sort((a, b) => a.selling_price - b.selling_price);
-    case "priceHighLow": return products.sort((a, b) => b.selling_price - a.selling_price);
-    default: return products;
+    case "priceLowHigh":
+      return products.sort((a, b) => (a.actual_selling_price || 0) - (b.actual_selling_price || 0));
+    case "priceHighLow":
+      return products.sort((a, b) => (b.actual_selling_price || 0) - (a.actual_selling_price || 0));
+    default:
+      return products;
   }
 });
 
@@ -168,11 +181,15 @@ const paginatedProducts = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
 const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
 
+// Watch for store changes so products update immediately
 watch(() => recentlyViewStore.recentlyViewed, fetchRecentProducts, { deep: true });
+
+// Fetch products on mount
 onMounted(fetchRecentProducts);
 
+// Navigate to product detail
 const goToProduct = (product) => {
-  const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const slug = (product.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   router.push(`/parent/child/${slug}/${product.id}`).catch(() => {});
 };
 </script>

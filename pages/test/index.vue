@@ -1,115 +1,128 @@
 <template>
-  <div>
-    <!-- Sort By Dropdown -->
-    <div class="mb-4 flex justify-end px-5 py-6">
-      <label class="mr-2 font-medium text-gray-700">Sort by:</label>
-      <select v-model="sortBy" class="border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-black">
+  <div class="bg-white text-black min-h-screen p-4 md:p-8">
+    <h1 class="text-2xl font-semibold mb-6">Test Products Page</h1>
+
+    <!-- Sorting -->
+    <div class="flex gap-4 mb-4 items-center">
+      <label>Sort by:</label>
+      <select v-model="selectedSort" class="border rounded px-2 py-1">
         <option value="default">Default</option>
-        <option value="priceAsc">Price: Low to High</option>
-        <option value="priceDesc">Price: High to Low</option>
-        <option value="ratingDesc">Rating: High to Low</option>
+        <option value="lowtohigh">Price: Low to High</option>
+        <option value="hightolow">Price: High to Low</option>
+        <option value="latest">Newest</option>
+        <option value="rating">Rating</option>
       </select>
     </div>
 
-    <!-- Product Grid with Transition -->
-    <transition-group
-      name="fade-scale"
-      tag="div"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    <!-- Products Grid (dynamic responsive with min 2 / max 7 columns) -->
+    <div
+      ref="gridContainer"
+      class="grid gap-6 mt-6"
+      :style="{
+        gridTemplateColumns: `repeat(${columns}, 1fr)`
+      }"
     >
       <ProductCard
         v-for="product in sortedProducts"
         :key="product.id"
         :id="product.id"
-        :title="product.title"
-        :image="product.image"
-        :price="product.price"
-        :mrp="product.mrp"
-        :tags="product.tags"
-        :sizes="product.sizes"
-        :avgRating="Number(product.avgRating)"
-        :productUrl="product.productUrl"
+        :title="product.name"
+        :image="product.img"
+        :hoverImage="product.alternate_img"
+        :price="product.discount_price || product.selling_price"
+        :avgRating="product.avg_rating"
       />
-    </transition-group>
+    </div>
 
-    <!-- Pagination Controls -->
-    <div class="mt-4 flex justify-center">
-      <button
-        @click="currentPage = Math.max(currentPage - 1, 1)"
-        :disabled="currentPage === 1"
-        class="px-4 py-2 bg-gray-300 rounded-l disabled:opacity-50"
-      >
-        Prev
-      </button>
-      <span class="px-4 py-2 bg-gray-100">
-        Page {{ currentPage }} of {{ totalPages }}
-      </span>
-      <button
-        @click="currentPage = Math.min(currentPage + 1, totalPages)"
-        :disabled="currentPage === totalPages"
-        class="px-4 py-2 bg-gray-300 rounded-r disabled:opacity-50"
-      >
-        Next
-      </button>
+    <div v-if="!products.length" class="text-center py-10 text-gray-500">
+      Loading or no products found...
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import ProductCard from '@/components/common/ProductCard.vue'; // Adjust the path as necessary
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import ProductCard from "@/components/common/ProductCard.vue";
 
-const products = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  title: `Product ${i + 1}`,
-  image: i % 3 === 0
-    ? 'https://i.pinimg.com/736x/67/9e/b7/679eb7580d6c6df14f3c6319719897ab.jpg'
-    : i % 3 === 1
-      ? 'https://i.pinimg.com/736x/17/ff/9b/17ff9bc6971f2c74c1c176a94e8811b3.jpg'
-      : 'https://i.pinimg.com/736x/bd/d4/21/bdd42190568e47444a35baf5c3ea7670.jpg',
-  price: (i + 1) * 100,
-  mrp: (i + 1) * 120,
-  tags: ['New', 'Sale'],
-  sizes: ['S', 'M', 'L'],
-  avgRating: Number((Math.random() * 5).toFixed(1)),
-  productUrl: `/product/${i + 1}`,
-}));
+const API_URL =
+  "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=categories%3A%3D128&filter_by=active%3A%3D1&per_page=250&page=1";
+const API_KEY = "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx";
 
-const itemsPerPage = 8;
-const currentPage = ref(1);
-const sortBy = ref('default');
+// --- State ---
+const products = ref([]);
+const selectedSort = ref("default");
+const columns = ref(2);
+const gridContainer = ref(null);
 
-// Pagination
-const totalPages = computed(() => Math.ceil(products.length / itemsPerPage));
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return products.slice(start, end);
+// --- Responsive Column Calculation ---
+const calculateColumns = () => {
+  if (!gridContainer.value) return;
+  const containerWidth = gridContainer.value.clientWidth;
+  const minColWidth = 180; // minimum column width in px
+  const maxCols = 7;
+  const minCols = 2;
+  let fitCols = Math.floor(containerWidth / minColWidth);
+  fitCols = Math.max(minCols, Math.min(maxCols, fitCols));
+  columns.value = fitCols;
+};
+
+// --- Fetch Products ---
+const fetchProducts = async () => {
+  try {
+    const res = await fetch(API_URL, {
+      headers: { "x-typesense-api-key": API_KEY },
+    });
+    const data = await res.json();
+
+    products.value = data.hits.map((hit) => {
+      const doc = hit.document;
+      return {
+        id: doc.id,
+        name: doc.name,
+        img: doc.img,
+        alternate_img: doc.alternate_img,
+        selling_price: doc.selling_price,
+        discount_price: doc.discount_price,
+        avg_rating: doc.avg_rating ?? 0,
+        raw: doc,
+      };
+    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+  }
+};
+
+// --- Sorting ---
+const sortedProducts = computed(() => {
+  const arr = [...products.value];
+  switch (selectedSort.value) {
+    case "lowtohigh":
+      return arr.sort((a, b) => a.selling_price - b.selling_price);
+    case "hightolow":
+      return arr.sort((a, b) => b.selling_price - a.selling_price);
+    case "latest":
+      return arr.sort(
+        (a, b) => new Date(b.raw.date_added) - new Date(a.raw.date_added)
+      );
+    case "rating":
+      return arr.sort((a, b) => b.avg_rating - a.avg_rating);
+    default:
+      return arr;
+  }
 });
 
-// Sorting
-const sortedProducts = computed(() => {
-  let sorted = [...paginatedProducts.value];
-  if (sortBy.value === 'priceAsc') {
-    sorted.sort((a, b) => a.price - b.price);
-  } else if (sortBy.value === 'priceDesc') {
-    sorted.sort((a, b) => b.price - a.price);
-  } else if (sortBy.value === 'ratingDesc') {
-    sorted.sort((a, b) => b.avgRating - a.avgRating);
-  }
-  return sorted;
+// --- Lifecycle ---
+onMounted(() => {
+  fetchProducts();
+  calculateColumns();
+  window.addEventListener("resize", calculateColumns);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", calculateColumns);
 });
 </script>
 
 <style scoped>
-/* Transition-group animations */
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
+/* Optional: add hover effect for card */
 </style>
