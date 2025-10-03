@@ -59,10 +59,12 @@ export const ProductDetailHotSelling: typeof import("../components/productDetail
 export const ProductDetailImageGallery: typeof import("../components/productDetail/ImageGallery.vue")['default']
 export const ProductDetailSizeGuide: typeof import("../components/productDetail/SizeGuide.vue")['default']
 export const ProductDetailT&C: typeof import("../components/productDetail/T&C.vue")['default']
+export const ProductDetailWishlistButton: typeof import("../components/productDetail/WishlistButton.vue")['default']
 export const ProductDetailPincode: typeof import("../components/productDetail/pincode.vue")['default']
 export const ProductDetailReviews&rating: typeof import("../components/productDetail/reviews&rating.vue")['default']
 export const ProfileAddressCard: typeof import("../components/profile/AddressCard.vue")['default']
 export const ProfilePastOrders: typeof import("../components/profile/PastOrders.vue")['default']
+export const ProfileRecentlyViewed: typeof import("../components/profile/ProfileRecentlyViewed.vue")['default']
 export const ProfileSavedAddresses: typeof import("../components/profile/SavedAddresses.vue")['default']
 export const SearchNoResults: typeof import("../components/search/NoResults.vue")['default']
 export const NuxtWelcome: typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
@@ -134,10 +136,12 @@ export const LazyProductDetailHotSelling: LazyComponent<typeof import("../compon
 export const LazyProductDetailImageGallery: LazyComponent<typeof import("../components/productDetail/ImageGallery.vue")['default']>
 export const LazyProductDetailSizeGuide: LazyComponent<typeof import("../components/productDetail/SizeGuide.vue")['default']>
 export const LazyProductDetailT&C: LazyComponent<typeof import("../components/productDetail/T&C.vue")['default']>
+export const LazyProductDetailWishlistButton: LazyComponent<typeof import("../components/productDetail/WishlistButton.vue")['default']>
 export const LazyProductDetailPincode: LazyComponent<typeof import("../components/productDetail/pincode.vue")['default']>
 export const LazyProductDetailReviews&rating: LazyComponent<typeof import("../components/productDetail/reviews&rating.vue")['default']>
 export const LazyProfileAddressCard: LazyComponent<typeof import("../components/profile/AddressCard.vue")['default']>
 export const LazyProfilePastOrders: LazyComponent<typeof import("../components/profile/PastOrders.vue")['default']>
+export const LazyProfileRecentlyViewed: LazyComponent<typeof import("../components/profile/ProfileRecentlyViewed.vue")['default']>
 export const LazyProfileSavedAddresses: LazyComponent<typeof import("../components/profile/SavedAddresses.vue")['default']>
 export const LazySearchNoResults: LazyComponent<typeof import("../components/search/NoResults.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>

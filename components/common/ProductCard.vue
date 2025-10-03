@@ -29,6 +29,7 @@
         class="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
         @mouseover="hoverImage && (currentImage = hoverImage)"
         @mouseleave="currentImage = image"
+        loading="lazy"
       />
 
       <!-- Minimal Discount Badge -->

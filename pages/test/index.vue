@@ -1,128 +1,98 @@
 <template>
-  <div class="bg-white text-black min-h-screen p-4 md:p-8">
-    <h1 class="text-2xl font-semibold mb-6">Test Products Page</h1>
+  <div class="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+    <h1 class="text-3xl font-bold mb-12 text-center text-black">Voucher / Coupon Preview</h1>
 
-    <!-- Sorting -->
-    <div class="flex gap-4 mb-4 items-center">
-      <label>Sort by:</label>
-      <select v-model="selectedSort" class="border rounded px-2 py-1">
-        <option value="default">Default</option>
-        <option value="lowtohigh">Price: Low to High</option>
-        <option value="hightolow">Price: High to Low</option>
-        <option value="latest">Newest</option>
-        <option value="rating">Rating</option>
-      </select>
-    </div>
+    <!-- Coupon -->
+    <transition name="fade-scale">
+      <div
+        v-if="voucher"
+        class="relative w-full max-w-md rounded-xl overflow-hidden shadow-2xl border border-white transform transition-all duration-500 hover:scale-105 hover:shadow-2xl px-8 py-6"
+        style="background: radial-gradient(circle at top left, #111 0%, #000 100%);"
+      >
+        <!-- Top striped border (thinner) -->
+        <div
+          class="absolute top-0 left-0 w-full"
+          style="height: 10px; background: repeating-linear-gradient(45deg, #fff, #fff 4px, #000 4px, #000 8px);"
+        ></div>
 
-    <!-- Products Grid (dynamic responsive with min 2 / max 7 columns) -->
-    <div
-      ref="gridContainer"
-      class="grid gap-6 mt-6"
-      :style="{
-        gridTemplateColumns: `repeat(${columns}, 1fr)`
-      }"
-    >
-      <ProductCard
-        v-for="product in sortedProducts"
-        :key="product.id"
-        :id="product.id"
-        :title="product.name"
-        :image="product.img"
-        :hoverImage="product.alternate_img"
-        :price="product.discount_price || product.selling_price"
-        :avgRating="product.avg_rating"
-      />
-    </div>
+        <!-- Bottom striped border (thinner) -->
+        <div
+          class="absolute bottom-0 left-0 w-full"
+          style="height: 10px; background: repeating-linear-gradient(45deg, #fff, #fff 4px, #000 4px, #000 8px);"
+        ></div>
 
-    <div v-if="!products.length" class="text-center py-10 text-gray-500">
-      Loading or no products found...
-    </div>
+        <!-- Soft glow behind the card -->
+        <div class="absolute inset-0 rounded-xl bg-white opacity-5 blur-3xl animate-glow"></div>
+
+        <!-- Coupon content -->
+        <div class="flex flex-col items-center justify-center text-center z-10 text-white">
+          <h2 class="text-xl font-bold uppercase tracking-wider animate-pop relative">
+            {{ voucher.category_name }}
+          </h2>
+        </div>
+
+        <!-- Sparkles -->
+        <div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+          <span 
+            v-for="i in 60" 
+            :key="i" 
+            class="absolute bg-white rounded-full animate-sparkle" 
+            :style="getRandomPosition(i)">
+          </span>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import ProductCard from "@/components/common/ProductCard.vue";
+import { ref } from "vue";
 
-const API_URL =
-  "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=categories%3A%3D128&filter_by=active%3A%3D1&per_page=250&page=1";
-const API_KEY = "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx";
+const voucher = ref({
+  category_name: "Category 1 Voucher"
+});
 
-// --- State ---
-const products = ref([]);
-const selectedSort = ref("default");
-const columns = ref(2);
-const gridContainer = ref(null);
-
-// --- Responsive Column Calculation ---
-const calculateColumns = () => {
-  if (!gridContainer.value) return;
-  const containerWidth = gridContainer.value.clientWidth;
-  const minColWidth = 180; // minimum column width in px
-  const maxCols = 7;
-  const minCols = 2;
-  let fitCols = Math.floor(containerWidth / minColWidth);
-  fitCols = Math.max(minCols, Math.min(maxCols, fitCols));
-  columns.value = fitCols;
+// Sparkle positions and variations
+const getRandomPosition = (index) => {
+  const top = Math.random() * 100 + '%';
+  const left = Math.random() * 100 + '%';
+  const size = Math.random() * 5 + 1 + 'px';
+  const delay = Math.random() * 2 + 's';
+  const duration = Math.random() * 2 + 1.5 + 's';
+  const opacity = Math.random() * 0.6 + 0.4;
+  return { top, left, width: size, height: size, animationDelay: delay, animationDuration: duration, opacity };
 };
-
-// --- Fetch Products ---
-const fetchProducts = async () => {
-  try {
-    const res = await fetch(API_URL, {
-      headers: { "x-typesense-api-key": API_KEY },
-    });
-    const data = await res.json();
-
-    products.value = data.hits.map((hit) => {
-      const doc = hit.document;
-      return {
-        id: doc.id,
-        name: doc.name,
-        img: doc.img,
-        alternate_img: doc.alternate_img,
-        selling_price: doc.selling_price,
-        discount_price: doc.discount_price,
-        avg_rating: doc.avg_rating ?? 0,
-        raw: doc,
-      };
-    });
-  } catch (err) {
-    console.error("Error fetching products:", err);
-  }
-};
-
-// --- Sorting ---
-const sortedProducts = computed(() => {
-  const arr = [...products.value];
-  switch (selectedSort.value) {
-    case "lowtohigh":
-      return arr.sort((a, b) => a.selling_price - b.selling_price);
-    case "hightolow":
-      return arr.sort((a, b) => b.selling_price - a.selling_price);
-    case "latest":
-      return arr.sort(
-        (a, b) => new Date(b.raw.date_added) - new Date(a.raw.date_added)
-      );
-    case "rating":
-      return arr.sort((a, b) => b.avg_rating - a.avg_rating);
-    default:
-      return arr;
-  }
-});
-
-// --- Lifecycle ---
-onMounted(() => {
-  fetchProducts();
-  calculateColumns();
-  window.addEventListener("resize", calculateColumns);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", calculateColumns);
-});
 </script>
 
 <style scoped>
-/* Optional: add hover effect for card */
+/* Coupon appear transition */
+.fade-scale-enter-active { transition: all 0.4s ease; }
+.fade-scale-leave-active { transition: all 0.3s ease; }
+.fade-scale-enter-from { opacity: 0; transform: scale(0.95); }
+.fade-scale-enter-to { opacity: 1; transform: scale(1); }
+.fade-scale-leave-from { opacity: 1; transform: scale(1); }
+.fade-scale-leave-to { opacity: 0; transform: scale(0.95); }
+
+/* Pop animation for text */
+@keyframes pop { 
+  0% { transform: scale(0.95); opacity: 0; } 
+  50% { transform: scale(1.05); opacity: 1; } 
+  100% { transform: scale(1); opacity: 1; } 
+}
+.animate-pop { animation: pop 0.6s ease-out; }
+
+/* Sparkle animation */
+@keyframes sparkle { 
+  0% { opacity: 0; transform: scale(0); } 
+  50% { opacity: 1; transform: scale(1.5); } 
+  100% { opacity: 0; transform: scale(0); } 
+}
+.animate-sparkle { animation-name: sparkle; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+
+/* Glow animation behind card */
+@keyframes glow {
+  0%, 100% { transform: scale(1); opacity: 0.05; }
+  50% { transform: scale(1.03); opacity: 0.15; }
+}
+.animate-glow { animation: glow 3s ease-in-out infinite; }
 </style>

@@ -16,36 +16,17 @@
 
     <!-- Wishlist Grid -->
     <div v-if="mounted && !loading && wishlistProducts.length" class="mt-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-      <div
+      <ProductCard
         v-for="product in wishlistProducts"
         :key="product.id"
-        class="bg-white rounded-lg shadow-md overflow-hidden relative transform transition hover:scale-105 duration-300 cursor-pointer group"
-        @click="goToProduct(product)"
-      >
-        <!-- Remove icon -->
-        <button 
-          @click.stop="removeFromWishlist(product.id)" 
-          class="absolute top-2 right-2 bg-white hover:bg-red-500 text-red-500 hover:text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow-md z-10 transition"
-          title="Remove from wishlist"
-        >
-          ✕
-        </button>
-
-        <!-- Product Image -->
-        <div class="w-full h-48 sm:h-56 md:h-64 lg:h-56 overflow-hidden">
-          <img
-            :src="product.image"
-            alt="Product Image"
-            class="w-full h-full object-cover transition duration-300 group-hover:scale-110"
-          />
-        </div>
-
-        <!-- Product Info -->
-        <div class="p-3 flex flex-col gap-1">
-          <h3 class="font-semibold text-gray-800 text-sm md:text-base truncate" :title="product.name">{{ product.name }}</h3>
-          <p class="text-gray-900 font-bold text-sm md:text-base">₹{{ product.price }}</p>
-        </div>
-      </div>
+        :id="product.id"
+        :title="product.name"
+        :image="product.image"
+        :price="product.price"
+        :product-url="product.product_url"
+        @card-click="goToProduct(product)"
+  
+      />
     </div>
 
     <!-- Empty State -->
@@ -60,6 +41,7 @@
 import { ref, onMounted, watch } from "vue"
 import { useWishlistStore } from "~/stores/wishlist"
 import { useRouter } from "vue-router"
+import ProductCard from "@/components/common/ProductCard.vue"
 
 const mounted = ref(false)
 const wishlist = useWishlistStore()
@@ -147,7 +129,6 @@ const fetchProducts = async () => {
     loading.value = false;
   }
 };
-
 
 // Remove product from wishlist
 const removeFromWishlist = (id) => {

@@ -1,34 +1,34 @@
 <template>
-  <div v-if="recentProducts.length > 0" class="space-y-6">
+  <div v-if="recentProducts.length > 0" class="space-y-4 sm:space-y-6 px-2 sm:px-4">
     <!-- Heading -->
-    <div class="w-full bg-black py-4 rounded-lg shadow-md">
-      <h2 class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold tracking-wide">
+    <div class="w-full bg-black py-3 sm:py-4 rounded-lg shadow-md">
+      <h2 class="text-white text-center text-base sm:text-lg md:text-xl font-bold tracking-wide">
         YOUR RECENT PICK AWAITS
       </h2>
     </div>
 
     <!-- Loading Shimmer -->
-    <div v-if="loading" class="flex gap-5 overflow-x-auto px-1 hide-scrollbar py-2">
+    <div v-if="loading" class="flex gap-3 sm:gap-4 overflow-x-auto px-1 hide-scrollbar py-2">
       <div
         v-for="n in 5"
         :key="n"
-        class="flex-shrink-0 w-48 md:w-52 bg-gray-200 rounded-xl p-3 animate-pulse"
+        class="flex-shrink-0 w-36 sm:w-44 md:w-48 bg-gray-200 rounded-xl p-2 sm:p-3 animate-pulse"
       >
-        <div class="w-full h-44 md:h-48 bg-gray-300 rounded-lg mb-3"></div>
-        <div class="h-4 bg-gray-300 rounded mb-2"></div>
-        <div class="h-4 bg-gray-300 rounded w-1/2"></div>
+        <div class="w-full h-36 sm:h-40 md:h-44 bg-gray-300 rounded-lg mb-2 sm:mb-3"></div>
+        <div class="h-3 sm:h-4 bg-gray-300 rounded mb-1 sm:mb-2"></div>
+        <div class="h-3 sm:h-4 bg-gray-300 rounded w-1/2"></div>
       </div>
     </div>
 
     <!-- Products Row -->
-    <div v-else class="flex gap-5 overflow-x-auto px-1 hide-scrollbar py-2">
+    <div v-else class="flex gap-3 sm:gap-4 overflow-x-auto px-1 hide-scrollbar py-2">
       <div
         v-for="(p, index) in displayedProducts"
         :key="index"
-        class="flex-shrink-0 w-48 md:w-52 bg-white shadow-md rounded-xl p-3 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-transform duration-300 transform relative"
+        class="flex-shrink-0 w-36 sm:w-44 md:w-48 bg-white shadow-md rounded-xl p-2 sm:p-3 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-transform duration-300 transform relative"
         @click="p.viewAll ? goToViewAll() : goToProduct(p)"
       >
-        <div class="w-full h-44 md:h-48 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
+        <div class="w-full h-36 sm:h-40 md:h-44 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
           <img
             v-if="!p.viewAll"
             :src="p.images[0]?.bigImg || p.images[0]?.img || ''"
@@ -38,15 +38,15 @@
           />
           <div
             v-else
-            class="flex items-center justify-center w-full h-full bg-gray-200 rounded-lg font-semibold text-gray-700 text-center text-base md:text-lg"
+            class="flex items-center justify-center w-full h-full bg-gray-200 rounded-lg font-semibold text-gray-700 text-center text-sm sm:text-base md:text-lg"
           >
             View All
           </div>
         </div>
-        <p v-if="!p.viewAll" class="text-sm md:text-base font-medium mt-3 truncate text-center">
+        <p v-if="!p.viewAll" class="text-xs sm:text-sm md:text-base font-medium mt-2 sm:mt-3 truncate text-center">
           {{ p.name }}
         </p>
-        <p v-if="!p.viewAll" class="text-sm md:text-base font-semibold mt-1 text-center">
+        <p v-if="!p.viewAll" class="text-xs sm:text-sm md:text-base font-semibold mt-1 text-center">
           ₹{{ p.selling_price }}
         </p>
       </div>
@@ -78,10 +78,13 @@ const fetchRecentProducts = async () => {
   }
 };
 
-// Display products + last "View All" card
-const displayedProducts = computed(() =>
-  recentProducts.value.length > 0 ? [...recentProducts.value, { viewAll: true }] : []
-);
+// Display products + last "View All" card only if 10 or more products
+const displayedProducts = computed(() => {
+  if (recentProducts.value.length >= 8) {
+    return [...recentProducts.value, { viewAll: true }];
+  }
+  return [...recentProducts.value];
+});
 
 // Navigate to individual product
 const goToProduct = (product) => {
@@ -104,7 +107,7 @@ watch(() => recentlyViewStore.recentlyViewed, fetchRecentProducts, { deep: true 
 onMounted(fetchRecentProducts);
 </script>
 
-<style>
+<style scoped>
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

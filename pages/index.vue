@@ -48,7 +48,7 @@
       </div>
       
       <!-- Trending Products -->
-         <div class="py-4">
+         <div class="py-0">
       <TrendingProducts />
          </div>
 

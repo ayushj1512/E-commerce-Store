@@ -40,57 +40,62 @@
             <ShareButton />
           </div>
 
-          <!-- Price -->
-          <div class="flex items-baseline gap-4 mt-2 relative">
-            <!-- Selling Price -->
-            <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
+          <!-- Price Section -->
+<div class="mt-2">
+  <div class="flex items-baseline gap-4 relative">
+    <!-- Selling Price -->
+    <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
 
-            <!-- Original Price with line-through -->
-            <p v-if="product.selling_price > product.real_selling_price" class="text-base line-through text-gray-500">
-              ₹{{ product.selling_price }}
-            </p>
+    <!-- Original Price with line-through -->
+    <p
+      v-if="product.selling_price > product.real_selling_price"
+      class="text-base line-through text-gray-500"
+    >
+      ₹{{ product.selling_price }}
+    </p>
 
-            <!-- Discount Badge -->
-            <span v-if="product.selling_price > product.real_selling_price"
-              class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-bounce"
-              :style="{ animationDuration: '0.8s' }">
-              {{ Math.round(((product.selling_price - product.real_selling_price) / product.selling_price) * 100) }}%
-              OFF
-            </span>
+    <!-- Discount Badge -->
+    <span
+      v-if="product.selling_price > product.real_selling_price"
+      class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-bounce"
+      :style="{ animationDuration: '0.8s' }"
+    >
+      {{ Math.round(((product.selling_price - product.real_selling_price) / product.selling_price) * 100) }}% OFF
+    </span>
+  </div>
 
-            <!-- Rating -->
-            <div v-if="product.avg_rating && product.avg_rating > 0 && product.total_ratings > 0"
-              class="flex items-center gap-2 mt-2">
-              <!-- Stars -->
-              <div class="flex">
-                <span v-for="i in 5" :key="i" class="text-yellow-400">
-                  <i v-if="i <= Math.round(product.avg_rating)" class="fas fa-star"></i>
-                  <i v-else class="far fa-star text-gray-300"></i>
-                </span>
-              </div>
+  <!-- ⭐ Rating moved below -->
+  <div
+    v-if="product.avg_rating && product.avg_rating > 0 && product.total_ratings > 0"
+    class="flex items-center gap-2 mt-2"
+  >
+    <!-- Stars -->
+    <div class="flex">
+      <span v-for="i in 5" :key="i" class="text-yellow-400">
+        <i v-if="i <= Math.round(product.avg_rating)" class="fas fa-star"></i>
+        <i v-else class="far fa-star text-gray-300"></i>
+      </span>
+    </div>
 
-              <!-- Average + total count -->
-              <span class="text-sm text-gray-600">
-                {{ product.avg_rating.toFixed(1) }} ({{ product.total_ratings }} ratings)
-              </span>
-            </div>
-          </div>
+    <!-- Average + total count -->
+    <span class="text-sm text-gray-600">
+      {{ product.avg_rating.toFixed(1) }} ({{ product.total_ratings }} ratings)
+    </span>
+  </div>
+</div>
+
 
           <!-- Wishlist + Voucher -->
-          <div class="flex gap-4 mt-4 w-full items-center">
-            <button @click="toggleWishlist(product.id)"
-              class="px-4 py-2 rounded-full border-2 font-medium transition-all flex items-center gap-2 whitespace-nowrap"
-              :class="isWishlisted
-                  ? 'bg-red-500 border-red-500 text-white hover:bg-red-600'
-                  : 'bg-white border-gray-300 text-black hover:border-black hover:bg-gray-100'
-                ">
-              <span v-if="isWishlisted">❤️ Already In Wishlist</span>
-              <span v-else>🤍 Add to Wishlist</span>
-            </button>
+     <div class="flex gap-4 mt-4 w-full items-center">
+  <!-- ✅ Wishlist Button Component -->
+  <WishlistButton
+    :isWishlisted="isWishlisted"
+    @toggle="toggleWishlist(product.id)"
+  />
 
-            <EligibleVoucher :voucher="eligibleVoucher" />
-
-          </div>
+  <!-- Eligible Voucher -->
+  <EligibleVoucher :voucher="eligibleVoucher" />
+</div>
 
 
 
@@ -176,6 +181,7 @@ import PeopleAlsoPicked from "@/components/productDetail/FrequentlyBoughtTogethe
 import SizeGuide from "@/components/productDetail/SizeGuide.vue";
 import EligibleVoucher from "@/components/productDetail/EligibleVoucher.vue";
 import HotSelling from "@/components/productDetail/HotSelling.vue"
+import WishlistButton from '@/components/productDetail/WishlistButton.vue'
 
 const route = useRoute();
 const router = useRouter();
@@ -362,3 +368,15 @@ onMounted(() => {
   fetchProduct();
 });
 </script>
+
+<style scoped>
+/* Subtle card glow animation */
+@keyframes card-glow {
+  0% { box-shadow: 0 0 0px rgba(255,0,0,0); }
+  50% { box-shadow: 0 0 12px rgba(255,0,0,0.6); }
+  100% { box-shadow: 0 0 0px rgba(255,0,0,0); }
+}
+.shadow-wishlist {
+  animation: card-glow 0.8s ease-in-out forwards;
+}
+</style>

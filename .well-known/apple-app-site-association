@@ -1,0 +1,11 @@
+{
+  "applinks": {
+      "apps": [],
+      "details": [
+      {
+        "appID": "HNZZGA4HP6.com.streetstylestore.m.twa",
+        "paths": ["*"]
+      }
+    ]
+  }
+}

@@ -30,28 +30,28 @@ function handleCardClick(item) {
 <template>
   <section class="pb-6 bg-white">
     <!-- Full width black heading -->
-    <div class="w-full bg-black py-3 mb-4">
-      <h2 class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold">
+    <div class="w-full bg-black py-3 mb-3 sm:mb-4">
+      <h2 class="text-white text-center text-base sm:text-lg md:text-xl font-bold">
         STREET STYLE HIGHLIGHTS
       </h2>
     </div>
 
     <!-- Loading / Error -->
-    <div v-if="loading" class="text-center text-gray-500 py-6">
+    <div v-if="loading" class="text-center text-gray-500 py-4 sm:py-6">
       Loading videos...
     </div>
-    <div v-else-if="error" class="text-center text-red-500 py-6">
+    <div v-else-if="error" class="text-center text-red-500 py-4 sm:py-6">
       {{ error }}
     </div>
 
     <!-- Video Scroll -->
-    <div v-else class="overflow-x-auto px-4 pb-4 flex gap-4 scrollbar-hide">
+    <div v-else class="overflow-x-auto px-2 sm:px-4 pb-4 flex gap-3 sm:gap-4 scrollbar-hide">
       <VideoCard
         v-for="item in sliderList"
         :key="item.id"
         :title="item.name"
         :videoUrl="item.img"
-        class="flex-shrink-0 w-64 sm:w-72 md:w-80 cursor-pointer"
+        class="flex-shrink-0 w-48 sm:w-56 md:w-64 cursor-pointer"
         @click="handleCardClick(item)"
       />
     </div>

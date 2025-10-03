@@ -34,6 +34,7 @@
           alt="Selected Product"
           class="rounded-lg w-full h-full object-contain transition-transform duration-300"
           :style="{ transform: `translateX(${slideOffset}px)` }"
+          loading="lazy"
         />
 
         <!-- Right Arrow -->
@@ -62,6 +63,7 @@
             :src="img.img"
             alt="Thumb"
             class="rounded-lg w-full h-full object-contain"
+            loading="lazy"
           />
         </div>
       </div>

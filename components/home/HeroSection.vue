@@ -14,6 +14,7 @@
           :src="slide"
           alt="Hero Image"
           class="w-full h-full object-cover object-center"
+          loading="lazy"
         />
       </div>
     </div>
