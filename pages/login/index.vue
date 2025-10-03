@@ -4,10 +4,10 @@
     <!-- Step 1: Mobile Number Input -->
     <div v-if="step === 1" class="w-full max-w-sm text-center">
       <h1 class="text-3xl font-bold mb-2 text-black">Welcome Back!</h1>
-      <p class="text-gray-700 mb-6">You're just a step away from your wadrobe needs </p>
+      <p class="text-gray-700 mb-6">You're just a step away from your wardrobe needs</p>
 
       <div class="flex items-center border border-gray-400 rounded-lg overflow-hidden mb-4 shadow-sm">
-        <span class="px-3  text-black font-semibold">+91</span>
+        <span class="px-3 text-black font-semibold">+91</span>
         <input
           v-model="auth.mobileNumber"
           type="tel"
@@ -61,7 +61,7 @@
     <!-- Step 3: Success -->
     <div v-if="step === 3" class="text-center">
       <h2 class="text-3xl font-bold mb-2 text-black">Welcome, {{ auth.name }}!</h2>
-      <p class="text-gray-700 mb-4">You're all set to grab your wadrobe needs </p>
+      <p class="text-gray-700 mb-4">You're all set to grab your wardrobe needs</p>
       <div class="w-20 h-20 mx-auto border-4 border-black rounded-full animate-ping mt-4"></div>
     </div>
 
@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/stores/auth";
 
@@ -80,6 +80,13 @@ const step = ref(1);
 const otpDigits = ref(["", "", "", ""]);
 const message = ref("");
 const otpMessage = ref("");
+
+// ✅ Redirect if session already exists
+onMounted(() => {
+  if (auth?.isAuthenticated || auth?.session) {
+    router.replace("/profile");
+  }
+});
 
 // Send OTP
 const sendOTP = async () => {

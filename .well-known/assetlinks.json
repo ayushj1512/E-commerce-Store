@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.streetstylestore.m.twa",
+    "sha256_cert_fingerprints": [
+      "A3:3D:29:D9:0F:C1:4F:D0:DC:C4:7B:1D:13:C1:1A:F1:AA:70:39:E0:2F:58:05:0D:E7:35:4A:AD:74:A8:DB:50"
+    ]
+  }
+}]

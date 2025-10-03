@@ -1,7 +1,7 @@
 <template>
   <section class="w-full overflow-hidden">
     <!-- Header row with title + Manage button -->
-    <div class="flex items-center justify-between pt-4 pb-5">
+    <div class="flex items-center justify-between pt-4 pb-2">
       <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-black">
         Saved Addresses
       </h2>
@@ -47,7 +47,7 @@
     <!-- Display addresses -->
     <div
       v-else
-      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+      class="flex w-full gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
     >
       <AddressCard
         v-for="address in addresses"

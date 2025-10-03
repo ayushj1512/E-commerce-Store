@@ -10,6 +10,7 @@
         :src="computedSrc"
         alt="Banner"
         class="w-full h-full object-cover"
+        loading="lazy"
       />
     </transition>
   </section>

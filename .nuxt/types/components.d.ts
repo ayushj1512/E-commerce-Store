@@ -59,10 +59,12 @@ interface _GlobalComponents {
     'ProductDetailImageGallery': typeof import("../../components/productDetail/ImageGallery.vue")['default']
     'ProductDetailSizeGuide': typeof import("../../components/productDetail/SizeGuide.vue")['default']
     'ProductDetailT&C': typeof import("../../components/productDetail/T&C.vue")['default']
+    'ProductDetailWishlistButton': typeof import("../../components/productDetail/WishlistButton.vue")['default']
     'ProductDetailPincode': typeof import("../../components/productDetail/pincode.vue")['default']
     'ProductDetailReviews&rating': typeof import("../../components/productDetail/reviews&rating.vue")['default']
     'ProfileAddressCard': typeof import("../../components/profile/AddressCard.vue")['default']
     'ProfilePastOrders': typeof import("../../components/profile/PastOrders.vue")['default']
+    'ProfileRecentlyViewed': typeof import("../../components/profile/ProfileRecentlyViewed.vue")['default']
     'ProfileSavedAddresses': typeof import("../../components/profile/SavedAddresses.vue")['default']
     'SearchNoResults': typeof import("../../components/search/NoResults.vue")['default']
     'NuxtWelcome': typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
@@ -134,10 +136,12 @@ interface _GlobalComponents {
     'LazyProductDetailImageGallery': LazyComponent<typeof import("../../components/productDetail/ImageGallery.vue")['default']>
     'LazyProductDetailSizeGuide': LazyComponent<typeof import("../../components/productDetail/SizeGuide.vue")['default']>
     'LazyProductDetailT&C': LazyComponent<typeof import("../../components/productDetail/T&C.vue")['default']>
+    'LazyProductDetailWishlistButton': LazyComponent<typeof import("../../components/productDetail/WishlistButton.vue")['default']>
     'LazyProductDetailPincode': LazyComponent<typeof import("../../components/productDetail/pincode.vue")['default']>
     'LazyProductDetailReviews&rating': LazyComponent<typeof import("../../components/productDetail/reviews&rating.vue")['default']>
     'LazyProfileAddressCard': LazyComponent<typeof import("../../components/profile/AddressCard.vue")['default']>
     'LazyProfilePastOrders': LazyComponent<typeof import("../../components/profile/PastOrders.vue")['default']>
+    'LazyProfileRecentlyViewed': LazyComponent<typeof import("../../components/profile/ProfileRecentlyViewed.vue")['default']>
     'LazyProfileSavedAddresses': LazyComponent<typeof import("../../components/profile/SavedAddresses.vue")['default']>
     'LazySearchNoResults': LazyComponent<typeof import("../../components/search/NoResults.vue")['default']>
     'LazyNuxtWelcome': LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>

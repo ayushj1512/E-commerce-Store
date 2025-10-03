@@ -77,6 +77,7 @@
         :showCartBtn="true"
         :avgRating="product.avgRating"
         :productUrl="`/${route.params.parent || 'products'}/${product.displayCategories?.[0] || 'category'}/${product.slug}/${product.id}`"
+        
       />
     </transition-group>
 
