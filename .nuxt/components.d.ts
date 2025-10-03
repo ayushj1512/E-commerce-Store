@@ -36,7 +36,7 @@ export const CommonShareButton: typeof import("../components/common/ShareButton.
 export const CommonVideoCard: typeof import("../components/common/VideoCard.vue")['default']
 export const CommonElectricBorder: typeof import("../components/common/electricBorder.vue")['default']
 export const CommonErrorHandler: typeof import("../components/common/errorHandler.vue")['default']
-export const HeaderWishlistIcon: typeof import("../components/header/wishlistIcon.vue")['default']
+export const HeaderWishlistIcon: typeof import("../components/header/WishlistIcon.vue")['default']
 export const HomeBannerComponent: typeof import("../components/home/BannerComponent.vue")['default']
 export const HomeCategorySlider: typeof import("../components/home/CategorySlider.vue")['default']
 export const HomeFitsSection: typeof import("../components/home/FitsSection.vue")['default']
@@ -113,7 +113,7 @@ export const LazyCommonShareButton: LazyComponent<typeof import("../components/c
 export const LazyCommonVideoCard: LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
 export const LazyCommonElectricBorder: LazyComponent<typeof import("../components/common/electricBorder.vue")['default']>
 export const LazyCommonErrorHandler: LazyComponent<typeof import("../components/common/errorHandler.vue")['default']>
-export const LazyHeaderWishlistIcon: LazyComponent<typeof import("../components/header/wishlistIcon.vue")['default']>
+export const LazyHeaderWishlistIcon: LazyComponent<typeof import("../components/header/WishlistIcon.vue")['default']>
 export const LazyHomeBannerComponent: LazyComponent<typeof import("../components/home/BannerComponent.vue")['default']>
 export const LazyHomeCategorySlider: LazyComponent<typeof import("../components/home/CategorySlider.vue")['default']>
 export const LazyHomeFitsSection: LazyComponent<typeof import("../components/home/FitsSection.vue")['default']>
