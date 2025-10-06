@@ -106,12 +106,14 @@ import { ref, onMounted, computed, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import axios from "axios"
 import { useCartStore } from "@/stores/cartStore"
+import { useAuthStore } from "@/stores/auth" // <-- added
 import GlobalToast, { addToast } from "@/components/common/GlobalToast.vue"
 import Confetti from '@/components/cart/confetti.vue'
 import CartCard from '@/components/cart/CartCard.vue'
 import EmptyCart from '@/components/cart/EmptyCart.vue'
 
 const cart = useCartStore()
+const auth = useAuthStore() // <-- added
 const router = useRouter()
 const route = useRoute()
 const confettiRef = ref(null)
@@ -223,7 +225,21 @@ const showClearCartModal = ref(false)
 const confirmClearCart = () => showClearCartModal.value = true
 const clearCartConfirmed = () => { cart.clearCart(); addToast('update', 'Cart cleared'); showClearCartModal.value = false }
 
-const checkout = () => { if (!cart.items.length) addToast('error', "Cart empty"); else router.push("/checkout") }
+// Updated checkout logic
+const checkout = () => {
+  if (!cart.items.length) {
+    addToast('error', "Cart empty")
+    return
+  }
+
+  if (!auth.isAuthenticated) {
+    addToast('warning', "Please login first")
+    setTimeout(() => router.push("/login"), 2000) // redirect after toast
+    return
+  }
+
+  router.push("/checkout")
+}
 
 const slugify = t => t?.toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")
 const goToDetail = i => router.push(`/${route.params.parent || "products"}/${slugify(i.categories?.[0] || "general")}/${slugify(i.name || "item")}/${i.id}`)
@@ -231,7 +247,12 @@ const goToDetail = i => router.push(`/${route.params.parent || "products"}/${slu
 watch(() => cart.items, computeDiscounts, { deep: true })
 watch(discount, (newDiscount, oldDiscount) => { if (newDiscount > oldDiscount) setTimeout(() => { confettiRef.value?.triggerConfetti() }, 700) })
 
-onMounted(async () => { cart.loadCart(); normalizeCartItems(); await fetchVouchers() })
+onMounted(async () => { 
+  cart.loadCart()
+  normalizeCartItems()
+  await fetchVouchers()
+  auth.initAuth() // <-- load auth session
+})
 </script>
 
 <style>

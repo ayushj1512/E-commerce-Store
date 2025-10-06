@@ -30,14 +30,18 @@
           </div>
 
           <!-- small inline summary -->
-          <div class="mt-4 flex justify-between items-center text-gray-700">
-            <div>
-              <div class="text-sm">Total items: <span class="font-semibold">{{ totalItems }}</span></div>
-              <div class="text-sm">Subtotal: <span class="font-semibold">₹{{ subtotal }}</span></div>
+          <div class="mt-4 flex justify-between items-center text-gray-700 flex-wrap gap-2">
+            <div class="text-sm">
+              Total items: <span class="font-semibold">{{ totalItems }}</span>
             </div>
-            <div class="text-right">
-              <div class="text-sm">Discount: -₹{{ discount }}</div>
-              <div class="text-lg font-bold mt-1">Total: ₹{{ total }}</div>
+            <div class="text-sm">
+              Subtotal: <span class="font-semibold">₹{{ subtotal }}</span>
+            </div>
+            <div class="text-sm">
+              Discount: -₹{{ discount }}
+            </div>
+            <div class="text-lg font-bold mt-1">
+              Total: ₹{{ total }}
             </div>
           </div>
 
@@ -144,49 +148,38 @@
           </div>
 
           <div class="pt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <div class="flex items-center gap-4">
+
+            <!-- Icons section -->
+            <div class="flex flex-wrap items-center gap-4">
               <div class="flex items-center gap-2">
-                <LucideShield class="w-5 h-5 text-green-600" />
+                <lucide-shield class="w-5 h-5 text-green-600" />
                 <span class="text-sm font-medium">Secure Payment</span>
               </div>
               <div class="flex items-center gap-2">
-                <LucideRepeat class="w-5 h-5 text-green-600" />
+                <lucide-repeat class="w-5 h-5 text-green-600" />
                 <span class="text-sm font-medium">Easy Exchange</span>
               </div>
               <div class="flex items-center gap-2">
-                <LucideRefreshCw class="w-5 h-5 text-green-600" />
+                <lucide-refresh-cw class="w-5 h-5 text-green-600" />
                 <span class="text-sm font-medium">Fast Refunds</span>
               </div>
             </div>
 
+            <!-- Proceed button -->
             <div class="flex items-center gap-3">
               <button @click="proceedToPayment"
                 class="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
-                <LucideCreditCard class="w-5 h-5" />
+                <lucide-credit-card class="w-5 h-5" />
                 <span>PROCEED TO PAYMENT • ₹{{ total }}</span>
-                <LucideArrowRight class="w-5 h-5" />
+                <lucide-arrow-right class="w-5 h-5" />
               </button>
             </div>
+
           </div>
         </div>
       </section>
 
     </div>
-
-    <!-- Leave Modal -->
-    <div v-if="showLeaveModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 w-80 text-center shadow-lg">
-        <h3 class="text-lg font-bold mb-2">Hold on!</h3>
-        <p class="text-gray-700 mb-4">
-          You have items in your cart. Are you sure you want to leave this page?
-        </p>
-        <div class="flex justify-center gap-3">
-          <button @click="stayOnPage" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100">Stay</button>
-          <button @click="leavePage" class="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800">Leave</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
@@ -194,8 +187,12 @@
 import { ref, computed, onMounted } from "vue";
 import { useCartStore } from "~/stores/cartStore";
 import { useAddressStore } from "~/stores/address";
-import { useRouter, onBeforeRouteLeave } from "vue-router";
+import { useRouter } from "vue-router";
 import CheckoutAddressSelector from "~/components/checkout/CheckoutAddressSelector.vue";
+
+import { 
+  Shield, Repeat, RefreshCw, CreditCard, ArrowRight 
+} from "lucide-vue-next";
 
 const cart = useCartStore();
 const addressStore = useAddressStore();
@@ -203,8 +200,6 @@ const router = useRouter();
 
 const mounted = ref(false);
 const selectedPayment = ref("cod");
-const showLeaveModal = ref(false);
-let pendingNavigationNext = null; // store the next() function
 
 const discount = 199; // example discount
 
@@ -231,31 +226,6 @@ function proceedToPayment() {
   }
   router.push("/checkout/payment");
 }
-
-// --- LEAVE CONFIRM MODAL LOGIC ---
-function stayOnPage() {
-  showLeaveModal.value = false;
-  pendingNavigationNext = null;
-}
-
-function leavePage() {
-  showLeaveModal.value = false;
-  if (pendingNavigationNext) {
-    pendingNavigationNext(); // resume the canceled navigation
-    pendingNavigationNext = null;
-  }
-}
-
-// Vue Router navigation guard
-onBeforeRouteLeave((to, from, next) => {
-  if (cart.items.length > 0) {
-    showLeaveModal.value = true;
-    pendingNavigationNext = next; // save next()
-    next(false); // cancel navigation for now
-  } else {
-    next();
-  }
-});
 
 onMounted(() => {
   mounted.value = true;
