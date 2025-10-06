@@ -36,6 +36,8 @@ interface _GlobalComponents {
     'CommonVideoCard': typeof import("../../components/common/VideoCard.vue")['default']
     'CommonElectricBorder': typeof import("../../components/common/electricBorder.vue")['default']
     'CommonErrorHandler': typeof import("../../components/common/errorHandler.vue")['default']
+    'HeaderCartIcon': typeof import("../../components/header/CartIcon.vue")['default']
+    'HeaderProfileIcon': typeof import("../../components/header/ProfileIcon.vue")['default']
     'HeaderWishlistIcon': typeof import("../../components/header/WishlistIcon.vue")['default']
     'HomeBannerComponent': typeof import("../../components/home/BannerComponent.vue")['default']
     'HomeCategorySlider': typeof import("../../components/home/CategorySlider.vue")['default']
@@ -50,6 +52,7 @@ interface _GlobalComponents {
     'HomeTrendingProducts': typeof import("../../components/home/TrendingProducts.vue")['default']
     'HomeVisitStore': typeof import("../../components/home/VisitStore.vue")['default']
     'HomeStars': typeof import("../../components/home/stars.vue")['default']
+    'HomeVoucher': typeof import("../../components/home/voucher.vue")['default']
     'LoginNewUserForm': typeof import("../../components/login/NewUserForm.vue")['default']
     'LoginOtpInput': typeof import("../../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../../components/login/PhoneNumberInput.vue")['default']
@@ -113,6 +116,8 @@ interface _GlobalComponents {
     'LazyCommonVideoCard': LazyComponent<typeof import("../../components/common/VideoCard.vue")['default']>
     'LazyCommonElectricBorder': LazyComponent<typeof import("../../components/common/electricBorder.vue")['default']>
     'LazyCommonErrorHandler': LazyComponent<typeof import("../../components/common/errorHandler.vue")['default']>
+    'LazyHeaderCartIcon': LazyComponent<typeof import("../../components/header/CartIcon.vue")['default']>
+    'LazyHeaderProfileIcon': LazyComponent<typeof import("../../components/header/ProfileIcon.vue")['default']>
     'LazyHeaderWishlistIcon': LazyComponent<typeof import("../../components/header/WishlistIcon.vue")['default']>
     'LazyHomeBannerComponent': LazyComponent<typeof import("../../components/home/BannerComponent.vue")['default']>
     'LazyHomeCategorySlider': LazyComponent<typeof import("../../components/home/CategorySlider.vue")['default']>
@@ -127,6 +132,7 @@ interface _GlobalComponents {
     'LazyHomeTrendingProducts': LazyComponent<typeof import("../../components/home/TrendingProducts.vue")['default']>
     'LazyHomeVisitStore': LazyComponent<typeof import("../../components/home/VisitStore.vue")['default']>
     'LazyHomeStars': LazyComponent<typeof import("../../components/home/stars.vue")['default']>
+    'LazyHomeVoucher': LazyComponent<typeof import("../../components/home/voucher.vue")['default']>
     'LazyLoginNewUserForm': LazyComponent<typeof import("../../components/login/NewUserForm.vue")['default']>
     'LazyLoginOtpInput': LazyComponent<typeof import("../../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../../components/login/PhoneNumberInput.vue")['default']>

@@ -11,23 +11,19 @@
         <img src="https://images.streetstylestore.com/new-sssnew-images/sss-logo.jpg" alt="Street Style Store" class="h-10 object-contain"/>
       </div>
 
-      <!-- Search, Cart, User, Wishlist -->
+      <!-- Search, Cart, Profile, Wishlist -->
       <div class="flex items-center space-x-4 relative">
         <button @click="navigateToSearch()" class="hover:text-gray-600 transition-colors">
           <SearchIcon class="w-6 h-6"/>
         </button>
 
-        <div class="relative cursor-pointer" @click="navigateTo('/cart')">
-          <ShoppingCart class="w-6 h-6 hover:text-gray-600 transition-colors"/>
-          <span v-if="totalCartItems > 0"
-            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-            {{ totalCartItems }}
-          </span>
-        </div>
+        <!-- Cart Icon Component -->
+        <CartIcon />
 
-        <User class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/profile')"/>
+        <!-- Profile Icon Component -->
+        <ProfileIcon />
 
-        <!-- ✅ Reusable WishlistIcon -->
+        <!-- Wishlist Icon -->
         <WishlistIcon />
       </div>
     </div>
@@ -57,50 +53,13 @@
           <SearchIcon class="w-6 h-6"/>
         </button>
 
-        <!-- Mini-Cart -->
-        <div class="relative cursor-pointer" @mouseenter="showMiniCart = true" @mouseleave="showMiniCart = false">
-          <ShoppingCart class="w-6 h-6 hover:text-gray-600 transition-colors"/>
-          <span v-if="totalCartItems > 0"
-            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-            {{ totalCartItems }}
-          </span>
+        <!-- Cart Icon Component -->
+        <CartIcon />
 
-          <transition name="fade-scale">
-            <div
-              v-if="showMiniCart && Array.isArray(cart.items) && cart.items.length > 0"
-              class="absolute right-0 mt-2 w-80 bg-white shadow-lg border rounded-xl p-4 z-50"
-            >
-              <div class="max-h-64 overflow-y-auto space-y-4">
-                <div 
-                  v-for="item in cart.items" 
-                  :key="item._key"
-                  class="flex items-center justify-between"
-                >
-                  <div class="flex items-center space-x-3 cursor-pointer" @click="navigateToProduct(item)">
-                    <img :src="item.image" alt="Product" class="w-12 h-16 object-cover rounded-lg"/>
-                    <div>
-                      <h4 class="font-semibold text-sm">{{ item.name }}</h4>
-                      <p v-if="item.size" class="text-xs text-gray-500">Size: {{ item.size }}</p>
-                      <p class="font-bold text-sm">₹{{ item.price }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center space-x-1">
-                    <button @click.stop="decreaseQty(item)" class="px-1 py-0.5 border rounded hover:bg-gray-100">-</button>
-                    <span class="text-sm font-medium">{{ item.quantity }}</span>
-                    <button @click.stop="increaseQty(item)" class="px-1 py-0.5 border rounded hover:bg-gray-100">+</button>
-                  </div>
-                </div>
-              </div>
-              <div class="mt-4 border-t pt-3">
-                <button @click="navigateTo('/cart')" class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition">View Cart & Checkout</button>
-              </div>
-            </div>
-          </transition>
-        </div>
+        <!-- Profile Icon Component -->
+        <ProfileIcon />
 
-        <User class="w-6 h-6 hover:text-gray-600 cursor-pointer transition-colors" @click="navigateTo('/profile')"/>
-
-        <!-- ✅ Reusable WishlistIcon -->
+        <!-- Wishlist Icon -->
         <WishlistIcon />
       </div>
     </div>
@@ -134,13 +93,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShoppingCart, User, Menu, X, SearchIcon } from 'lucide-vue-next'
+import { Menu, X, SearchIcon } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlist'
 import slugify from 'slugify'
+
 import WishlistIcon from '@/components/header/WishlistIcon.vue'
+import CartIcon from '@/components/header/CartIcon.vue'
+import ProfileIcon from '@/components/header/ProfileIcon.vue'  // ✅ New ProfileIcon
 
 const cart = useCartStore()
 const wishlist = useWishlistStore()
@@ -156,7 +118,6 @@ const menus = [
 
 const mobileSidebarOpen = ref(false)
 const openMenus = ref([])
-const showMiniCart = ref(false)
 
 onMounted(() => { 
   cart.loadCart()
@@ -197,13 +158,6 @@ const navigateToSearch = query => {
   else if(query) router.push(`/search-results?query=${encodeURIComponent(query)}`); 
   else router.push('/search') 
 }
-
-const increaseQty = (item) => cart.updateQuantity(item, item.quantity + 1)
-const decreaseQty = (item) => { if(item.quantity>1) cart.updateQuantity(item, item.quantity - 1) }
-
-const totalCartItems = computed(() => {
-  return Array.isArray(cart.items) ? cart.items.reduce((total, item) => total + (item.quantity || 0), 0) : 0
-})
 </script>
 
 <style scoped>

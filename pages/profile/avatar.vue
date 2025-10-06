@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-50 min-h-screen py-6 px-3 sm:px-6 md:px-12 lg:px-24 flex flex-col">
-    <div class="mx-auto w-full max-w-5xl flex flex-col gap-6">
-      
+    <div class="mx-auto w-full max-w-5xl flex flex-col gap-10">
+
       <!-- Header -->
       <div class="text-center">
         <h1 class="text-3xl font-extrabold text-black mb-2">Choose Your Avatar</h1>
@@ -13,11 +13,24 @@
         <div 
           v-for="(img, idx) in avatars" 
           :key="idx" 
-          class="relative cursor-pointer rounded-full border-4 transition-all duration-300"
-          :class="{'border-black scale-105 shadow-lg': img === selectedAvatar, 'border-gray-200': img !== selectedAvatar}"
+          class="relative cursor-pointer rounded-full transition-all duration-300 flex justify-center items-center"
           @click="selectAvatar(img)"
         >
-          <img :src="img" alt="Avatar" class="w-full h-full object-cover rounded-full"/>
+          <img 
+            :src="img" 
+            alt="Avatar" 
+            class="w-full h-full object-cover rounded-full transition-transform duration-300"
+            :class="img === selectedAvatar ? 'scale-120 shadow-xl' : 'hover:scale-105 hover:shadow-md'"
+          />
+          
+          <!-- Red Badge for Selected -->
+          <template v-if="img === selectedAvatar">
+            <div class="absolute -top-2 -right-2 bg-red-500 rounded-full p-2 shadow-md flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -58,7 +71,6 @@ const avatars = [
   "https://i.pinimg.com/1200x/1a/c3/62/1ac36242f08f474672e5717653fd3a29.jpg"
 ];
 
-// Initialize selected avatar from cookies or default to first avatar
 const selectedAvatar = ref(cookies.get('user_avatar') || avatars[0]);
 
 const selectAvatar = (img) => {
@@ -66,15 +78,18 @@ const selectAvatar = (img) => {
 };
 
 const saveAvatar = () => {
-  // Save avatar in cookie for 30 days
   cookies.set('user_avatar', selectedAvatar.value, { path: '/', maxAge: 60 * 60 * 24 * 30 });
-  router.push('/profile'); // Navigate back to profile page
+  router.push('/profile');
 };
 </script>
 
 <style scoped>
-img:hover {
-  transform: scale(1.05);
-  transition: transform 0.3s ease;
+/* Selected avatar scale */
+.scale-120 {
+  transform: scale(1.2);
+}
+/* Hover effect for unselected avatars */
+img {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 </style>

@@ -22,6 +22,9 @@
       <!-- Premium Categories -->
       <PremiumCategories />
 
+
+    <OfferList class="py-4" />
+
       <!-- Shop By Section -->
       <ShopBy /> 
 
@@ -83,6 +86,8 @@ import ShopBy from '~/components/home/ShopBy.vue'
 import Headline2 from '../components/home/Headline2.vue'
 import RecentlyViewedProducts from '../components/home/RecentlyViewedProducts.vue'
 import InstaGallery from '../components/home/InstaGallery.vue'
+import OfferList from '@/components/home/voucher.vue'
+
 </script>
 
 <style>
