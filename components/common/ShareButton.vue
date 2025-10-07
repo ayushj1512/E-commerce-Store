@@ -4,11 +4,14 @@ import { Share2 } from "lucide-vue-next"
 const shareProduct = async () => {
   const url = window.location.href
 
+  // Friendly, inviting text
+  const shareText = "Hey! I just found this amazing product and thought you might love it too 😍. Check it out below!"
+
   if (navigator.share) {
     try {
       await navigator.share({
-        title: "Check out this product!",
-        text: "Found this product, have a look 👇",
+        title: "A Special Recommendation Just For You!",
+        text: shareText,
         url,
       })
     } catch (err) {
@@ -16,8 +19,8 @@ const shareProduct = async () => {
     }
   } else {
     try {
-      await navigator.clipboard.writeText(url)
-      alert("Link copied to clipboard!")
+      await navigator.clipboard.writeText(`${shareText}\n${url}`)
+      alert("Link and message copied to clipboard! Share it with your friends 😊")
     } catch (err) {
       console.error("Copy failed:", err)
     }

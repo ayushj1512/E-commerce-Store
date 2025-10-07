@@ -5,17 +5,16 @@
       <!-- Success Tick Animation -->
       <div class="flex justify-center mb-4">
         <div class="w-24 h-24 rounded-full bg-teal-400 flex items-center justify-center animate-bounce-forever shadow-lg">
-          <!-- Lucide Check Icon -->
           <Check class="h-12 w-12 text-white"/>
         </div>
       </div>
 
       <!-- Header -->
       <div class="text-center space-y-2">
-<h1 class="text-3xl md:text-4xl text-black font-great-vibes font-bold">Thanks for your order!</h1>
+        <h1 class="text-3xl md:text-4xl text-black font-great-vibes font-bold">Thanks for your order!</h1>
         <p class="text-gray-600 text-sm md:text-base">
-          Hey Vladimir,<br/>
-          Your order <span class="text-blue-500 font-medium">U5635680</span> has been successfully placed at <span class="font-semibold">Street Style Store (SSS)</span>. You’ll find all details below, and we’ll send a shipping confirmation email soon.
+          Hey {{ checkout.customerName || "Customer" }},<br/>
+          Your order <span class="text-blue-500 font-medium">{{ checkout.orderReference }}</span> has been successfully placed at <span class="font-semibold">{{ checkout.storeName || "Our Store" }}</span>. You’ll find all details below, and we’ll send a shipping confirmation email soon.
         </p>
         <p class="text-gray-500 text-sm">
           Questions? Suggestions? <a href="#" class="text-blue-500 underline hover:text-blue-600">Shoot us an email.</a>
@@ -26,11 +25,11 @@
       <div class="grid grid-cols-2 gap-4 border-t border-b border-gray-200 py-4 text-sm text-gray-700">
         <div>
           <p class="font-semibold">Order Number</p>
-          <p>U5635680</p>
+          <p>{{ checkout.orderReference }}</p>
         </div>
         <div>
           <p class="font-semibold">Order Date</p>
-          <p>17 January 2017</p>
+          <p>{{ checkout.orderDate }}</p>
         </div>
       </div>
 
@@ -38,11 +37,19 @@
       <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
         <div>
           <p class="font-semibold">Shipping Address</p>
-          <p>Vladimir Kudinov<br/>340 Main St. STE. 680,<br/>Venice, CA 90291</p>
+          <p>
+            {{ checkout.shippingAddress.name }}<br/>
+            {{ checkout.shippingAddress.street }}<br/>
+            {{ checkout.shippingAddress.city }}, {{ checkout.shippingAddress.zip }}
+          </p>
         </div>
         <div>
           <p class="font-semibold">Billing Address</p>
-          <p>Vladimir Kudinov<br/>340 Main St. STE. 680,<br/>Venice, CA 90291</p>
+          <p>
+            {{ checkout.billingAddress.name }}<br/>
+            {{ checkout.billingAddress.street }}<br/>
+            {{ checkout.billingAddress.city }}, {{ checkout.billingAddress.zip }}
+          </p>
         </div>
       </div>
 
@@ -50,27 +57,19 @@
       <div>
         <p class="font-semibold text-gray-900 mb-2">Here’s what you ordered:</p>
         <div class="space-y-4">
-          <div class="flex items-center gap-4 hover:bg-gray-50 p-3 rounded-lg transition transform hover:scale-102 shadow-sm">
-            <img src="https://cdn.streetstylestore.com/3/0/3/2/8/8/303288-sss_vertical.webp" alt="Yanagi Tea Kettle" class="w-16 h-16 object-cover rounded-md border"/>
+          <div 
+            v-for="item in checkout.orderItems" 
+            :key="item.id"
+            class="flex items-center gap-4 hover:bg-gray-50 p-3 rounded-lg transition transform hover:scale-102 shadow-sm"
+          >
+            <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover rounded-md border"/>
             <div class="flex-1">
-              <p class="font-medium text-gray-900">Yanagi Tea Kettle</p>
-              <p class="text-gray-500 text-sm">Sori Yanagi Medium</p>
+              <p class="font-medium text-gray-900">{{ item.name }}</p>
+              <p class="text-gray-500 text-sm" v-if="item.variant">{{ item.variant }}</p>
             </div>
             <div class="text-right">
-              <p class="text-gray-600">Qty: 1</p>
-              <p class="font-semibold text-gray-900">Rs49</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-4 hover:bg-gray-50 p-3 rounded-lg transition transform hover:scale-102 shadow-sm">
-            <img src="https://cdn.streetstylestore.com/3/0/3/2/8/8/303288-sss_vertical.webp" alt="Analog Travel Alarm Clock" class="w-16 h-16 object-cover rounded-md border"/>
-            <div class="flex-1">
-              <p class="font-medium text-gray-900">Analog Travel Alarm Clock</p>
-              <p class="text-gray-500 text-sm">Braun</p>
-            </div>
-            <div class="text-right">
-              <p class="text-gray-600">Qty: 1</p>
-              <p class="font-semibold text-gray-900">Rs29</p>
+              <p class="text-gray-600">Qty: {{ item.quantity }}</p>
+              <p class="font-semibold text-gray-900">Rs{{ item.price }}</p>
             </div>
           </div>
         </div>
@@ -80,19 +79,19 @@
       <div class="border-t border-gray-200 pt-4 text-sm text-gray-700 space-y-2">
         <div class="flex justify-between">
           <span>Subtotal</span>
-          <span>Rs78</span>
+          <span>Rs{{ checkout.subtotal }}</span>
         </div>
         <div class="flex justify-between">
           <span>Shipping</span>
-          <span>Rs5</span>
+          <span>Rs{{ checkout.shipping || 0 }}</span>
         </div>
         <div class="flex justify-between">
           <span>Tax</span>
-          <span>Rs0</span>
+          <span>Rs{{ checkout.tax || 0 }}</span>
         </div>
         <div class="flex justify-between font-bold text-gray-900 border-t border-gray-300 pt-2 text-lg">
           <span>Total</span>
-          <span>Rs83</span>
+          <span>Rs{{ checkout.total }}</span>
         </div>
       </div>
 
@@ -121,7 +120,10 @@
 </template>
 
 <script setup>
-import { Check } from 'lucide-vue-next';
+import { Check } from 'lucide-vue-next'
+import { useCheckoutStore } from '~/stores/checkoutStore'
+
+const checkout = useCheckoutStore()
 </script>
 
 <style scoped>
@@ -146,6 +148,6 @@ import { Check } from 'lucide-vue-next';
 
 .font-great-vibes {
   font-family: 'Great Vibes', cursive;
-  font-weight: 700; /* makes it visually bolder */
+  font-weight: 700;
 }
 </style>

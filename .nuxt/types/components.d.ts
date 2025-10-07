@@ -56,6 +56,7 @@ interface _GlobalComponents {
     'LoginNewUserForm': typeof import("../../components/login/NewUserForm.vue")['default']
     'LoginOtpInput': typeof import("../../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../../components/login/PhoneNumberInput.vue")['default']
+    'ProductDetailColorSelector': typeof import("../../components/productDetail/ColorSelector.vue")['default']
     'ProductDetailEligibleVoucher': typeof import("../../components/productDetail/EligibleVoucher.vue")['default']
     'ProductDetailFrequentlyBoughtTogether': typeof import("../../components/productDetail/FrequentlyBoughtTogether.vue")['default']
     'ProductDetailHotSelling': typeof import("../../components/productDetail/HotSelling.vue")['default']
@@ -136,6 +137,7 @@ interface _GlobalComponents {
     'LazyLoginNewUserForm': LazyComponent<typeof import("../../components/login/NewUserForm.vue")['default']>
     'LazyLoginOtpInput': LazyComponent<typeof import("../../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../../components/login/PhoneNumberInput.vue")['default']>
+    'LazyProductDetailColorSelector': LazyComponent<typeof import("../../components/productDetail/ColorSelector.vue")['default']>
     'LazyProductDetailEligibleVoucher': LazyComponent<typeof import("../../components/productDetail/EligibleVoucher.vue")['default']>
     'LazyProductDetailFrequentlyBoughtTogether': LazyComponent<typeof import("../../components/productDetail/FrequentlyBoughtTogether.vue")['default']>
     'LazyProductDetailHotSelling': LazyComponent<typeof import("../../components/productDetail/HotSelling.vue")['default']>

@@ -1,8 +1,14 @@
-// stores/order.js
+// stores/orders.js
 import { defineStore } from "pinia";
 import { useNuxtApp } from "#app";
 
-export const useOrderStore = defineStore("order", {
+/**
+ * Main order store
+ * Usage:
+ *   import { useOrdersStore } from '~/stores/orders'
+ *   const orderStore = useOrdersStore();
+ */
+export const useOrdersStore = defineStore("order", {
   state: () => ({
     orderItems: [],
     idOrder: "",
@@ -29,15 +35,13 @@ export const useOrderStore = defineStore("order", {
 
     async sendOrderConfirmation() {
       if (!this.idOrder) return null;
-
       const { $api, $globals, $axios } = useNuxtApp();
       const payload = JSON.stringify({
         gateway_action: "order/sendOrderConfirmation",
         id_order: this.idOrder,
         version: "1",
-        affiliateInfo: $globals.affiliateInfo || {}, // fallback
+        affiliateInfo: $globals.affiliateInfo || {},
       });
-
       return await $api.gatewayServerCall(
         $axios,
         $globals.baseUrl + "admin2014/custom-api/order/sendOrderConfirmation.php",
@@ -47,13 +51,8 @@ export const useOrderStore = defineStore("order", {
       );
     },
 
-    /**
-     * Fetch customer order list
-     * Accepts full payload including id_cart, id_customer, and user_hash_key
-     */
     async getCustomerOrderList({ orderType, orderTime, id_cart, id_customer, user_hash_key }) {
       const { $api, $globals, $axios } = useNuxtApp();
-
       const payload = JSON.stringify({
         gateway_action: "customer/getCustomerOrderList",
         version: "1",
@@ -63,7 +62,6 @@ export const useOrderStore = defineStore("order", {
         id_customer,
         user_hash_key,
       });
-
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
     },
 
@@ -77,26 +75,22 @@ export const useOrderStore = defineStore("order", {
         idCarrier,
         shippingNumber,
       });
-
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
     },
 
     async sendPreOrderConfirmation(orderId) {
       if (!orderId) return null;
-
       const { $api, $globals, $axios } = useNuxtApp();
       const payload = JSON.stringify({
         gateway_action: "order/confirmation/index",
         id_order: orderId,
         version: "1",
       });
-
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
     },
 
     async getSpecificOrder({ orderType, idOrder, id_cart, id_customer, user_hash_key }) {
       const { $api, $globals, $axios } = useNuxtApp();
-
       const payload = JSON.stringify({
         gateway_action: "customer/getCustomerOrderList",
         version: "1",
@@ -106,19 +100,14 @@ export const useOrderStore = defineStore("order", {
         id_customer,
         user_hash_key,
       });
-
       return await $api.gatewayServerCall($axios, $globals.gatewayUrl, payload, "", true);
     },
   },
 
   getters: {
     getOrderItems: (state) => state.orderItems,
-
-    getOrderQty: (state) =>
-      state.orderItems.reduce((total, item) => total + (item.product_qty || 0), 0),
-
+    getOrderQty: (state) => state.orderItems.reduce((total, item) => total + (item.product_qty || 0), 0),
     getOrderId: (state) => state.idOrder,
-
     getOrderDetail: (state) => state.orderDetail,
   },
 });

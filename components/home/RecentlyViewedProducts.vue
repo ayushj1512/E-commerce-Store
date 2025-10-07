@@ -31,7 +31,7 @@
         <div class="w-full h-36 sm:h-40 md:h-44 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
           <img
             v-if="!p.viewAll"
-            :src="p.images[0]?.bigImg || p.images[0]?.img || ''"
+            :src="p.images[0]?.bigImg || p.images[0]?.img || '/fallback.jpg'"
             alt="Product"
             class="w-full h-full object-contain transition-transform duration-300"
             loading="lazy"
@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRecentlyViewStore } from "@/stores/recentlyViewStore";
 
 const recentlyViewStore = useRecentlyViewStore();
@@ -68,8 +68,8 @@ const loading = ref(true);
 const fetchRecentProducts = async () => {
   loading.value = true;
   try {
-    const products = await recentlyViewStore.getProducts();
-    recentProducts.value = products || [];
+    await recentlyViewStore.fetchProducts(); // fetch from store (SSR compatible)
+    recentProducts.value = recentlyViewStore.products || [];
   } catch (err) {
     recentProducts.value = [];
     console.error("Error fetching recently viewed products:", err);
@@ -78,7 +78,7 @@ const fetchRecentProducts = async () => {
   }
 };
 
-// Display products + last "View All" card only if 10 or more products
+// Display products + last "View All" card if 8 or more products
 const displayedProducts = computed(() => {
   if (recentProducts.value.length >= 8) {
     return [...recentProducts.value, { viewAll: true }];
@@ -86,13 +86,11 @@ const displayedProducts = computed(() => {
   return [...recentProducts.value];
 });
 
-// Navigate to individual product
+// Navigate to individual product using productUrl
 const goToProduct = (product) => {
-  const slug = product.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  window.location.href = `/parent/child/${slug}/${product.id}`;
+  if (product.productUrl) {
+    window.location.href = product.productUrl;
+  }
 };
 
 // Navigate to view all page

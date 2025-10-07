@@ -104,6 +104,7 @@ declare global {
   const useAttrs: typeof import('../../node_modules/vue')['useAttrs']
   const useAuthStore: typeof import('../../stores/auth')['useAuthStore']
   const useCartStore: typeof import('../../stores/cartStore')['useCartStore']
+  const useCheckoutStore: typeof import('../../stores/checkoutStore')['useCheckoutStore']
   const useCookie: typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']
   const useCssModule: typeof import('../../node_modules/vue')['useCssModule']
   const useCssVars: typeof import('../../node_modules/vue')['useCssVars']
@@ -122,7 +123,7 @@ declare global {
   const useNuxtApp: typeof import('../../node_modules/nuxt/dist/app/nuxt')['useNuxtApp']
   const useNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']
   const useNuxtDevTools: typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']
-  const useOrderStore: typeof import('../../stores/orders')['useOrderStore']
+  const useOrdersStore: typeof import('../../stores/orders')['useOrdersStore']
   const usePinia: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']
   const usePreviewMode: typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']
   const useProductStore: typeof import('../../stores/productStore')['useProductStore']
@@ -299,6 +300,7 @@ declare module 'vue' {
     readonly useAttrs: UnwrapRef<typeof import('../../node_modules/vue')['useAttrs']>
     readonly useAuthStore: UnwrapRef<typeof import('../../stores/auth')['useAuthStore']>
     readonly useCartStore: UnwrapRef<typeof import('../../stores/cartStore')['useCartStore']>
+    readonly useCheckoutStore: UnwrapRef<typeof import('../../stores/checkoutStore')['useCheckoutStore']>
     readonly useCookie: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']>
     readonly useCssModule: UnwrapRef<typeof import('../../node_modules/vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('../../node_modules/vue')['useCssVars']>
@@ -317,7 +319,7 @@ declare module 'vue' {
     readonly useNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/nuxt')['useNuxtApp']>
     readonly useNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']>
     readonly useNuxtDevTools: UnwrapRef<typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']>
-    readonly useOrderStore: UnwrapRef<typeof import('../../stores/orders')['useOrderStore']>
+    readonly useOrdersStore: UnwrapRef<typeof import('../../stores/orders')['useOrdersStore']>
     readonly usePinia: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']>
     readonly usePreviewMode: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']>
     readonly useProductStore: UnwrapRef<typeof import('../../stores/productStore')['useProductStore']>

@@ -84,6 +84,13 @@
   </div>
 </div>
 
+ <ColorSelector
+            v-if="parsedColors.length"
+            :colors="parsedColors"
+            v-model:selectedColor="selectedColor"
+            @update:image="selectedImage = $event"
+          />
+
 
           <!-- Wishlist + Voucher -->
      <div class="flex gap-4 mt-4 w-full items-center">
@@ -182,6 +189,7 @@ import SizeGuide from "@/components/productDetail/SizeGuide.vue";
 import EligibleVoucher from "@/components/productDetail/EligibleVoucher.vue";
 import HotSelling from "@/components/productDetail/HotSelling.vue"
 import WishlistButton from '@/components/productDetail/WishlistButton.vue'
+import ColorSelector from "@/components/productDetail/ColorSelector.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -206,6 +214,15 @@ const filteredSizes = computed(() =>
 );
 
 const isWishlisted = computed(() => wishlistStore.isFavorite(product.value.id));
+
+// **Parse colors dynamically**
+const parsedColors = computed(() => {
+  if (!product.value.colors) return [];
+  return product.value.colors.split(',').map(colorStr => {
+    const [hex, name, verticalImg, attrImg] = colorStr.split('*');
+    return { hex: hex.trim(), name: name.trim(), verticalImg: verticalImg.trim(), attrImg: attrImg.trim() };
+  });
+});
 
 const requiresSizeLogic = computed(() => {
   const categoryIds = (product.value.categories || []).map(Number);
@@ -301,10 +318,8 @@ const formatText = (text) => text ? text.toLowerCase().replace(/\b\w/g, c => c.t
 const fetchProduct = async () => {
   loading.value = true;
   error.value = null;
-
   try {
     const productId = route.params.id;
-
     const res = await ofetch(
       `https://api.streetstylestore.com/collections/products/documents/${productId}`,
       { headers: { "x-typesense-api-key": "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx" } }
@@ -325,34 +340,24 @@ const fetchProduct = async () => {
       product_size_array: doc.product_size_array || firstData.product_size_array || [],
       product_all_sizes: doc.product_all_sizes || [],
       customSizeChartArr: parsed.customSizeChartArr || null,
-      fbt_items: (parsed.fbt || []).map((i) => ({ ...i, hover: false })),
+      fbt_items: (parsed.fbt || []).map(i => ({ ...i, hover: false })),
       categories: doc.categories || [],
-
-      // ✅ Rating data
       avg_rating: doc.review_stats?.avg_rating || 0,
-      total_ratings: doc.review_stats?.total_ratings || 0
+      total_ratings: doc.review_stats?.total_ratings || 0,
+      colors: doc.colors || firstData.colors || "",
     };
 
-
     recentlyViewStore.addProduct(product.value.id);
-    console.log(`[Recently Viewed] Added product ID: ${product.value.id}`);
-
     selectedImage.value = product.value.images[0]?.bigImg || "";
-
-
 
     // Fetch vouchers
     const voucherRes = await ofetch(
       "https://api.streetstylestore.com/collections/sss_config/documents/voucher-listing?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
     );
-
     const vouchers = JSON.parse(voucherRes.data || "[]");
     const productCatIds = (product.value.categories || []).map(String);
 
-    eligibleVoucher.value = vouchers.find((v) => {
-      const voucherCatId = String(v.id_category || "").trim();
-      return productCatIds.includes(voucherCatId);
-    });
+    eligibleVoucher.value = vouchers.find(v => productCatIds.includes(String(v.id_category || "").trim()));
 
   } catch (err) {
     error.value = "Failed to fetch product data";

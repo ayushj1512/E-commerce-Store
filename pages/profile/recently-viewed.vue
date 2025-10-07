@@ -118,7 +118,7 @@ import ProductCard from "@/components/common/ProductCard.vue";
 const router = useRouter();
 const recentlyViewStore = useRecentlyViewStore();
 
-// Load from cookie immediately
+// Load IDs immediately
 recentlyViewStore.loadRecentlyViewed();
 
 const sortBy = ref("latest");
@@ -136,21 +136,19 @@ const sortOptions = [
 const getSortLabel = (value) => sortOptions.find(o => o.value === value)?.label || "Sort By";
 const setSort = (value) => { sortBy.value = value; dropdownOpen.value = false; currentPage.value = 1; };
 
+// Local reactive products array
 const recentProducts = ref([]);
 
-// Fetch products using store's getProducts
+// Fetch products from store (SSR-safe)
 const fetchRecentProducts = async () => {
   loading.value = true;
   try {
-    const products = await recentlyViewStore.getProducts();
-
-    // Normalize images to always have at least 2 items
-    recentProducts.value = (products || []).map(p => {
+    await recentlyViewStore.fetchProducts();
+    recentProducts.value = (recentlyViewStore.products || []).map(p => {
       const images = p.images || [];
       if (images.length === 1) images.push(images[0]);
       return { ...p, images };
     });
-
   } catch (err) {
     recentProducts.value = [];
     console.error("Error fetching recently viewed products:", err);
@@ -159,7 +157,7 @@ const fetchRecentProducts = async () => {
   }
 };
 
-// Computed: sorted and paginated products
+// Sorted & paginated products
 const sortedProducts = computed(() => {
   const products = [...recentProducts.value];
   switch (sortBy.value) {
@@ -181,16 +179,20 @@ const paginatedProducts = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
 const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
 
-// Watch for store changes so products update immediately
+// Watch for changes in store
 watch(() => recentlyViewStore.recentlyViewed, fetchRecentProducts, { deep: true });
 
-// Fetch products on mount
+// Fetch on mount
 onMounted(fetchRecentProducts);
 
-// Navigate to product detail
+// Navigate to product page
 const goToProduct = (product) => {
-  const slug = (product.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  router.push(`/parent/child/${slug}/${product.id}`).catch(() => {});
+  if (product.productUrl) {
+    window.location.href = product.productUrl;
+  } else {
+    const slug = (product.name || "product").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    router.push(`/parent/child/${slug}/${product.id}`).catch(() => {});
+  }
 };
 </script>
 
@@ -202,8 +204,6 @@ const goToProduct = (product) => {
   opacity: 0;
   transform: translateY(10px);
 }
-
-/* Move animation for rearrangement */
 .move {
   transition: transform 0.3s ease;
 }
