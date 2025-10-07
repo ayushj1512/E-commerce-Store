@@ -1,10 +1,9 @@
 <template>
   <div class="mt-6">
-<h3 class="text-xl md:text-2xl font-bold mb-4 text-black relative inline-block">
- Recommended Bundles
-  <span class="absolute left-0 bottom-0 w-12 h-1 bg-gray-500 rounded-full"></span>
-</h3>
-
+    <h3 class="text-xl md:text-2xl font-bold mb-4 text-black relative inline-block">
+      Recommended Bundles
+      <span class="absolute left-0 bottom-0 w-12 h-1 bg-gray-500 rounded-full"></span>
+    </h3>
 
     <!-- Loading -->
     <div v-if="loading" class="flex gap-4 overflow-x-auto py-2">
@@ -39,10 +38,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { ofetch } from "ofetch";
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { ofetch } from 'ofetch';
 
+// Reactive state
 const hotItems = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -51,14 +51,14 @@ const router = useRouter();
 const HOT_ITEMS_API =
   "https://api.streetstylestore.com/collections/sss_config/documents/sss-product-clr-items?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC";
 
-async function fetchHotItems() {
+// SSR-friendly fetch
+const fetchHotItems = async () => {
   loading.value = true;
   error.value = null;
 
   try {
     const res = await ofetch(HOT_ITEMS_API);
 
-    // Parse the 'data' string from the response
     const dataStr = res.data;
     if (!dataStr) throw new Error("No data field in API response");
 
@@ -72,13 +72,15 @@ async function fetchHotItems() {
   } finally {
     loading.value = false;
   }
-}
+};
 
+// Go to product page
 function goToProduct(url) {
   router.push(url);
 }
 
-onMounted(fetchHotItems);
+// --- SSR fetch using async setup ---
+await fetchHotItems(); // runs on server during SSR, then hydrates client
 </script>
 
 <style>
@@ -90,5 +92,14 @@ onMounted(fetchHotItems);
 .fade-leave-to {
   opacity: 0;
   max-height: 0;
+}
+
+/* Shimmer animation for loading */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 </style>

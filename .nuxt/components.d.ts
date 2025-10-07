@@ -56,6 +56,7 @@ export const HomeVoucher: typeof import("../components/home/voucher.vue")['defau
 export const LoginNewUserForm: typeof import("../components/login/NewUserForm.vue")['default']
 export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['default']
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
+export const ProductDetailColorSelector: typeof import("../components/productDetail/ColorSelector.vue")['default']
 export const ProductDetailEligibleVoucher: typeof import("../components/productDetail/EligibleVoucher.vue")['default']
 export const ProductDetailFrequentlyBoughtTogether: typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']
 export const ProductDetailHotSelling: typeof import("../components/productDetail/HotSelling.vue")['default']
@@ -136,6 +137,7 @@ export const LazyHomeVoucher: LazyComponent<typeof import("../components/home/vo
 export const LazyLoginNewUserForm: LazyComponent<typeof import("../components/login/NewUserForm.vue")['default']>
 export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login/OtpInput.vue")['default']>
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
+export const LazyProductDetailColorSelector: LazyComponent<typeof import("../components/productDetail/ColorSelector.vue")['default']>
 export const LazyProductDetailEligibleVoucher: LazyComponent<typeof import("../components/productDetail/EligibleVoucher.vue")['default']>
 export const LazyProductDetailFrequentlyBoughtTogether: LazyComponent<typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']>
 export const LazyProductDetailHotSelling: LazyComponent<typeof import("../components/productDetail/HotSelling.vue")['default']>

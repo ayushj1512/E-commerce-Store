@@ -1,19 +1,31 @@
 <template>
   <section class="pt-2 bg-white">
+    <h2 class="text-xl md:text-2xl font-bold px-3 sm:px-4 md:px-6 lg:px-8 mb-3">
+      🔥 Trending Products
+    </h2>
+
+    <!-- Loading State -->
+    <div v-if="productStore.trendingLoading" class="text-center py-10">
+      Loading trending products...
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="!productStore.trendingProducts.length" class="text-center text-gray-500 py-10">
+      No trending products available right now.
+    </div>
+
     <!-- Products Horizontal Scroll -->
-    <div class="overflow-x-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-3 scrollbar-hide">
-      <div
-        class="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-6 snap-x snap-mandatory touch-pan-x"
-      >
+    <div v-else class="overflow-x-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-3 scrollbar-hide">
+      <div class="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-6 snap-x snap-mandatory touch-pan-x">
         <ProductCard
-          v-for="product in products"
+          v-for="product in productStore.trendingProducts"
           :key="product.id"
           :id="product.id"
           :title="product.name"
           :image="product.img"
           :hoverImage="null"
-          :price="product.real_selling_price"
-          :mrp="product.selling_price"
+          :price="product.price"
+          :mrp="product.mrp"
           :productUrl="product.product_url"
           :showCartBtn="true"
           class="flex-shrink-0 w-36 sm:w-44 md:w-52 lg:w-60 xl:w-64 snap-start"
@@ -25,51 +37,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import axios from "axios";
+import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import ProductCard from "@/components/common/ProductCard.vue";
+import { useProductStore } from "@/stores/productStore";
 
 const router = useRouter();
-const products = ref([]);
+const productStore = useProductStore();
 
 // Navigate to product detail
 const goToDetail = (url) => {
   if (!url) return;
-  if (url.startsWith("/")) {
-    router.push(url).catch(() => {});
-  } else {
-    window.location.href = url;
-  }
+  if (url.startsWith("/")) router.push(url).catch(() => {});
+  else window.location.href = url;
 };
 
-const fetchProducts = async () => {
-  try {
-    const res = await axios.get(
-      "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=categories:=373&filter_by=active:=1&sort_by=avg_rating:desc&per_page=12&page=1",
-      {
-        headers: {
-          "X-Typesense-Api-Key": "VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh",
-        },
-      }
-    );
-
-    products.value = res.data.hits.map((hit) => ({
-      id: hit.document.id,
-      name: hit.document.name,
-      img: hit.document.img,
-      real_selling_price: hit.document.real_selling_price,
-      selling_price: hit.document.selling_price,
-      tags: hit.document.tags || [],
-      product_url: hit.document.product_url,
-    }));
-  } catch (err) {
-    console.error("Failed to fetch products:", err);
+// Fetch trending products if not already fetched
+onMounted(async () => {
+  if (!productStore.trendingProducts.length) {
+    await productStore.fetchTrendingProducts();
   }
-};
-
-onMounted(() => {
-  fetchProducts();
 });
 </script>
 
