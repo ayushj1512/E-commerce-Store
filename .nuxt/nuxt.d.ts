@@ -1,4 +1,5 @@
 /// <reference types="@pinia/nuxt" />
+/// <reference types="nuxt-toast" />
 /// <reference types="@nuxt/devtools" />
 /// <reference types="@nuxt/telemetry" />
 /// <reference path="types/builder-env.d.ts" />

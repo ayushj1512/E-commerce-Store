@@ -120,20 +120,16 @@ const discountPercent = computed(() => {
 // --- Voucher logic with reactive watchEffect ---
 watchEffect(() => {
   if (!cart.vouchers.length) {
-    console.log(`[Voucher] No vouchers loaded yet for product: ${props.title}`)
     voucher.value = null
     return
   }
 
-  console.log(`[Voucher] Checking product "${props.title}" with categories:`, props.categories)
   // Convert both sides to numbers to avoid type mismatch
   const matched = cart.vouchers.find(v => props.categories.map(Number).includes(Number(v.id_category)))
 
   if (matched) {
-    console.log(`[Voucher] MATCHED voucher for "${props.title}":`, matched.category_name)
     voucher.value = matched
   } else {
-    console.log(`[Voucher] No voucher applicable for "${props.title}"`)
     voucher.value = null
   }
 })
@@ -157,7 +153,6 @@ const toggleWishlist = () => {
 
 // Debug: watch cart vouchers to see updates live
 watchEffect(() => {
-  console.log("[Voucher] Cart vouchers updated:", cart.vouchers)
 })
 </script>
 

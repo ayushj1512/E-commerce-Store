@@ -21,8 +21,11 @@ export const CartConfetti: typeof import("../components/cart/confetti.vue")['def
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CheckoutAddressSelector: typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']
 export const CollectionAvailableVoucher: typeof import("../components/collection/AvailableVoucher.vue")['default']
-export const CollectionFilterDrawer: typeof import("../components/collection/FilterDrawer.vue")['default']
-export const CollectionFilterSidebar: typeof import("../components/collection/FilterSidebar.vue")['default']
+export const CollectionFilters: typeof import("../components/collection/Filters.vue")['default']
+export const CollectionImportantNoteModal: typeof import("../components/collection/ImportantNoteModal.vue")['default']
+export const CollectionMobileFilterSortHeader: typeof import("../components/collection/MobileFilterSortHeader.vue")['default']
+export const CollectionSortDropdown: typeof import("../components/collection/SortDropdown.vue")['default']
+export const CollectionSortingTags: typeof import("../components/collection/SortingTags.vue")['default']
 export const CollectionPage: typeof import("../components/collection/collectionPage.vue")['default']
 export const CommonFooter: typeof import("../components/common/Footer.vue")['default']
 export const CommonGlobalNotification: typeof import("../components/common/GlobalNotification.vue")['default']
@@ -102,8 +105,11 @@ export const LazyCartConfetti: LazyComponent<typeof import("../components/cart/c
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCheckoutAddressSelector: LazyComponent<typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']>
 export const LazyCollectionAvailableVoucher: LazyComponent<typeof import("../components/collection/AvailableVoucher.vue")['default']>
-export const LazyCollectionFilterDrawer: LazyComponent<typeof import("../components/collection/FilterDrawer.vue")['default']>
-export const LazyCollectionFilterSidebar: LazyComponent<typeof import("../components/collection/FilterSidebar.vue")['default']>
+export const LazyCollectionFilters: LazyComponent<typeof import("../components/collection/Filters.vue")['default']>
+export const LazyCollectionImportantNoteModal: LazyComponent<typeof import("../components/collection/ImportantNoteModal.vue")['default']>
+export const LazyCollectionMobileFilterSortHeader: LazyComponent<typeof import("../components/collection/MobileFilterSortHeader.vue")['default']>
+export const LazyCollectionSortDropdown: LazyComponent<typeof import("../components/collection/SortDropdown.vue")['default']>
+export const LazyCollectionSortingTags: LazyComponent<typeof import("../components/collection/SortingTags.vue")['default']>
 export const LazyCollectionPage: LazyComponent<typeof import("../components/collection/collectionPage.vue")['default']>
 export const LazyCommonFooter: LazyComponent<typeof import("../components/common/Footer.vue")['default']>
 export const LazyCommonGlobalNotification: LazyComponent<typeof import("../components/common/GlobalNotification.vue")['default']>

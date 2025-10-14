@@ -174,6 +174,7 @@ declare global {
   const useSlots: typeof import('../../node_modules/vue')['useSlots']
   const useState: typeof import('../../node_modules/nuxt/dist/app/composables/state')['useState']
   const useTemplateRef: typeof import('../../node_modules/vue')['useTemplateRef']
+  const useToast: typeof import('../../node_modules/nuxt-toast/dist/runtime/composables/useToast')['useToast']
   const useTransitionState: typeof import('../../node_modules/vue')['useTransitionState']
   const useWishlistStore: typeof import('../../stores/wishlist')['useWishlistStore']
   const watch: typeof import('../../node_modules/vue')['watch']
@@ -370,6 +371,7 @@ declare module 'vue' {
     readonly useSlots: UnwrapRef<typeof import('../../node_modules/vue')['useSlots']>
     readonly useState: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/state')['useState']>
     readonly useTemplateRef: UnwrapRef<typeof import('../../node_modules/vue')['useTemplateRef']>
+    readonly useToast: UnwrapRef<typeof import('../../node_modules/nuxt-toast/dist/runtime/composables/useToast')['useToast']>
     readonly useTransitionState: UnwrapRef<typeof import('../../node_modules/vue')['useTransitionState']>
     readonly useWishlistStore: UnwrapRef<typeof import('../../stores/wishlist')['useWishlistStore']>
     readonly watch: UnwrapRef<typeof import('../../node_modules/vue')['watch']>

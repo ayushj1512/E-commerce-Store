@@ -47,7 +47,7 @@
     <div
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 transition-all duration-300 hover:bg-gray-50 rounded-2xl"
       :class="{
-        'shadow-lg scale-105': !item.discountApplied && isVoucherApplied
+        'shadow-lg ': !item.discountApplied && isVoucherApplied
       }"
     >
       <!-- Product Info -->
@@ -140,7 +140,5 @@ const singleVoucher = computed(() => {
 </script>
 
 <style scoped>
-.scale-105 {
-  transform: scale(1.05);
-}
+
 </style>

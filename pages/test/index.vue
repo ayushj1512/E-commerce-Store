@@ -1,69 +1,65 @@
 <template>
-  <div class="min-h-screen bg-gray-100 p-6 flex flex-col items-center gap-6">
-    <h1 class="text-2xl font-bold mb-6">Combo Product Card Test</h1>
+  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+    <h1 class="text-2xl font-bold mb-6">Nuxt Toast Test Page</h1>
 
-    <ComboProductCard
-      v-for="product in products"
-      :key="product.id"
-      :id="product.id"
-      :title="product.title"
-      :image="product.image"
-      :hover-image="product.hoverImage"
-      :tags="product.tags"
-      :price="product.price"
-      :mrp="product.mrp"
-      :product-url="product.url"
-      :avg-rating="product.avgRating"
-      :combo="product.combo"
-    />
+    <div class="flex flex-col md:flex-row gap-4">
+      <button
+        @click="showSuccessToast"
+        class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+      >
+        Show Success Toast
+      </button>
+
+      <button
+        @click="showErrorToast"
+        class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+      >
+        Show Error Toast
+      </button>
+
+      <button
+        @click="showInfoToast"
+        class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+      >
+        Show Info Toast
+      </button>
+
+      <button
+        @click="showWarningToast"
+        class="px-6 py-3 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 transition"
+      >
+        Show Warning Toast
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import ComboProductCard from "../../components/common/ProductCard.vue"
+import { useToast } from "nuxt-toast";
 
-const products = [
-  {
-    id: 1,
-    title: "Summer Combo T-Shirt + Shorts",
-    image: "https://via.placeholder.com/300x300.png?text=Product+1",
-    hoverImage: "https://via.placeholder.com/300x300.png?text=Product+1+Hover",
-    tags: ["Summer", "Hot Deal"],
-    price: 799,
-    mrp: 999,
-    url: "/product/1",
-    avgRating: 4.5,
-    combo: {
-      name: "Summer Fun Combo"
-    }
-  },
-  {
-    id: 2,
-    title: "Winter Combo Hoodie + Gloves",
-    image: "https://via.placeholder.com/300x300.png?text=Product+2",
-    hoverImage: null,
-    tags: ["Winter", "Trending"],
-    price: 1299,
-    mrp: 1599,
-    url: "/product/2",
-    avgRating: 4.8,
-    combo: {
-      name: "Winter Warm Combo"
-    }
-  },
-  {
-    id: 3,
-    title: "Gaming Combo Mouse + Keyboard",
-    image: "https://via.placeholder.com/300x300.png?text=Product+3",
-    hoverImage: "https://via.placeholder.com/300x300.png?text=Product+3+Hover",
-    tags: ["Gaming", "Exclusive"],
-    price: 2499,
-    mrp: 2999,
-    url: "/product/3",
-    avgRating: 4.7,
-    combo: {
-      name: "Pro Gamer Combo"
-    }
-  }
-]
+// Initialize toast composable
+const toast = useToast();
+
+// Functions to show toast messages
+const showSuccessToast = () => {
+  toast.success("✅ This is a success message!", { duration: 2000 });
+};
+
+const showErrorToast = () => {
+  toast.error("❌ Something went wrong!", { duration: 2000 });
+};
+
+const showInfoToast = () => {
+  toast.info("ℹ️ Here is some information.", { duration: 2000 });
+};
+
+const showWarningToast = () => {
+  toast.warning("⚠️ This is a warning!", { duration: 2000 });
+};
 </script>
+
+<style>
+body {
+  font-family: Inter, sans-serif;
+}
+</style>

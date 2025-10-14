@@ -40,4 +40,5 @@ export { useProductStore } from '../stores/productStore';
 export { useRecentlyViewStore } from '../stores/recentlyViewStore';
 export { useWishlistStore } from '../stores/wishlist';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
+export { useToast } from '../node_modules/nuxt-toast/dist/runtime/composables/useToast';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

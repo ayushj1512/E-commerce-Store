@@ -56,17 +56,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { ofetch } from "ofetch";
-import { useAuthStore } from "@/stores/auth";
 import { Check, X, Info, CreditCard } from "lucide-vue-next";
-
-const authStore = useAuthStore();
-
-// Ensure auth session is loaded
-onMounted(() => {
-  authStore.initAuth();
-});
 
 const pinCode = ref("");
 const loading = ref(false);
@@ -101,19 +93,6 @@ async function checkPinCode() {
     return;
   }
 
-  // Reload auth in case it hasn't initialized yet
-  if (!authStore.isAuthenticated) {
-    authStore.loadSession();
-  }
-
-  if (!authStore.key || !authStore.id_customer) {
-    statusMessage.value = "Please login to check delivery.";
-    available.value = null;
-    codInfo.value = null;
-    prepaidInfo.value = null;
-    return;
-  }
-
   loading.value = true;
   statusMessage.value = "";
   available.value = null;
@@ -121,13 +100,14 @@ async function checkPinCode() {
   prepaidInfo.value = null;
 
   try {
+    // Minimal payload without auth
     const payload = {
       gateway_action: "order/checkPinCode",
       pin_code: pinCode.value,
       site: "sss",
-      id_cart: authStore.id_cart || "0",
-      id_customer: authStore.id_customer,
-      user_hash_key: authStore.key,
+      id_cart: "0", // default dummy cart
+      id_customer: "0", // dummy user
+      user_hash_key: "", // no login
     };
 
     const res = await ofetch("https://gateway.streetstylestore.com/gateway/v1/", { method: "POST", body: payload });

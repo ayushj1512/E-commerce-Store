@@ -122,37 +122,38 @@
             <PincodeCheck />
           </div>
 
-          <!-- Buy + Cart / Notify -->
-          <div class="flex flex-col sm:flex-row gap-4 mt-6 sticky top-24 z-10">
-            <template v-if="requiresSizeLogic">
-              <template v-if="filteredSizes.length">
-                <button @click="buyNow"
-                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
-                  Buy Now
-                </button>
-                <button @click="addToCart"
-                  class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
-                  Add to Cart
-                </button>
-              </template>
-              <template v-else>
-                <button @click="notifyMe"
-                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">
-                  Notify Me
-                </button>
-              </template>
-            </template>
-            <template v-else>
-              <button @click="buyNow"
-                class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
-                Buy Now
-              </button>
-              <button @click="addToCart"
-                class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
-                Add to Cart
-              </button>
-            </template>
-          </div>
+         <!-- Buy + Cart / Notify -->
+<div class="flex flex-row gap-4 mt-6 sticky top-24 z-10 w-full">
+  <template v-if="requiresSizeLogic">
+    <template v-if="filteredSizes.length">
+      <button @click="buyNow"
+        class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
+        Buy Now
+      </button>
+      <button @click="addToCart"
+        class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
+        Add to Cart
+      </button>
+    </template>
+    <template v-else>
+      <button @click="notifyMe"
+        class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">
+        Notify Me
+      </button>
+    </template>
+  </template>
+  <template v-else>
+    <button @click="buyNow"
+      class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
+      Buy Now
+    </button>
+    <button @click="addToCart"
+      class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
+      Add to Cart
+    </button>
+  </template>
+</div>
+
         </div>
       </div>
     </div>

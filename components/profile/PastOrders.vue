@@ -2,7 +2,7 @@
   <section>
     <!-- Header with button -->
     <div class="flex justify-between items-center pt-4 pb-5">
-      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-black">Past Orders</h2>
+      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-black">Recent Orders</h2>
       <router-link
         to="/profile/orders"
         class="bg-black text-white px-4 py-2 rounded-lg shadow-md transition"

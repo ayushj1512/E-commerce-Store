@@ -4,7 +4,7 @@
     @keydown.enter.prevent="goToWishlist"
     type="button"
     aria-label="Open wishlist"
-    class="inline-flex items-center justify-center focus:outline-none"
+    class="inline-flex items-center justify-center focus:outline-none relative"
   >
     <div class="relative w-6 h-6">
       <!-- Outline Heart (stationary default state) -->
@@ -12,13 +12,13 @@
         class="w-6 h-6 absolute inset-0 transition-colors duration-200 text-black"
       />
 
-      <!-- Animated Heart + Sparkles -->
+      <!-- Animated Heart + Sparkles wrapper -->
       <div
-        v-if="animating"
         class="absolute inset-0 flex items-center justify-center"
+        v-show="animating"
       >
-        <Heart class="w-6 h-6 text-red-500 fill-current animate-heart-pop"/>
-        
+        <Heart class="w-6 h-6 text-red-500 fill-current animate-heart-pop" />
+
         <!-- Soft ripple -->
         <span class="ripple-small"></span>
 
@@ -51,7 +51,7 @@ const count = computed(() =>
 
 const animating = ref(false)
 const prevCount = ref(undefined)
-const ANIM_DURATION = 1700 // increased duration
+const ANIM_DURATION = 1700 // duration of animation
 
 watch(
   () => count.value,
@@ -72,7 +72,7 @@ function goToWishlist() {
 </script>
 
 <style scoped>
-/* Heart pop animation (smooth easing) */
+/* Heart pop animation */
 @keyframes heart-pop {
   0% { transform: scale(0.75); opacity: 0.6; }
   30% { transform: scale(1.35); opacity: 1; }

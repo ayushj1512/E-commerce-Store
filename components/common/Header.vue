@@ -1,5 +1,10 @@
 <template>
-  <header class="bg-white text-black shadow-md sticky top-0 z-50">
+  <header
+    :class="[
+      'bg-white text-black shadow-md z-50',
+      !isListingPage ? 'sticky top-0' : 'md:sticky md:top-0'
+    ]"
+  >
     <!-- Mobile Header -->
     <div class="flex items-center justify-between px-4 py-3 md:hidden">
       <button @click="mobileSidebarOpen = true" class="focus:outline-none">
@@ -93,8 +98,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Menu, X, SearchIcon } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cartStore'
 import { useWishlistStore } from '@/stores/wishlist'
@@ -102,11 +107,18 @@ import slugify from 'slugify'
 
 import WishlistIcon from '@/components/header/WishlistIcon.vue'
 import CartIcon from '@/components/header/CartIcon.vue'
-import ProfileIcon from '@/components/header/ProfileIcon.vue'  // ✅ New ProfileIcon
+import ProfileIcon from '@/components/header/ProfileIcon.vue'
 
 const cart = useCartStore()
 const wishlist = useWishlistStore()
 const router = useRouter()
+const route = useRoute()
+
+// Detect if we are on product listing page /[parent]/[child]/index.vue
+const isListingPage = computed(() => {
+  const segments = route.path.split('/').filter(Boolean)
+  return segments.length === 2
+})
 
 const menus = [
   { name:"Tops", items:["Crop Tops","Blouses","Shirts","Tunics","Graphic Tees"] },
@@ -133,26 +145,22 @@ const toggleMenu = name => {
 }
 
 const navigateTo = path => { router.push(path); mobileSidebarOpen.value=false }
-
-const navigateToCategory = (category) => {
+const navigateToCategory = category => {
   const slug = slugify(category, { lower: true })
   router.push(`/collection/${slug}`)
 }
-
 const navigateToSubCategory = (parent, sub) => {
   const parentSlug = slugify(parent, { lower: true })
   const subSlug = slugify(sub, { lower: true })
   router.push(`/${parentSlug}/${subSlug}`)
   mobileSidebarOpen.value = false
 }
-
-const navigateToProduct = (item) => {
+const navigateToProduct = item => {
   const parentSlug = slugify(item.parentCategory || 'collection', { lower: true })
   const subSlug = slugify(item.subCategory || 'products', { lower: true })
   const productSlug = slugify(item.name, { lower: true })
   router.push(`/${parentSlug}/${subSlug}/${productSlug}/${item.id}`)
 }
-
 const navigateToSearch = query => { 
   if(typeof window!=='undefined' && window.innerWidth<768) router.push('/search'); 
   else if(query) router.push(`/search-results?query=${encodeURIComponent(query)}`); 

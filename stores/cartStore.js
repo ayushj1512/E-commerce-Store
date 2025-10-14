@@ -13,16 +13,24 @@ export const useCartStore = defineStore("cart", {
   }),
 
   getters: {
+    // total items count
     totalQuantity: (state) =>
       state.items.reduce((sum, i) => sum + (i.quantity || 0), 0),
+
+    // subtotal before discounts
     subtotal: (state) =>
-      state.items.reduce((sum, i) => sum + (i.realPrice || 0) * (i.quantity || 0), 0),
+      state.items
+        .reduce((sum, i) => sum + (i.realPrice || 0) * (i.quantity || 0), 0)
+        .toFixed(2),
+
+    // total after discounts (and COD if selected)
     total: (state) => {
       const baseTotal = state.items.reduce(
-        (sum, i) => sum + (i.finalPrice || i.price || 0) * (i.quantity || 0),
+        (sum, i) => sum + (i.finalPrice || i.price * i.quantity),
         0
       );
-      return state.codSelected ? baseTotal + state.COD_CHARGE : baseTotal;
+      const withCOD = state.codSelected ? baseTotal + state.COD_CHARGE : baseTotal;
+      return Number(withCOD.toFixed(2));
     },
   },
 
@@ -56,7 +64,7 @@ export const useCartStore = defineStore("cart", {
         discountApplied: false,
         discountQty: 0,
         discountPerItem: 0,
-        finalPrice: +product.real_selling_price || +product.price || 0,
+        finalPrice: +product.real_selling_price || +product.price || 0, // total for this item row
       };
 
       if (existing) existing.quantity += cartItem.quantity;
@@ -140,7 +148,6 @@ export const useCartStore = defineStore("cart", {
           category_name: v.category_name,
           link: v.link,
         }));
-        console.log("[Voucher] Fetched vouchers:", this.vouchers);
         this.computeDiscounts();
       } catch (err) {
         console.error("Failed to load vouchers:", err);
@@ -149,11 +156,13 @@ export const useCartStore = defineStore("cart", {
 
     normalizeCartItems() {
       this.items.forEach((item, index) => {
-        if (!item._key) item._key = `${item.id}-${item.size || "default"}-${index}`;
-        if (!Array.isArray(item.categories)) item.categories = [Number(item.categoryId || 0)];
+        if (!item._key)
+          item._key = `${item.id}-${item.size || "default"}-${index}`;
+        if (!Array.isArray(item.categories))
+          item.categories = [Number(item.categoryId || 0)];
         item.categories = item.categories.map(Number);
         if (!item.realPrice) item.realPrice = item.price;
-        if (!item.finalPrice) item.finalPrice = item.price;
+        if (!item.finalPrice) item.finalPrice = item.price * item.quantity;
       });
     },
 
@@ -190,9 +199,10 @@ export const useCartStore = defineStore("cart", {
             item.discountQty = qtyToDiscount;
             item.discountPerItem = v.discount;
             item.discountApplied = qtyToDiscount > 0;
-            item.finalPrice =
+            item.finalPrice = +(
               qtyToDiscount * (item.price - v.discount) +
-              (item.quantity - qtyToDiscount) * item.price;
+              (item.quantity - qtyToDiscount) * item.price
+            ).toFixed(2);
             remainingDiscountQty -= qtyToDiscount;
             remainingPerItem[item._key] =
               item.quantity > qtyToDiscount ? remainingToUnlock : 0;
@@ -200,7 +210,7 @@ export const useCartStore = defineStore("cart", {
             item.discountQty = 0;
             item.discountPerItem = 0;
             item.discountApplied = false;
-            item.finalPrice = item.price;
+            item.finalPrice = +(item.price * item.quantity).toFixed(2);
             remainingPerItem[item._key] = remainingToUnlock;
           }
         });
@@ -211,9 +221,6 @@ export const useCartStore = defineStore("cart", {
         );
         this.applicableVouchers.push({ ...v, remainingPerItem });
       });
-
-      console.log("[Voucher Debug] Applied vouchers:", this.applicableVouchers);
-      console.log("[Voucher Debug] Cart items after discount:", this.items);
     },
 
     getItemVouchers(item) {
@@ -234,8 +241,11 @@ export const useCartStore = defineStore("cart", {
       );
     },
 
+    // returns per-unit price for display
     getFinalPrice(item) {
-      return item.finalPrice || item.price;
+      return item.quantity > 0
+        ? (item.finalPrice || item.price * item.quantity) / item.quantity
+        : item.price;
     },
   },
 });

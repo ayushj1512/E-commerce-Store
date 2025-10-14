@@ -100,7 +100,7 @@ export const useProductStore = defineStore("productStore", () => {
     trendingLoading.value = true;
     trendingError.value = null;
     try {
-      const res = await ofetch(`${API_URL}/collections/products/documents/search?q=*&filter_by=active:=1&sort_by=avg_rating:desc&per_page=12&page=1`, {
+      const res = await ofetch(`${API_URL}/collections/products/documents/search?q=*&filter_by=active:=1&sort_by=date_updated_unix:desc&sort_by=avg_rating:desc&per_page=12&page=1`, {
         headers: { "x-typesense-api-key": API_KEY }
       });
       trendingProducts.value = (res.hits?.map(hit => {
@@ -129,67 +129,119 @@ export const useProductStore = defineStore("productStore", () => {
   // ------------------------------
   // Fetch Products by Category
   // ------------------------------
-  const fetchProducts = async (options = {}) => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const { categoryId, page = 1, perPage = 30, city, idBrand, shop, type, tags = [], maxPrice } = options;
-      const childParam = route?.params?.child || "";
-      const parentParam = route?.params?.parent || "";
-      let resolvedCatId = categoryId;
-      if (!resolvedCatId) {
-        const match = (childParam !== "all" ? childParam : parentParam).match(/(\d+)$/);
-        resolvedCatId = match ? match[1] : "default";
-      }
+ const fetchProducts = async (options = {}) => {
+  loading.value = true;
+  error.value = null;
 
-      const filterParams = [];
-      if (resolvedCatId && !isNaN(Number(resolvedCatId))) filterParams.push(`categories:=${resolvedCatId}`);
-      if (city) filterParams.push(`deal_cities:=[${city}]`);
-      if (idBrand) filterParams.push(`id_brand:=${idBrand}`);
-      if (shop) filterParams.push(`sss_shops:=[${shop}]`);
-      if (type) filterParams.push(`product_type:=${type}`);
-      if (tags.length) filterParams.push(`tags:=[${tags.join(",")}]`);
-      filterParams.push("active:=1");
+  try {
+    const {
+      categoryId,
+      perPage = 250, // fetch max per request
+      city,
+      idBrand,
+      shop,
+      type,
+      tags = [],
+      maxPrice
+    } = options;
 
-      const url = `${API_URL}/collections/products/documents/search?q=*&${filterParams.map(f => `filter_by=${encodeURIComponent(f)}`).join("&")}&per_page=${perPage}&page=${page}`;
+    const childParam = route?.params?.child || "";
+    const parentParam = route?.params?.parent || "";
+    let resolvedCatId = categoryId;
+
+    if (!resolvedCatId) {
+      const match = (childParam !== "all" ? childParam : parentParam).match(/(\d+)$/);
+      resolvedCatId = match ? match[1] : "default";
+    }
+
+    // 🔹 Start filter params with active:=1 always
+    const filterParams = ["active:=1"];
+    if (resolvedCatId && !isNaN(Number(resolvedCatId))) filterParams.push(`categories:=${resolvedCatId}`);
+    if (city) filterParams.push(`deal_cities:=[${city}]`);
+    if (idBrand) filterParams.push(`id_brand:=${idBrand}`);
+    if (shop) filterParams.push(`sss_shops:=[${shop}]`);
+    if (type) filterParams.push(`product_type:=${type}`);
+    if (tags.length) filterParams.push(`tags:=[${tags.join(",")}]`);
+
+    let allProducts = [];
+    let page = 1;
+    let totalFetched = 0;
+    let totalFound = 0;
+
+    do {
+      const url = `${API_URL}/collections/products/documents/search?q=*&${filterParams
+        .map(f => `filter_by=${encodeURIComponent(f)}`)
+        .join("&")}&per_page=${perPage}&page=${page}`;
+
       const res = await ofetch(url, { headers: { "x-typesense-api-key": API_KEY } });
+      totalFound = res.found || 0;
 
-      const data = Array.isArray(res.hits) ? res.hits.map(hit => {
-        const doc = hit.document ?? hit;
-        const parsed = doc.product_data ? safeParseJSON(doc.product_data) : {};
-        const first = parsed["0"] || {};
-        const price = Number(first.selling_price) || Number(doc.real_selling_price) || Number(doc.selling_price) || 0;
-        if (maxPrice != null && price > maxPrice) return null;
+      const data = Array.isArray(res.hits)
+        ? res.hits
+            .map(hit => {
+              const doc = hit.document ?? hit;
+              const parsed = doc.product_data ? safeParseJSON(doc.product_data) : {};
+              const first = parsed["0"] || {};
+              const price =
+                Number(first.selling_price) ||
+                Number(doc.real_selling_price) ||
+                Number(doc.selling_price) ||
+                0;
 
-        const displayCategories = first.categories ? first.categories.split("^").map(c => c.split("*")[0]) : doc.categories?.map(String) || [];
-        const matchedVoucher = vouchers.value.find(v => displayCategories.includes(String(v.categoryId)));
+              if (maxPrice != null && price > maxPrice) return null;
 
-        return {
-          id: String(doc.product_id || first.id || doc.id),
-          displayName: first.name || doc.name || "",
-          displayPrice: price,
-          displayDiscount: Number(first.discount_price) || Number(doc.discount_price) || 0,
-          sizes: (parsed.shoeSize || []).map(s => s.Size).filter(Boolean) || (doc.product_all_sizes || []).filter(Boolean) || ["N/A"],
-          brand: doc.brand || first.brand || "",
-          displayCategories,
-          tags: doc.tags || [],
-          slug: slugify(doc.name || first.name || doc.id),
-          images: parsed.images || [{ img: doc.img }],
-          quantity_available: first.product_quantity || doc.quantity_available || 0,
-          rawData: doc,
-          voucherName: matchedVoucher?.category_name || null
-        };
-      }).filter(Boolean) : [];
+              const displayCategories =
+                first.categories
+                  ? first.categories.split("^").map(c => c.split("*")[0])
+                  : doc.categories?.map(String) || [];
 
-      if (!productLists.value[resolvedCatId]) productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
-      productLists.value[resolvedCatId].products = page === 1 ? data : [...productLists.value[resolvedCatId].products, ...data];
-      productLists.value[resolvedCatId].currentPage = page;
-      productLists.value[resolvedCatId].total = res.found || data.length;
+              const matchedVoucher = vouchers.value.find(v =>
+                displayCategories.includes(String(v.categoryId))
+              );
 
-      generateFilters();
-    } catch (err) { error.value = err?.message || "Failed to fetch products"; }
-    finally { loading.value = false; }
-  };
+              return {
+                id: String(doc.product_id || first.id || doc.id),
+                displayName: first.name || doc.name || "",
+                displayPrice: price,
+                displayDiscount: Number(first.discount_price) || Number(doc.discount_price) || 0,
+                sizes:
+                  (parsed.shoeSize || []).map(s => s.Size).filter(Boolean) ||
+                  (doc.product_all_sizes || []).filter(Boolean) ||
+                  ["N/A"],
+                brand: doc.brand || first.brand || "",
+                displayCategories,
+                tags: doc.tags || [],
+                slug: slugify(doc.name || first.name || doc.id),
+                images: parsed.images || [{ img: doc.img }],
+                quantity_available: first.product_quantity || doc.quantity_available || 0,
+                rawData: doc,
+                voucherName: matchedVoucher?.category_name || null
+              };
+            })
+            .filter(Boolean)
+        : [];
+
+      allProducts.push(...data);
+      totalFetched += data.length;
+      page++;
+    } while (totalFetched < totalFound);
+
+    if (!productLists.value[resolvedCatId])
+      productLists.value[resolvedCatId] = { products: [], currentPage: 1, total: 0 };
+
+    productLists.value[resolvedCatId].products = allProducts;
+    productLists.value[resolvedCatId].currentPage = page - 1;
+    productLists.value[resolvedCatId].total = totalFound;
+
+    generateFilters();
+  } catch (err) {
+    error.value = err?.message || "Failed to fetch products";
+  } finally {
+    loading.value = false;
+  }
+};
+
+
 
   const generateFilters = () => {
     const allCategories = new Set(), allSizes = new Set(), allBrands = new Set();

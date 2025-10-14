@@ -21,8 +21,11 @@ interface _GlobalComponents {
     'CartRelatedProducts': typeof import("../../components/cart/relatedProducts.vue")['default']
     'CheckoutAddressSelector': typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']
     'CollectionAvailableVoucher': typeof import("../../components/collection/AvailableVoucher.vue")['default']
-    'CollectionFilterDrawer': typeof import("../../components/collection/FilterDrawer.vue")['default']
-    'CollectionFilterSidebar': typeof import("../../components/collection/FilterSidebar.vue")['default']
+    'CollectionFilters': typeof import("../../components/collection/Filters.vue")['default']
+    'CollectionImportantNoteModal': typeof import("../../components/collection/ImportantNoteModal.vue")['default']
+    'CollectionMobileFilterSortHeader': typeof import("../../components/collection/MobileFilterSortHeader.vue")['default']
+    'CollectionSortDropdown': typeof import("../../components/collection/SortDropdown.vue")['default']
+    'CollectionSortingTags': typeof import("../../components/collection/SortingTags.vue")['default']
     'CollectionPage': typeof import("../../components/collection/collectionPage.vue")['default']
     'CommonFooter': typeof import("../../components/common/Footer.vue")['default']
     'CommonGlobalNotification': typeof import("../../components/common/GlobalNotification.vue")['default']
@@ -102,8 +105,11 @@ interface _GlobalComponents {
     'LazyCartRelatedProducts': LazyComponent<typeof import("../../components/cart/relatedProducts.vue")['default']>
     'LazyCheckoutAddressSelector': LazyComponent<typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']>
     'LazyCollectionAvailableVoucher': LazyComponent<typeof import("../../components/collection/AvailableVoucher.vue")['default']>
-    'LazyCollectionFilterDrawer': LazyComponent<typeof import("../../components/collection/FilterDrawer.vue")['default']>
-    'LazyCollectionFilterSidebar': LazyComponent<typeof import("../../components/collection/FilterSidebar.vue")['default']>
+    'LazyCollectionFilters': LazyComponent<typeof import("../../components/collection/Filters.vue")['default']>
+    'LazyCollectionImportantNoteModal': LazyComponent<typeof import("../../components/collection/ImportantNoteModal.vue")['default']>
+    'LazyCollectionMobileFilterSortHeader': LazyComponent<typeof import("../../components/collection/MobileFilterSortHeader.vue")['default']>
+    'LazyCollectionSortDropdown': LazyComponent<typeof import("../../components/collection/SortDropdown.vue")['default']>
+    'LazyCollectionSortingTags': LazyComponent<typeof import("../../components/collection/SortingTags.vue")['default']>
     'LazyCollectionPage': LazyComponent<typeof import("../../components/collection/collectionPage.vue")['default']>
     'LazyCommonFooter': LazyComponent<typeof import("../../components/common/Footer.vue")['default']>
     'LazyCommonGlobalNotification': LazyComponent<typeof import("../../components/common/GlobalNotification.vue")['default']>

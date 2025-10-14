@@ -79,7 +79,7 @@
         </div>
       </template>
 
-      <!-- Confirm Remove Modal -->
+      <!-- Confirm Remove Modal with Wishlist option -->
       <div
         v-if="showModal"
         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -90,7 +90,13 @@
             Are you sure you want to remove
             <strong>{{ modalItem?.name }}</strong> from the cart?
           </p>
-          <div class="flex justify-end gap-3">
+          <div class="flex flex-col gap-3">
+            <button
+              @click="removeAndWishlist"
+              class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all duration-200"
+            >
+              Remove & Add to Wishlist
+            </button>
             <button
               @click="removeConfirmed"
               class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200"
@@ -143,6 +149,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/auth";
+import { useWishlistStore } from "@/stores/wishlist";
 import GlobalToast, { addToast } from "@/components/common/GlobalToast.vue";
 import Confetti from "@/components/cart/confetti.vue";
 import CartCard from "@/components/cart/CartCard.vue";
@@ -150,6 +157,8 @@ import EmptyCart from "@/components/cart/EmptyCart.vue";
 
 const cart = useCartStore();
 const auth = useAuthStore();
+const wishlist = useWishlistStore();
+wishlist.loadWishlist(); // load wishlist on mount
 const router = useRouter();
 const route = useRoute();
 const confettiRef = ref(null);
@@ -162,26 +171,39 @@ const sortedCartItems = computed(() => {
 
 const increaseQty = (i) => {
   cart.updateQuantity(i, i.quantity + 1, i.size);
-  console.log("🟢 Increased:", i.name, "| New Qty:", i.quantity + 1);
-  console.log("🧾 Current Cart Total:", cart.total, "COD Amount:", cart.codAmount);
   addToast("success", `+ ${i.name}`);
 };
 
 const decreaseQty = (i) => {
   if (i.quantity > 1) {
     cart.updateQuantity(i, i.quantity - 1, i.size);
-    console.log("🔻 Decreased:", i.name, "| New Qty:", i.quantity - 1);
-    console.log("🧾 Current Cart Total:", cart.total, "COD Amount:", cart.codAmount);
     addToast("warning", `- ${i.name}`);
   }
 };
 
 const showModal = ref(false);
 const modalItem = ref(null);
-const confirmRemove = (i) => ((modalItem.value = i), (showModal.value = true));
+
+const confirmRemove = (i) => {
+  modalItem.value = i;
+  showModal.value = true;
+};
+
+// Remove only
 const removeConfirmed = () => {
   cart.removeFromCart(modalItem.value);
   addToast("error", `${modalItem.value.name} removed from cart`);
+  showModal.value = false;
+};
+
+// Remove and add to wishlist
+const removeAndWishlist = () => {
+  cart.removeFromCart(modalItem.value);
+  wishlist.toggleFavorite(modalItem.value.id);
+  addToast(
+    "success",
+    `${modalItem.value.name} removed from cart & added to wishlist`
+  );
   showModal.value = false;
 };
 
@@ -198,13 +220,11 @@ const checkout = () => {
     addToast("error", "Cart empty");
     return;
   }
-
   if (!auth.isAuthenticated) {
     addToast("warning", "Please login first");
     setTimeout(() => router.push("/login"), 2000);
     return;
   }
-
   router.push("/checkout");
 };
 
