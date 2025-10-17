@@ -67,17 +67,17 @@
         <div
           v-for="product in paginatedProducts"
           :key="product.id"
-          class="cursor-pointer relative transform transition hover:scale-105"
+          class="cursor-pointer relative transform transition-all hover:scale-105 hover:shadow-lg rounded-xl bg-white"
           @click="goToProduct(product)"
         >
           <ProductCard
             :id="product.id"
             :title="product.name"
-            :image="product.images[0]?.bigImg || product.images[0]?.img || '/fallback.jpg'"
-            :hoverImage="product.images[1]?.bigImg || product.images[1]?.img || product.images[0]?.bigImg || product.images[0]?.img || '/fallback.jpg'"
-            :price="product.actual_selling_price"
+            :image="product.images?.[0]?.bigImg || product.images?.[0]?.img || '/fallback.jpg'"
+            :hoverImage="product.images?.[1]?.bigImg || product.images?.[1]?.img || product.images?.[0]?.bigImg || product.images?.[0]?.img || '/fallback.jpg'"
+            :price="product.real_selling_price"
             :mrp="product.selling_price"
-            :avgRating="0"
+            :avgRating="product.avg_rating || 0"
             :sizes="product.sizes || []"
             :productUrl="product.productUrl || ''"
           />
@@ -134,20 +134,29 @@ const sortOptions = [
 ];
 
 const getSortLabel = (value) => sortOptions.find(o => o.value === value)?.label || "Sort By";
-const setSort = (value) => { sortBy.value = value; dropdownOpen.value = false; currentPage.value = 1; };
+const setSort = (value) => {
+  sortBy.value = value;
+  dropdownOpen.value = false;
+  currentPage.value = 1;
+};
 
 // Local reactive products array
 const recentProducts = ref([]);
 
-// Fetch products from store (SSR-safe)
+// Fetch products from store (client-side only)
 const fetchRecentProducts = async () => {
   loading.value = true;
   try {
     await recentlyViewStore.fetchProducts();
     recentProducts.value = (recentlyViewStore.products || []).map(p => {
-      const images = p.images || [];
+      const images = p.images?.length ? p.images : [{ img: "/fallback.jpg", bigImg: "/fallback.jpg" }];
       if (images.length === 1) images.push(images[0]);
-      return { ...p, images };
+      return {
+        ...p,
+        images,
+        real_selling_price: p.real_selling_price ?? p.selling_price ?? 0,
+        selling_price: p.selling_price ?? 0,
+      };
     });
   } catch (err) {
     recentProducts.value = [];
@@ -157,14 +166,14 @@ const fetchRecentProducts = async () => {
   }
 };
 
-// Sorted & paginated products
+// Sorting & Pagination
 const sortedProducts = computed(() => {
   const products = [...recentProducts.value];
   switch (sortBy.value) {
     case "priceLowHigh":
-      return products.sort((a, b) => (a.actual_selling_price || 0) - (b.actual_selling_price || 0));
+      return products.sort((a, b) => (a.real_selling_price || 0) - (b.real_selling_price || 0));
     case "priceHighLow":
-      return products.sort((a, b) => (b.actual_selling_price || 0) - (a.actual_selling_price || 0));
+      return products.sort((a, b) => (b.real_selling_price || 0) - (a.real_selling_price || 0));
     default:
       return products;
   }
@@ -179,19 +188,22 @@ const paginatedProducts = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
 const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
 
-// Watch for changes in store
+// Sync store updates
 watch(() => recentlyViewStore.recentlyViewed, fetchRecentProducts, { deep: true });
 
-// Fetch on mount
+// Fetch once on mount
 onMounted(fetchRecentProducts);
 
-// Navigate to product page
+// Navigation
 const goToProduct = (product) => {
   if (product.productUrl) {
     window.location.href = product.productUrl;
   } else {
-    const slug = (product.name || "product").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    router.push(`/parent/child/${slug}/${product.id}`).catch(() => {});
+    const slug = (product.name || "product")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    router.push(`/category/subcategory/product/${slug}/${product.id}`).catch(() => {});
   }
 };
 </script>

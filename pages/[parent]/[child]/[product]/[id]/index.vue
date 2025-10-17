@@ -41,68 +41,55 @@
           </div>
 
           <!-- Price Section -->
-<div class="mt-2">
-  <div class="flex items-baseline gap-4 relative">
-    <!-- Selling Price -->
-    <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
+          <div class="mt-2">
+            <div class="flex items-baseline gap-4 relative">
+              <!-- Selling Price -->
+              <p class="text-2xl font-semibold">₹{{ product.real_selling_price }}</p>
 
-    <!-- Original Price with line-through -->
-    <p
-      v-if="product.selling_price > product.real_selling_price"
-      class="text-base line-through text-gray-500"
-    >
-      ₹{{ product.selling_price }}
-    </p>
+              <!-- Original Price with line-through -->
+              <p v-if="product.selling_price > product.real_selling_price" class="text-base line-through text-gray-500">
+                ₹{{ product.selling_price }}
+              </p>
 
-    <!-- Discount Badge -->
-    <span
-      v-if="product.selling_price > product.real_selling_price"
-      class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-bounce"
-      :style="{ animationDuration: '0.8s' }"
-    >
-      {{ Math.round(((product.selling_price - product.real_selling_price) / product.selling_price) * 100) }}% OFF
-    </span>
-  </div>
+              <!-- Discount Badge -->
+              <span v-if="product.selling_price > product.real_selling_price"
+                class="ml-2 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full animate-bounce"
+                :style="{ animationDuration: '0.8s' }">
+                {{ Math.round(((product.selling_price - product.real_selling_price) / product.selling_price) * 100) }}%
+                OFF
+              </span>
+            </div>
 
-  <!-- ⭐ Rating moved below -->
-  <div
-    v-if="product.avg_rating && product.avg_rating > 0 && product.total_ratings > 0"
-    class="flex items-center gap-2 mt-2"
-  >
-    <!-- Stars -->
-    <div class="flex">
-      <span v-for="i in 5" :key="i" class="text-yellow-400">
-        <i v-if="i <= Math.round(product.avg_rating)" class="fas fa-star"></i>
-        <i v-else class="far fa-star text-gray-300"></i>
-      </span>
-    </div>
+            <!-- ⭐ Rating moved below -->
+            <div v-if="product.avg_rating && product.avg_rating > 0 && product.total_ratings > 0"
+              class="flex items-center gap-2 mt-2">
+              <!-- Stars -->
+              <div class="flex">
+                <span v-for="i in 5" :key="i" class="text-yellow-400">
+                  <i v-if="i <= Math.round(product.avg_rating)" class="fas fa-star"></i>
+                  <i v-else class="far fa-star text-gray-300"></i>
+                </span>
+              </div>
 
-    <!-- Average + total count -->
-    <span class="text-sm text-gray-600">
-      {{ product.avg_rating.toFixed(1) }} ({{ product.total_ratings }} ratings)
-    </span>
-  </div>
-</div>
+              <!-- Average + total count -->
+              <span class="text-sm text-gray-600">
+                {{ product.avg_rating.toFixed(1) }} ({{ product.total_ratings }} ratings)
+              </span>
+            </div>
+          </div>
 
- <ColorSelector
-            v-if="parsedColors.length"
-            :colors="parsedColors"
-            v-model:selectedColor="selectedColor"
-            @update:image="selectedImage = $event"
-          />
+          <ColorSelector v-if="parsedColors.length" :colors="parsedColors" v-model:selectedColor="selectedColor"
+            @update:image="selectedImage = $event" />
 
 
           <!-- Wishlist + Voucher -->
-     <div class="flex gap-4 mt-4 w-full items-center">
-  <!-- ✅ Wishlist Button Component -->
-  <WishlistButton
-    :isWishlisted="isWishlisted"
-    @toggle="toggleWishlist(product.id)"
-  />
+          <div class="flex gap-4 mt-4 w-full items-center">
+            <!-- ✅ Wishlist Button Component -->
+            <WishlistButton :isWishlisted="isWishlisted" @toggle="toggleWishlist(product.id)" />
 
-  <!-- Eligible Voucher -->
-  <EligibleVoucher :voucher="eligibleVoucher" />
-</div>
+            <!-- Eligible Voucher -->
+            <EligibleVoucher :voucher="eligibleVoucher" />
+          </div>
 
 
 
@@ -122,37 +109,37 @@
             <PincodeCheck />
           </div>
 
-         <!-- Buy + Cart / Notify -->
-<div class="flex flex-row gap-4 mt-6 sticky top-24 z-10 w-full">
-  <template v-if="requiresSizeLogic">
-    <template v-if="filteredSizes.length">
-      <button @click="buyNow"
-        class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
-        Buy Now
-      </button>
-      <button @click="addToCart"
-        class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
-        Add to Cart
-      </button>
-    </template>
-    <template v-else>
-      <button @click="notifyMe"
-        class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">
-        Notify Me
-      </button>
-    </template>
-  </template>
-  <template v-else>
-    <button @click="buyNow"
-      class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
-      Buy Now
-    </button>
-    <button @click="addToCart"
-      class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
-      Add to Cart
-    </button>
-  </template>
-</div>
+          <!-- Buy + Cart / Notify -->
+          <div class="flex flex-row gap-4 mt-6 sticky top-24 z-10 w-full">
+            <template v-if="requiresSizeLogic">
+              <template v-if="filteredSizes.length">
+                <button @click="buyNow"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
+                  Buy Now
+                </button>
+                <button @click="addToCart"
+                  class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
+                  Add to Cart
+                </button>
+              </template>
+              <template v-else>
+                <button @click="notifyMe"
+                  class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all shadow-md">
+                  Notify Me
+                </button>
+              </template>
+            </template>
+            <template v-else>
+              <button @click="buyNow"
+                class="flex-1 bg-black text-white py-3 px-6 rounded-full font-semibold hover:bg-gray-800 transform hover:scale-105 transition">
+                Buy Now
+              </button>
+              <button @click="addToCart"
+                class="flex-1 border-2 border-black text-black py-3 px-6 rounded-full font-semibold hover:bg-black hover:text-white transform hover:scale-105 transition">
+                Add to Cart
+              </button>
+            </template>
+          </div>
 
         </div>
       </div>
@@ -188,8 +175,8 @@ import ImageGallery from "@/components/productDetail/ImageGallery.vue";
 import PeopleAlsoPicked from "@/components/productDetail/FrequentlyBoughtTogether.vue";
 import SizeGuide from "@/components/productDetail/SizeGuide.vue";
 import EligibleVoucher from "@/components/productDetail/EligibleVoucher.vue";
-import HotSelling from "@/components/productDetail/HotSelling.vue"
-import WishlistButton from '@/components/productDetail/WishlistButton.vue'
+import HotSelling from "@/components/productDetail/HotSelling.vue";
+import WishlistButton from '@/components/productDetail/WishlistButton.vue';
 import ColorSelector from "@/components/productDetail/ColorSelector.vue";
 
 const route = useRoute();
@@ -204,6 +191,7 @@ const recentlyViewStore = useRecentlyViewStore();
 const product = ref({});
 const selectedSize = ref("");
 const selectedImage = ref("");
+const selectedColor = ref(null); // ✅ Added selectedColor
 const eligibleVoucher = ref(null);
 const loading = ref(true);
 const error = ref(null);
@@ -216,7 +204,6 @@ const filteredSizes = computed(() =>
 
 const isWishlisted = computed(() => wishlistStore.isFavorite(product.value.id));
 
-// **Parse colors dynamically**
 const parsedColors = computed(() => {
   if (!product.value.colors) return [];
   return product.value.colors.split(',').map(colorStr => {
@@ -234,13 +221,7 @@ const requiresSizeLogic = computed(() => {
 const toggleWishlist = (id) => {
   const isAdding = !wishlistStore.isFavorite(id);
   wishlistStore.toggleFavorite(id);
-
   if (isAdding) console.log(`[Wishlist] Added product ID: ${id}`);
-
-  // toast?.success(
-  //   wishlistStore.isFavorite(id) ? "Added to Wishlist ❤️" : "Removed from Wishlist 🤍",
-  //   { timeout: 2000 }
-  // );
 };
 
 // Add to cart
@@ -252,15 +233,34 @@ const addToCart = () => {
   const cartProduct = {
     id: product.value.id,
     name: product.value.name,
-    price: +product.value.real_selling_price,
-    realPrice: +product.value.selling_price,
+    price: +product.value.real_selling_price || +product.value.price || 0,
+    realPrice: +product.value.selling_price || +product.value.real_selling_price || 0,
     discountPrice: +product.value.discount_price || 0,
-    categories: product.value.categories || [],
+    categories: (product.value.categories || []).map(Number),
     size: selectedSize.value || null,
-    image: selectedImage.value,
-    quantity: 1
+    color: selectedColor.value || null, // ✅ Optional color
+    image: selectedImage.value || product.value.image || "",
+    quantity: 1,
+    attributes: product.value.attributes || [], // expects [{ attr, val }]
+    item_list_id: product.value.item_list_id || "",
+    item_list_name: product.value.item_list_name || "",
+    finalPrice: +product.value.real_selling_price || +product.value.price || 0,
+    discountApplied: false,
+    discountQty: 0,
+    discountPerItem: 0,
+    product_payload: {
+      product: {
+        product_id: product.value.id.toString(),
+        name: product.value.name,
+        selling_price: +product.value.price || 0,
+        discount_price: +product.value.discount_price || 0,
+        size: selectedSize.value || null,
+        color: selectedColor.value || null,
+      },
+    },
   };
 
+  // Apply eligible voucher
   if (eligibleVoucher.value) {
     const voucherCatId = String(eligibleVoucher.value.id_category || "");
     const matchesCategory = cartProduct.categories.map(String).includes(voucherCatId);
@@ -343,6 +343,9 @@ const fetchProduct = async () => {
       customSizeChartArr: parsed.customSizeChartArr || null,
       fbt_items: (parsed.fbt || []).map(i => ({ ...i, hover: false })),
       categories: doc.categories || [],
+      attributes: doc.attributes || [], // ✅ Added attributes
+      item_list_id: doc.item_list_id || "", // ✅ Added
+      item_list_name: doc.item_list_name || "", // ✅ Added
       avg_rating: doc.review_stats?.avg_rating || 0,
       total_ratings: doc.review_stats?.total_ratings || 0,
       colors: doc.colors || firstData.colors || "",
@@ -378,10 +381,19 @@ onMounted(() => {
 <style scoped>
 /* Subtle card glow animation */
 @keyframes card-glow {
-  0% { box-shadow: 0 0 0px rgba(255,0,0,0); }
-  50% { box-shadow: 0 0 12px rgba(255,0,0,0.6); }
-  100% { box-shadow: 0 0 0px rgba(255,0,0,0); }
+  0% {
+    box-shadow: 0 0 0px rgba(255, 0, 0, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+  }
+
+  100% {
+    box-shadow: 0 0 0px rgba(255, 0, 0, 0);
+  }
 }
+
 .shadow-wishlist {
   animation: card-glow 0.8s ease-in-out forwards;
 }

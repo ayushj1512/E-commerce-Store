@@ -22,14 +22,16 @@
           <SearchIcon class="w-6 h-6"/>
         </button>
 
-        <!-- Cart Icon Component -->
-        <CartIcon />
-
+       
         <!-- Profile Icon Component -->
         <ProfileIcon />
 
         <!-- Wishlist Icon -->
-        <WishlistIcon />
+        <WishlistIcon /> 
+        
+        <!-- Cart Icon Component -->
+        <CartIcon />
+
       </div>
     </div>
 
@@ -58,14 +60,16 @@
           <SearchIcon class="w-6 h-6"/>
         </button>
 
-        <!-- Cart Icon Component -->
-        <CartIcon />
+        
 
         <!-- Profile Icon Component -->
         <ProfileIcon />
 
         <!-- Wishlist Icon -->
         <WishlistIcon />
+        
+        <!-- Cart Icon Component -->
+        <CartIcon />
       </div>
     </div>
 

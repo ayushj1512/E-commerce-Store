@@ -1,11 +1,12 @@
 <template>
   <section class="pt-2 bg-white">
-    <h2 class="text-xl md:text-2xl font-bold px-3 sm:px-4 md:px-6 lg:px-8 mb-3">
-      🔥 Trending Products
+    <!-- Section Header -->
+    <h2 class="text-xl md:text-2xl font-bold px-3 sm:px-4 md:px-6 lg:px-8 mb-3 flex items-center gap-2">
+      🔥 <span>Trending Products</span>
     </h2>
 
     <!-- Loading State -->
-    <div v-if="productStore.trendingLoading" class="text-center py-10">
+    <div v-if="productStore.trendingLoading" class="text-center py-10 text-gray-600">
       Loading trending products...
     </div>
 
@@ -14,21 +15,26 @@
       No trending products available right now.
     </div>
 
-    <!-- Products Horizontal Scroll -->
-    <div v-else class="overflow-x-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-3 scrollbar-hide">
-      <div class="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-6 snap-x snap-mandatory touch-pan-x">
+    <!-- Products Scroll -->
+    <div
+      v-else
+      class="overflow-x-auto px-3 sm:px-4 md:px-6 lg:px-8 pb-4 scrollbar-hide"
+    >
+      <div
+        class="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-6 snap-x snap-mandatory touch-pan-x"
+      >
         <ProductCard
           v-for="product in productStore.trendingProducts"
           :key="product.id"
           :id="product.id"
           :title="product.name"
           :image="product.img"
-          :hoverImage="null"
-          :price="product.price"
+          :hoverImage="product.hover_img || null"
+          :price="product.displayPrice"
           :mrp="product.mrp"
           :productUrl="product.product_url"
           :showCartBtn="true"
-          class="flex-shrink-0 w-36 sm:w-44 md:w-52 lg:w-60 xl:w-64 snap-start"
+          class="flex-shrink-0 w-36 sm:w-44 md:w-52 lg:w-60 xl:w-64 snap-start transition-transform hover:-translate-y-1 hover:scale-[1.03]"
           @click="goToDetail(product.product_url)"
         />
       </div>
@@ -45,23 +51,24 @@ import { useProductStore } from "@/stores/productStore";
 const router = useRouter();
 const productStore = useProductStore();
 
-// Navigate to product detail
+// Navigate to product detail page
 const goToDetail = (url) => {
   if (!url) return;
   if (url.startsWith("/")) router.push(url).catch(() => {});
   else window.location.href = url;
 };
 
-// Fetch trending products if not already fetched
+// Fetch trending products once
 onMounted(async () => {
   if (!productStore.trendingProducts.length) {
     await productStore.fetchTrendingProducts();
+    console.log("Trending Products:", productStore.trendingProducts);
   }
 });
 </script>
 
 <style scoped>
-/* Hide horizontal scrollbar */
+/* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -70,8 +77,15 @@ onMounted(async () => {
   scrollbar-width: none;
 }
 
-/* Smooth horizontal scroll */
+/* Smooth scroll */
 .overflow-x-auto {
   scroll-behavior: smooth;
+}
+
+/* Tighter gap for smaller screens */
+@media (max-width: 640px) {
+  .flex {
+    gap: 0.5rem;
+  }
 }
 </style>

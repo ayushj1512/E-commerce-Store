@@ -1208,6 +1208,7 @@ const VueResolver = (_, value) => {
 };
 
 const headSymbol = "usehead";
+// @__NO_SIDE_EFFECTS__
 function vueInstall(head) {
   const plugin = {
     install(app) {
@@ -1219,10 +1220,12 @@ function vueInstall(head) {
   return plugin.install;
 }
 
+// @__NO_SIDE_EFFECTS__
 function resolveUnrefHeadInput(input) {
   return walkResolver(input, VueResolver);
 }
 
+// @__NO_SIDE_EFFECTS__
 function createHead(options = {}) {
   const head = createHead$1({
     ...options,

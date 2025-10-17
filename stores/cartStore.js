@@ -1,6 +1,7 @@
 // stores/cartStore.js
 import { defineStore } from "pinia";
 import axios from "axios";
+import { useAuthStore } from "@/stores/auth";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
@@ -44,35 +45,63 @@ export const useCartStore = defineStore("cart", {
     },
 
     addToCart(product) {
-      if (!product) return;
+  if (!product) return;
 
-      const key = this.generateKey(product);
-      const existing = this.items.find((i) => i._key === key);
+  const key = this.generateKey(product);
+  const existing = this.items.find((i) => i._key === key);
 
-      const cartItem = {
-        id: product.id,
+  const cartItem = {
+    id: product.id,
+    name: product.name,
+    price: +product.real_selling_price || +product.price || 0,
+    realPrice: +product.selling_price || +product.real_selling_price || 0,
+    discountPrice: +product.discount_price || 0,
+    categories: (product.categories || []).map(Number),
+    size: product.size || null,
+    color: product.color || null,
+    image: product.image || "",
+    quantity: product.quantity || 1,
+    _key: key,
+    discountApplied: false,
+    discountQty: 0,
+    discountPerItem: 0,
+    finalPrice: +product.real_selling_price || +product.price || 0, // total for this item row
+
+    // New fields for checkout payload
+    attributes: product.attributes || [],       // expects [{ attr, val }]
+    item_list_id: product.item_list_id || "",
+    item_list_name: product.item_list_name || "",
+    product_payload: {
+      product: {
+        product_id: product.id.toString(),
         name: product.name,
-        price: +product.real_selling_price || +product.price || 0,
-        realPrice: +product.selling_price || +product.real_selling_price || 0,
-        discountPrice: +product.discount_price || 0,
-        categories: (product.categories || []).map(Number),
-        size: product.size || null,
-        color: product.color || null,
-        image: product.image || "",
-        quantity: product.quantity || 1,
-        _key: key,
-        discountApplied: false,
-        discountQty: 0,
-        discountPerItem: 0,
-        finalPrice: +product.real_selling_price || +product.price || 0, // total for this item row
-      };
-
-      if (existing) existing.quantity += cartItem.quantity;
-      else this.items.push(cartItem);
-
-      this.saveCart();
-      this.computeDiscounts();
+        selling_price: +product.price || 0,
+        discount_price: +product.discount_price || 0,
+      },
     },
+  };
+
+  if (existing) {
+    // Merge quantities and attributes if item exists
+    existing.quantity += cartItem.quantity;
+
+    // Optionally update other fields if needed
+    existing.discountApplied = cartItem.discountApplied;
+    existing.discountQty = cartItem.discountQty;
+    existing.discountPerItem = cartItem.discountPerItem;
+    existing.finalPrice = cartItem.finalPrice;
+    existing.attributes = cartItem.attributes;
+    existing.item_list_id = cartItem.item_list_id;
+    existing.item_list_name = cartItem.item_list_name;
+    existing.product_payload = cartItem.product_payload;
+  } else {
+    this.items.push(cartItem);
+  }
+
+  this.saveCart();
+  this.computeDiscounts();
+},
+
 
     removeFromCart(product) {
       if (!product) return;
@@ -247,5 +276,69 @@ export const useCartStore = defineStore("cart", {
         ? (item.finalPrice || item.price * item.quantity) / item.quantity
         : item.price;
     },
+
+    async fetchCartCheckout() {
+  if (!this.items.length) return;
+
+  this.loadingCheckout = true;
+  this.checkoutError = null;
+
+  try {
+    const authStore = useAuthStore();
+
+    // Build payload with full item details
+    const payload = {
+      gateway_action: "order/buyNowSSS",
+      cart_items: this.items.map((item) => ({
+        cartItems: {
+          product_id: item.id.toString(),
+          product_name: item.name,
+          quantity: item.quantity,
+          product_price: item.price || item.realPrice || 0,
+          discount_price: item.discountPerItem || 0,
+          discount_percent: item.discountQty && item.discountPerItem
+            ? ((item.discountPerItem / item.price) * 100).toFixed(0)
+            : "0",
+          categories: item.categories || [],
+          attribute: item.attributes || [], // expects [{ attr, val }]
+          item_list_id: item.item_list_id || "",
+          item_list_name: item.item_list_name || "",
+          product_img: item.image || "",
+          product_payload: {
+            product: {
+              product_id: item.id.toString(),
+              name: item.name,
+              selling_price: item.price,
+              discount_price: item.discountPerItem || 0,
+            },
+          },
+        },
+      })),
+      checkout: "new",
+      deal_city: "",                 // optionally from config store
+      id_cart: authStore.cart_id,
+      id_customer: authStore.id_customer,
+      site: "sss",
+      user_hash_key: authStore.key,
+      version: "1",
+    };
+
+    const { data } = await axios.post(
+      "https://gateway.streetstylestore.com/gateway/v1/",
+      payload
+    );
+
+    if (data.success) {
+      this.cartData = data; // save API response
+    } else {
+      this.checkoutError = data.errors || "Unknown error from gateway";
+    }
+  } catch (err) {
+    this.checkoutError = err.message || "Failed to fetch cart checkout";
+  } finally {
+    this.loadingCheckout = false;
+  }
+}
+
   },
 });

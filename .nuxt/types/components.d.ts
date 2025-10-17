@@ -15,11 +15,14 @@ type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}
 
 interface _GlobalComponents {
       'TopBar': typeof import("../../components/TopBar.vue")['default']
+    'CartBuyAlongProducts': typeof import("../../components/cart/BuyAlongProducts.vue")['default']
     'CartCard': typeof import("../../components/cart/CartCard.vue")['default']
     'CartEmptyCart': typeof import("../../components/cart/EmptyCart.vue")['default']
     'CartConfetti': typeof import("../../components/cart/confetti.vue")['default']
     'CartRelatedProducts': typeof import("../../components/cart/relatedProducts.vue")['default']
+    'CheckoutCartSummary': typeof import("../../components/checkout/CartSummary.vue")['default']
     'CheckoutAddressSelector': typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']
+    'CheckoutPaymentOptions': typeof import("../../components/checkout/PaymentOptions.vue")['default']
     'CollectionAvailableVoucher': typeof import("../../components/collection/AvailableVoucher.vue")['default']
     'CollectionFilters': typeof import("../../components/collection/Filters.vue")['default']
     'CollectionImportantNoteModal': typeof import("../../components/collection/ImportantNoteModal.vue")['default']
@@ -42,6 +45,7 @@ interface _GlobalComponents {
     'HeaderCartIcon': typeof import("../../components/header/CartIcon.vue")['default']
     'HeaderProfileIcon': typeof import("../../components/header/ProfileIcon.vue")['default']
     'HeaderWishlistIcon': typeof import("../../components/header/WishlistIcon.vue")['default']
+    'HomeAppDownload': typeof import("../../components/home/AppDownload.vue")['default']
     'HomeBannerComponent': typeof import("../../components/home/BannerComponent.vue")['default']
     'HomeCategorySlider': typeof import("../../components/home/CategorySlider.vue")['default']
     'HomeFitsSection': typeof import("../../components/home/FitsSection.vue")['default']
@@ -59,6 +63,9 @@ interface _GlobalComponents {
     'LoginNewUserForm': typeof import("../../components/login/NewUserForm.vue")['default']
     'LoginOtpInput': typeof import("../../components/login/OtpInput.vue")['default']
     'LoginPhoneNumberInput': typeof import("../../components/login/PhoneNumberInput.vue")['default']
+    'OrderCancelOrderModal': typeof import("../../components/order/CancelOrderModal.vue")['default']
+    'OrderGetSupportButton': typeof import("../../components/order/GetSupportButton.vue")['default']
+    'OrderTrackOrderButton': typeof import("../../components/order/TrackOrderButton.vue")['default']
     'ProductDetailColorSelector': typeof import("../../components/productDetail/ColorSelector.vue")['default']
     'ProductDetailEligibleVoucher': typeof import("../../components/productDetail/EligibleVoucher.vue")['default']
     'ProductDetailFrequentlyBoughtTogether': typeof import("../../components/productDetail/FrequentlyBoughtTogether.vue")['default']
@@ -99,11 +106,14 @@ interface _GlobalComponents {
     'NuxtIsland': typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
     'NuxtRouteAnnouncer': typeof import("../../node_modules/nuxt/dist/app/components/server-placeholder")['default']
       'LazyTopBar': LazyComponent<typeof import("../../components/TopBar.vue")['default']>
+    'LazyCartBuyAlongProducts': LazyComponent<typeof import("../../components/cart/BuyAlongProducts.vue")['default']>
     'LazyCartCard': LazyComponent<typeof import("../../components/cart/CartCard.vue")['default']>
     'LazyCartEmptyCart': LazyComponent<typeof import("../../components/cart/EmptyCart.vue")['default']>
     'LazyCartConfetti': LazyComponent<typeof import("../../components/cart/confetti.vue")['default']>
     'LazyCartRelatedProducts': LazyComponent<typeof import("../../components/cart/relatedProducts.vue")['default']>
+    'LazyCheckoutCartSummary': LazyComponent<typeof import("../../components/checkout/CartSummary.vue")['default']>
     'LazyCheckoutAddressSelector': LazyComponent<typeof import("../../components/checkout/CheckoutAddressSelector.vue")['default']>
+    'LazyCheckoutPaymentOptions': LazyComponent<typeof import("../../components/checkout/PaymentOptions.vue")['default']>
     'LazyCollectionAvailableVoucher': LazyComponent<typeof import("../../components/collection/AvailableVoucher.vue")['default']>
     'LazyCollectionFilters': LazyComponent<typeof import("../../components/collection/Filters.vue")['default']>
     'LazyCollectionImportantNoteModal': LazyComponent<typeof import("../../components/collection/ImportantNoteModal.vue")['default']>
@@ -126,6 +136,7 @@ interface _GlobalComponents {
     'LazyHeaderCartIcon': LazyComponent<typeof import("../../components/header/CartIcon.vue")['default']>
     'LazyHeaderProfileIcon': LazyComponent<typeof import("../../components/header/ProfileIcon.vue")['default']>
     'LazyHeaderWishlistIcon': LazyComponent<typeof import("../../components/header/WishlistIcon.vue")['default']>
+    'LazyHomeAppDownload': LazyComponent<typeof import("../../components/home/AppDownload.vue")['default']>
     'LazyHomeBannerComponent': LazyComponent<typeof import("../../components/home/BannerComponent.vue")['default']>
     'LazyHomeCategorySlider': LazyComponent<typeof import("../../components/home/CategorySlider.vue")['default']>
     'LazyHomeFitsSection': LazyComponent<typeof import("../../components/home/FitsSection.vue")['default']>
@@ -143,6 +154,9 @@ interface _GlobalComponents {
     'LazyLoginNewUserForm': LazyComponent<typeof import("../../components/login/NewUserForm.vue")['default']>
     'LazyLoginOtpInput': LazyComponent<typeof import("../../components/login/OtpInput.vue")['default']>
     'LazyLoginPhoneNumberInput': LazyComponent<typeof import("../../components/login/PhoneNumberInput.vue")['default']>
+    'LazyOrderCancelOrderModal': LazyComponent<typeof import("../../components/order/CancelOrderModal.vue")['default']>
+    'LazyOrderGetSupportButton': LazyComponent<typeof import("../../components/order/GetSupportButton.vue")['default']>
+    'LazyOrderTrackOrderButton': LazyComponent<typeof import("../../components/order/TrackOrderButton.vue")['default']>
     'LazyProductDetailColorSelector': LazyComponent<typeof import("../../components/productDetail/ColorSelector.vue")['default']>
     'LazyProductDetailEligibleVoucher': LazyComponent<typeof import("../../components/productDetail/EligibleVoucher.vue")['default']>
     'LazyProductDetailFrequentlyBoughtTogether': LazyComponent<typeof import("../../components/productDetail/FrequentlyBoughtTogether.vue")['default']>

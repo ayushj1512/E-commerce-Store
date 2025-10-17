@@ -8,7 +8,7 @@
         </button>
         <SortingTags v-model="selectedSort" :options="sortOptions" />
         <div class="ml-auto text-gray-700 text-sm">
-          Total Results: {{ sortedProducts.length }}
+          Total Results: {{ totalProductsCount }}
         </div>
       </div>
 
@@ -54,11 +54,11 @@
     </transition>
 
     <!-- Voucher -->
-    <AvailableVoucher :category-id="categoryIdFromRoute" class="mb-4 mt-4 " />
+    <AvailableVoucher :category-id="categoryIdFromRoute" class="mb-4 mt-4" />
 
     <!-- Mobile result count -->
     <div class="md:hidden text-gray-700 text-sm text-right mb-6">
-      Total Results: {{ sortedProducts.length }}
+      Total Results: {{ totalProductsCount }}
     </div>
 
     <!-- Products Grid -->
@@ -82,14 +82,21 @@
       />
     </transition-group>
 
+    <!-- Infinite Scroll Sentinel -->
+    <div ref="sentinel" class="h-10 w-full text-center py-6 text-gray-500">
+      <span v-if="isLoadingMore">Loading more...</span>
+      <span v-else-if="!hasMore">No more products</span>
+    </div>
+
     <div v-if="!sortedProducts.length" class="text-center py-10 text-gray-500">
       No products found.
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useRoute } from "#app";
 import { useProductStore } from "@/stores/productStore.js";
 import ProductCard from "@/components/common/ProductCard.vue";
@@ -98,16 +105,31 @@ import Filters from "@/components/collection/Filters.vue";
 import SortingTags from "@/components/collection/SortingTags.vue";
 import SortDropdown from "@/components/collection/SortDropdown.vue";
 
+// --- Pinia store & route
 const store = useProductStore();
 const route = useRoute();
 
-// 🧭 Drawer
+// --- Drawer controls
 const isOpen = ref(false);
 const toggleDrawer = () => (isOpen.value = !isOpen.value);
 const closeDrawer = () => (isOpen.value = false);
 
-// 🔽 Sorting
+// --- Pagination
+const currentPage = ref(1);
+const perPage = 30;
+const isLoadingMore = ref(false);
+const hasMore = ref(true);
+const totalProductsCount = ref(0);
+
+const capitalize = (s) =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+  
+// --- Filters & sorting
+const selectedCategories = ref([]);
+const selectedTags = ref([]);
+const selectedSizes = ref([]);
 const selectedSort = ref("default");
+
 const sortOptions = [
   { label: "Price: Low to High", value: "lowtohigh" },
   { label: "Price: High to Low", value: "hightolow" },
@@ -116,94 +138,37 @@ const sortOptions = [
   { label: "Rating", value: "rating" },
 ];
 
-// 🏷️ Category from route
+// --- Products
+const allProducts = ref([]);
+const filteredProducts = ref([]);
+
+// --- Category from route
 const categoryIdFromRoute = computed(() => {
   const subCategoryParam = route.params.child || "";
   const match = subCategoryParam?.match(/(\d+)$/);
-  const id = match ? Number(match[1]) : Number(route.params.parent);
-  console.log("📂 Category ID from route:", id);
-  return id;
+  return match ? Number(match[1]) : Number(route.params.parent);
 });
 
-// 🧩 Filters
-const selectedCategories = ref([]);
-const selectedTags = ref([]);
-const selectedSizes = ref([]);
+// --- Helpers
+const isSize = (val) =>
+  /^[0-9]+$|^(XS|S|M|L|XL|XXL|2XL|3XL|4XL|5XL)$/i.test(val?.toString().trim());
+const normalizeSize = (s) =>
+  s?.toString().trim().toUpperCase().replace(/\s+/g, "") || "";
 
-// 🔍 Detect if a string is a valid size (e.g. L, XL, 2XL, 38)
-const isSize = (val) => {
-  if (!val) return false;
-  const v = val.toString().trim().toUpperCase();
-  return (
-    /^[0-9]+$/.test(v) || // numeric
-    /^([0-9]*)(XS|S|M|L|XL|XXL|2XL|3XL|4XL|5XL)$/.test(v)
+// --- Persist filters
+const storageKey = computed(() => `collectionFilters_${categoryIdFromRoute.value}`);
+const persistFilters = () =>
+  localStorage.setItem(
+    storageKey.value,
+    JSON.stringify({
+      categories: selectedCategories.value,
+      tags: selectedTags.value,
+      sizes: selectedSizes.value,
+      sort: selectedSort.value,
+    })
   );
-};
-
-// 🔠 Normalize size format consistently
-const normalizeSize = (size) => {
-  if (!size) return "";
-  let s = size.toString().trim().toUpperCase();
-  s = s.replace(/\s+/g, ""); // remove spaces like "2 XL" → "2XL"
-  if (!isNaN(s)) return s;
-  if (/^([0-9]*)([A-Z]+)$/.test(s)) return s;
-  return s;
-};
-
-// 🧍 Capitalize for display (not for API)
-const capitalize = (s) =>
-  s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
-
-// ❌ Remove selected filter
-function removeParentFilter(type, value) {
-  if (type === "category")
-    selectedCategories.value = selectedCategories.value.filter((v) => v !== value);
-  else if (type === "tag")
-    selectedTags.value = selectedTags.value.filter((v) => v !== value);
-  else if (type === "size")
-    selectedSizes.value = selectedSizes.value.filter((v) => v !== value);
-
-  console.log(`🗑️ Removed ${type} filter:`, value);
-  persistFilters(); // save after removing
-}
-
-// 🛍️ All products
-const allProducts = ref([]);
-
-// 📦 Fetch products from store
-const fetchStoreProducts = async () => {
-  const catId = categoryIdFromRoute.value;
-  if (!catId) return;
-  console.log("📦 Fetching products for category:", catId);
-  try {
-    await store.fetchProducts({ categoryId: catId, page: 1, perPage: 250 });
-    allProducts.value = store.productLists[catId]?.products || [];
-    console.log("✅ Products fetched:", allProducts.value.length);
-  } catch (err) {
-    console.error("❌ Error fetching store products:", err);
-  }
-};
-
-// 💾 --- FILTER PERSISTENCE HELPERS --- 💾
-
-// Unique key per category, so filters don’t overlap across pages
-const getStorageKey = () => `collectionFilters_${categoryIdFromRoute.value}`;
-
-// Save current filters to localStorage
-const persistFilters = () => {
-  const filters = {
-    categories: selectedCategories.value,
-    tags: selectedTags.value,
-    sizes: selectedSizes.value,
-    sort: selectedSort.value,
-  };
-  localStorage.setItem(getStorageKey(), JSON.stringify(filters));
-  console.log("💾 Filters persisted:", filters);
-};
-
-// Restore filters from localStorage
 const restoreFilters = () => {
-  const saved = localStorage.getItem(getStorageKey());
+  const saved = localStorage.getItem(storageKey.value);
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
@@ -211,28 +176,71 @@ const restoreFilters = () => {
       selectedTags.value = parsed.tags || [];
       selectedSizes.value = parsed.sizes || [];
       selectedSort.value = parsed.sort || "default";
-      console.log("♻️ Restored filters from localStorage:", parsed);
-    } catch (e) {
-      console.warn("⚠️ Error parsing saved filters:", e);
-    }
-  } else {
-    console.log("ℹ️ No saved filters found.");
+    } catch {}
   }
 };
 
-// 🧮 Compute filtered products
-const filteredProducts = ref([]);
-
-const computeFilteredProducts = async () => {
+// --- Fetch from Pinia store
+const fetchProductsFromStore = async (page = 1) => {
   const catId = categoryIdFromRoute.value;
   if (!catId) return;
 
-  console.log("⚙️ Computing filtered products...");
-  console.log("🎯 Selected filters:", {
-    selectedCategories: selectedCategories.value,
-    selectedTags: selectedTags.value,
-    selectedSizes: selectedSizes.value,
+  await store.fetchProducts({
+    categoryId: catId,
+    page,
+    perPage,
+    append: page > 1,
   });
+
+  const list = store.productLists[catId];
+  if (!list) return;
+
+  if (page === 1) {
+    allProducts.value = [...(list.products || [])];
+  } else {
+    // prevent duplicates
+    const newProducts = (list.products || []).filter(
+      (p) => !allProducts.value.some((ap) => ap.id === p.id)
+    );
+    allProducts.value.push(...newProducts);
+  }
+
+  totalProductsCount.value = list.total || 0;
+  hasMore.value = allProducts.value.length < totalProductsCount.value;
+};
+
+// --- Infinite Scroll
+const sentinel = ref(null);
+let observer;
+
+const loadMore = async () => {
+  if (isLoadingMore.value || !hasMore.value) return;
+  isLoadingMore.value = true;
+  currentPage.value++;
+  await fetchProductsFromStore(currentPage.value);
+  await computeFilteredProducts();
+  isLoadingMore.value = false;
+};
+
+const initObserver = async () => {
+  await nextTick();
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) loadMore();
+    },
+    { threshold: 1 }
+  );
+  if (sentinel.value) observer.observe(sentinel.value);
+};
+
+onMounted(initObserver);
+onBeforeUnmount(() => observer && observer.disconnect());
+
+// --- Compute filtered products
+const computeFilteredProducts = async () => {
+  const catId = categoryIdFromRoute.value;
+  if (!catId) return;
 
   const allProds = allProducts.value.map((p) => ({
     ...p,
@@ -240,74 +248,57 @@ const computeFilteredProducts = async () => {
     hoverImageUrl: p.images?.[1]?.img || p.images?.[0]?.img || "",
     displayPrice: Number(p.displayPrice ?? p.price ?? 0),
     displayDiscount: Number(p.displayDiscount ?? 0),
-    avgRating: Number(
-      p.avgRating ?? p.rawData?.avg_rating ?? p.rawData?.rating?.avg ?? 0
-    ),
+    avgRating: Number(p.avgRating ?? p.rawData?.avg_rating ?? 0),
     tags: p.tags || [],
     sizes: (p.sizes || []).map(normalizeSize),
   }));
 
+  // no filters selected
   if (
     !selectedCategories.value.length &&
     !selectedTags.value.length &&
     !selectedSizes.value.length
   ) {
     filteredProducts.value = allProds;
-    console.log("ℹ️ No filters selected — showing all products.");
+    persistFilters();
     return;
   }
 
-  let apiIds = [];
   try {
     const filters = [`categories:=${catId}`, `active:=1`];
+    const tags = [...selectedCategories.value, ...selectedTags.value].filter(
+      (v) => !isSize(v)
+    );
+    const sizes = [...selectedSizes.value].filter(isSize).map(normalizeSize);
 
-    // Separate tags vs sizes cleanly
-    const rawValues = [
-      ...selectedCategories.value,
-      ...selectedTags.value,
-      ...selectedSizes.value,
-    ];
+    if (tags.length)
+      filters.push(`tags:=[${tags.map((t) => `"${t}"`).join(",")}]`);
+    if (sizes.length)
+      filters.push(
+        `product_size_array:=[${sizes.map((s) => `"${s}"`).join(",")}]`
+      );
 
-    const tagValues = rawValues.filter((v) => !isSize(v));
-    const sizeValues = rawValues.filter(isSize).map(normalizeSize);
-
-    // 🏷️ Tags filter
-    if (tagValues.length) {
-      const tagStr = tagValues.map((t) => `"${t}"`).join(",");
-      filters.push(`tags:=[${tagStr}]`);
-    }
-
-    // 📏 Sizes filter
-    if (sizeValues.length) {
-      const sizeStr = sizeValues.map((s) => `"${s}"`).join(",");
-      filters.push(`product_size_array:=[${sizeStr}]`);
-    }
-
-    // 🌐 Build API URL
-    const filterQuery = filters.map((f) => `&filter_by=${f}`).join("");
-    const url = `https://api.streetstylestore.com/collections/products/documents/search?q=*&sort_by=date_updated_unix:desc&per_page=250&page=1${filterQuery}&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`;
-
-    console.log("🧠 Final Filter API:", url);
+    const url = `https://api.streetstylestore.com/collections/products/documents/search?q=*&sort_by=date_updated_unix:desc&per_page=${perPage}&page=1${filters
+      .map((f) => `&filter_by=${f}`)
+      .join("")}&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`;
 
     const res = await fetch(url);
     const data = await res.json();
 
-    apiIds = data.hits?.map((h) => h.document.id) || [];
-    console.log("📥 Filter API returned:", apiIds.length, "results");
-  } catch (e) {
-    console.error("❌ Filter API error:", e);
-    apiIds = [];
+    const apiIds = data.hits?.map((h) => h.document.id) || [];
+    filteredProducts.value = apiIds.length
+      ? allProds.filter((p) => apiIds.includes(p.id))
+      : allProds;
+
+    totalProductsCount.value = data.found || totalProductsCount.value;
+  } catch {
+    filteredProducts.value = allProds;
   }
 
-  filteredProducts.value = apiIds.length
-    ? allProds.filter((p) => apiIds.includes(p.id))
-    : allProds;
-
-  console.log("🎯 Filtered products count:", filteredProducts.value.length);
-  persistFilters(); // auto-save filters after each computation
+  persistFilters();
 };
 
-// 🔃 Sorting logic
+// --- Sort
 const sortedProducts = computed(() => {
   const arr = [...filteredProducts.value];
   switch (selectedSort.value) {
@@ -316,27 +307,26 @@ const sortedProducts = computed(() => {
     case "hightolow":
       return arr.sort((a, b) => b.displayPrice - a.displayPrice);
     case "latest":
-      return arr.sort((a, b) => (b.date_added_unix || 0) - (a.date_added_unix || 0));
+      return arr.sort(
+        (a, b) => (b.date_added_unix || 0) - (a.date_added_unix || 0)
+      );
     case "rating":
       return arr.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
     case "trending":
-      return arr.sort((a, b) => (b.trending_score || 0) - (a.trending_score || 0));
+      return arr.sort(
+        (a, b) => (b.trending_score || 0) - (a.trending_score || 0)
+      );
     default:
       return arr;
   }
 });
 
-// 👀 Watchers
+// --- Watchers
 watch(
   [selectedCategories, selectedTags, selectedSizes, selectedSort],
-  () => {
-    console.log("🧭 Filters changed:", {
-      selectedCategories: selectedCategories.value,
-      selectedTags: selectedTags.value,
-      selectedSizes: selectedSizes.value,
-      selectedSort: selectedSort.value,
-    });
-    computeFilteredProducts();
+  async () => {
+    currentPage.value = 1;
+    await computeFilteredProducts();
   },
   { deep: true }
 );
@@ -344,20 +334,35 @@ watch(
 watch(
   [() => route.params.parent, () => route.params.child],
   async () => {
-    console.log("🔄 Route changed — refetching products...");
-    await fetchStoreProducts();
-    restoreFilters(); // restore on navigation
+    restoreFilters();
+    currentPage.value = 1;
+    allProducts.value = [];
+    await fetchProductsFromStore();
     await computeFilteredProducts();
+    await initObserver();
   }
 );
 
-// 🚀 Mounted
+// --- Mounted init
 onMounted(async () => {
-  console.log("🚀 Component mounted — fetching initial products...");
-  restoreFilters(); // restore saved filters first
-  await fetchStoreProducts();
+  restoreFilters();
+  await fetchProductsFromStore();
   await computeFilteredProducts();
+  await initObserver();
 });
+
+// --- Remove filter chip
+const removeParentFilter = (type, value) => {
+  if (type === "category")
+    selectedCategories.value = selectedCategories.value.filter(
+      (v) => v !== value
+    );
+  if (type === "tag")
+    selectedTags.value = selectedTags.value.filter((v) => v !== value);
+  if (type === "size")
+    selectedSizes.value = selectedSizes.value.filter((v) => v !== value);
+  persistFilters();
+};
 </script>
 
 <style scoped>
