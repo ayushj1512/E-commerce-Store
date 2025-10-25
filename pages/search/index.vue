@@ -3,7 +3,7 @@
 
     <!-- Premium Search Bar -->
     <div
-      class="flex items-center bg-white border border-gray-300 rounded-3xl shadow-lg px-5 py-3 mb-6 transition-transform hover:scale-105">
+      class="flex items-center bg-white border border-gray-300 rounded-3xl shadow-lg px-5 py-3 mb-6 transition-transform">
       <Search class="w-7 h-7 text-gray-700 mr-3" />
       <input
         type="text"
@@ -116,17 +116,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Search, Camera } from 'lucide-vue-next'
 import ProductCard from '@/components/common/ProductCard.vue'
 import NoResults from '@/components/search/NoResults.vue'
+import { useToast } from "vue-toastification"
 
 const route = useRoute()
+const toast = useToast()
 
 const query = ref('')
 const fileInput = ref(null)
-const scrollContainer = ref(null)
 const activeCategories = ref([])
 const products = ref([]) 
 const suggestedProducts = ref([])
@@ -137,11 +138,11 @@ const popularSearches = ref([
   "Tops","Crop Top","Crop","Round Neck","Sleeveless","Half Sleeve","Bodycon",
   "Shirt","Full Sleeves","White","Long Sleeve","Graphic","Summer","Oversize",
   "Mini","Floral","Midi","Maxi","Strapless","Jumpsuit","Lavender"
-]);
+])
 
 const totalResults = ref(0)
 let page = ref(1)
-const perPage = 250
+const perPage = 20
 
 // --- Cookie helpers ---
 const setCookie = (name, value, days) => {
@@ -174,35 +175,35 @@ const fetchActiveCategories = async () => {
     activeCategories.value = JSON.parse(data.data)
   } catch (err) {
     console.error("Error fetching active categories:", err)
+    toast.error("Failed to load categories")
   }
 }
 
 // --- Fetch products ---
 const searchProducts = async (reset = true) => {
-  if (!activeCategories.value || !activeCategories.value.length) return
+  if (!activeCategories.value.length) return
   if (reset) {
     products.value = []
     page.value = 1
     totalResults.value = 0
+    loading.value = true
+  } else {
+    loadingMore.value = true
   }
-  loading.value = reset
-  loadingMore.value = !reset
 
   try {
-    let queries = []
-    if (query.value.trim()) {
-      queries.push(query.value.trim())
-    } else if (recentSearches.value && recentSearches.value.length) {
-      queries = recentSearches.value.slice(0, 3)
-    } else {
-      queries = popularSearches.value.slice(0, 3)
-    }
+    const queries = query.value.trim()
+      ? [query.value.trim()]
+      : recentSearches.value.slice(0, 3).length
+        ? recentSearches.value.slice(0, 3)
+        : popularSearches.value.slice(0, 3)
 
     let allResults = []
 
     for (const q of queries) {
       const url = `https://api.streetstylestore.com/collections/products/documents/search?q=${encodeURIComponent(q)}&filter_by=categories:=[${activeCategories.value.join(",")}]
 &query_by=tags,name,product_id&filter_by=active:=1&sort_by=date_updated_unix:desc&per_page=${perPage}&page=${page.value}&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`.replace(/\s+/g, '')
+
       const res = await fetch(url)
       const data = await res.json()
       allResults.push(...data.hits.map(h => ({
@@ -221,19 +222,21 @@ const searchProducts = async (reset = true) => {
     products.value.push(...allResults)
   } catch (err) {
     console.error("Error fetching products:", err)
+    toast.error("Failed to load products")
   } finally {
     loading.value = false
     loadingMore.value = false
   }
 }
 
-// --- Infinite scroll ---
+// --- Infinite scroll using window ---
 const handleScroll = () => {
-  const container = scrollContainer.value
-  if (!container || loadingMore.value) return
+  if (loadingMore.value || loading.value) return
+  const scrollBottom = window.innerHeight + window.scrollY
+  const pageHeight = document.documentElement.offsetHeight
 
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight - 100) {
-    if (products.value && products.value.length < totalResults.value) {
+  if (scrollBottom >= pageHeight - 200) {
+    if (products.value.length < totalResults.value) {
       page.value += 1
       searchProducts(false)
     }
@@ -268,7 +271,7 @@ const triggerFileUpload = () => fileInput.value.click()
 const handleImageUpload = (e) => {
   const file = e.target.files[0]
   if (!file) return
-  alert(`Image search triggered 📷`)
+  toast.info(`Image search triggered 📷`)
 }
 
 // --- Watch input from header or local ---
@@ -284,6 +287,8 @@ watch(query, (newVal) => {
 
 // --- On mount ---
 onMounted(async () => {
+  window.addEventListener('scroll', handleScroll)
+
   const saved = getCookie("recentSearches")
   if (saved) {
     try {
@@ -297,5 +302,10 @@ onMounted(async () => {
 
   await fetchActiveCategories()
   searchProducts(true)
+})
+
+// --- Remove scroll listener on unmount ---
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>

@@ -1,10 +1,35 @@
 <template>
-    <section class="min-h-screen">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-            class="size-6 text-green-500">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="m8.99 14.993 6-6m6 3.001c0 1.268-.63 2.39-1.593 3.069a3.746 3.746 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043 3.745 3.745 0 0 1-3.068 1.593c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 0 1-3.296-1.043 3.746 3.746 0 0 1-1.043-3.297 3.746 3.746 0 0 1-1.593-3.068c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 0 1 1.043-3.297 3.745 3.745 0 0 1 3.296-1.042 3.745 3.745 0 0 1 3.068-1.594c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.297 3.746 3.746 0 0 1 1.593 3.068ZM9.74 9.743h.008v.007H9.74v-.007Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm4.125 4.5h.008v.008h-.008v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-        </svg>
-    </section>
-
+  <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <ProductCardScroll
+      v-for="product in products"
+      :key="product.id"
+      :id="product.id"
+      :title="product.name"
+      :images="product.images.map(img => img.img)"
+      :price="product.selling_price"
+      :mrp="product.discount_price"
+      :avg-rating="product.avg_rating"
+      :product-url="product.product_url"
+    />
+  </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from "vue"
+import ProductCardScroll from "@/components/common/ProductCardScroll.vue"
+
+const products = ref([])
+
+const fetchProducts = async () => {
+  const res = await fetch(
+    "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=tags:=[tops]&filter_by=active:=1&sort_by=date_updated_unix:desc&sort_by=avg_rating:desc&per_page=30&page=1",
+    {
+      headers: { "x-typesense-api-key": "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx" }
+    }
+  )
+  const data = await res.json()
+  products.value = data.hits.map(hit => hit.document)
+}
+
+onMounted(() => fetchProducts())
+</script>

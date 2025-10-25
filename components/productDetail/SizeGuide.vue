@@ -112,23 +112,49 @@ const props = defineProps({
 
 defineEmits(["select-size", "open-size-chart", "close-size-chart"]);
 
-// ✅ Filter logic for both numeric and letter-based sizes
+// ✅ Filter logic for numeric and extended alphanumeric sizes
 const filteredSizes = computed(() => {
   if (!props.sizes?.length) return [];
 
-  const numericSizes = props.sizes.filter((s) => /^\d+(\.\d+)?$/.test(s.trim()));
-  const alphaSizes = props.sizes.filter((s) => /^[XSML]{1,3}$/.test(s.trim().toUpperCase()));
+  // Normalize and clean sizes
+  const cleanSizes = props.sizes
+    .map((s) => String(s).trim().toUpperCase())
+    .filter(Boolean);
 
-  // Prefer numeric if available, otherwise use letter-based
-  if (numericSizes.length > 0) {
-    return numericSizes.sort((a, b) => Number(a) - Number(b));
-  } else if (alphaSizes.length > 0) {
-    const order = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-    return alphaSizes
-      .map((s) => s.toUpperCase())
-      .sort((a, b) => order.indexOf(a) - order.indexOf(b));
-  }
+  // Separate numeric (e.g., 36, 38.5) and alphanumeric (e.g., XS, S, M, L, XL, 2XL, 3XL, ONE SIZE)
+  const numericSizes = cleanSizes.filter((s) => /^\d+(\.\d+)?$/.test(s));
+  const alphaSizes = cleanSizes.filter((s) =>
+    /^(XXS|XS|S|M|L|XL|XXL|XXXL|XXXXL|2XS|2XL|3XL|4XL|5XL|ONESIZE|ONE SIZE|FREE SIZE)$/i.test(s)
+  );
 
-  return [];
+  // Sort numeric ascending
+  const sortedNumeric = numericSizes.sort((a, b) => Number(a) - Number(b));
+
+  // Sort alphabetic based on standard order
+  const order = [
+    "XXS",
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "2XL",
+    "XXL",
+    "3XL",
+    "XXXL",
+    "4XL",
+    "XXXXL",
+    "5XL",
+    "ONESIZE",
+    "ONE SIZE",
+    "FREE SIZE",
+  ];
+  const sortedAlpha = alphaSizes.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+
+  // Prefer numeric first if exists, then alpha
+  if (sortedNumeric.length > 0) return sortedNumeric;
+  if (sortedAlpha.length > 0) return sortedAlpha;
+
+  return cleanSizes; // fallback for any unexpected formats
 });
 </script>

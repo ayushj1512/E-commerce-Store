@@ -33,20 +33,36 @@
         :key="voucher.code"
         class="border border-gray-300 rounded-xl p-5 shadow-sm hover:shadow-md transition bg-white"
       >
+        <!-- Top Section -->
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold text-black">{{ voucher.code }}</h2>
+          <h2 class="text-lg font-semibold text-black">
+            {{ voucher.code }}
+          </h2>
           <span class="text-xs px-2 py-1 rounded-full bg-black text-white">
-            {{ voucher.reduction || "Flat Off" }}
+            {{ getReductionText(voucher) }}
           </span>
         </div>
-        <p class="text-gray-700 text-sm mb-1">
-          {{ voucher.name || "Special Voucher" }}
+
+        <!-- Details -->
+        <p class="text-gray-700 text-sm mb-1 capitalize">
+          {{ voucher.coupon_type || "Special Voucher" }}
         </p>
+
         <p class="text-gray-500 text-xs mb-2">
-          Expires: {{ voucher.date_to || "N/A" }}
+          Expires: {{ formatDate(voucher.date_expiration) }}
         </p>
+
         <p class="text-gray-600 text-xs">
-          {{ voucher.description || "Use this voucher to save on your next order!" }}
+          Status:
+          <span
+            :class="voucher.status === 'Yes' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'"
+          >
+            {{ voucher.status === 'Yes' ? 'Active' : 'Inactive' }}
+          </span>
+        </p>
+
+        <p v-if="voucher.expiry_days" class="text-gray-500 text-xs mt-1">
+          Expires in {{ voucher.expiry_days }} days
         </p>
       </div>
     </div>
@@ -66,6 +82,31 @@ export default {
     };
   },
   methods: {
+    // Format expiry date
+    formatDate(dateStr) {
+      if (!dateStr) return "N/A";
+      try {
+        const [dd, mm, yyyy] = dateStr.replace(/\\/g, "").split("/");
+        return new Date(`${yyyy}-${mm}-${dd}`).toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      } catch {
+        return dateStr;
+      }
+    },
+
+    // Show readable reduction text
+    getReductionText(voucher) {
+      const amount = parseFloat(voucher.reduction_amount || 0);
+      const percent = parseFloat(voucher.reduction_percent || 0);
+      if (percent > 0) return `${percent}% Off`;
+      if (amount > 0) return `₹${amount} Off`;
+      return "Special Offer";
+    },
+
+    // Fetch vouchers from API
     async fetchVouchers() {
       this.loading = true;
       const authStore = useAuthStore();
@@ -91,12 +132,13 @@ export default {
 
         console.log("🔹 Full API Response:", response.data);
 
-        if (response.data?.voucherList?.length > 0) {
+        // ✅ Handle new response structure
+        if (response.data?.status && Array.isArray(response.data.voucherList)) {
           this.vouchers = response.data.voucherList;
-          console.log("🔹 Voucher List:", this.vouchers);
+          console.log("✅ Voucher List:", this.vouchers);
         } else {
           this.vouchers = [];
-          console.log("🔹 No vouchers found.");
+          console.log("ℹ️ No vouchers found.");
         }
       } catch (err) {
         console.error("❌ Failed to fetch vouchers:", err);

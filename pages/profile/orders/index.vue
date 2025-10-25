@@ -186,7 +186,7 @@ const fetchOrders = async () => {
 // Navigate to order detail page using slugified route
 const goToOrderDetail = (order) => {
   const orderIdSlug = encodeURIComponent(order.order_detail.order.toString());
-  router.push(`/profile/order/${orderIdSlug}`);
+  router.push(`/profile/orders/${orderIdSlug}`);
 };
 
 const statusClass = (status) => {

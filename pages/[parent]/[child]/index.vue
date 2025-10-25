@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white text-black min-h-screen p-4 md:p-8">
+  <div class="page-wrapper bg-white text-black min-h-screen p-4 md:p-8">
     <!-- 🔹 Top bar: Filters + Sorting -->
     <div class="flex flex-wrap gap-2 mb-4 items-center w-full">
       <div class="hidden md:flex items-center w-full gap-2">
@@ -85,12 +85,15 @@
     <!-- Infinite Scroll Sentinel -->
     <div ref="sentinel" class="h-10 w-full text-center py-6 text-gray-500">
       <span v-if="isLoadingMore">Loading more...</span>
-      <span v-else-if="!hasMore">No more products</span>
+      <span v-else-if="!hasMore"></span>
     </div>
 
     <div v-if="!sortedProducts.length" class="text-center py-10 text-gray-500">
       No products found.
     </div>
+
+    <!-- 🔹 Important Note Modal -->
+    <ImportantNoteModal v-model:show="showImportantNote" />
   </div>
 </template>
 
@@ -104,6 +107,7 @@ import AvailableVoucher from "@/components/collection/AvailableVoucher.vue";
 import Filters from "@/components/collection/Filters.vue";
 import SortingTags from "@/components/collection/SortingTags.vue";
 import SortDropdown from "@/components/collection/SortDropdown.vue";
+import ImportantNoteModal from '@/components/collection/ImportantNoteModal.vue';
 
 // --- Pinia store & route
 const store = useProductStore();
@@ -113,6 +117,10 @@ const route = useRoute();
 const isOpen = ref(false);
 const toggleDrawer = () => (isOpen.value = !isOpen.value);
 const closeDrawer = () => (isOpen.value = false);
+
+// note modal
+const showImportantNote = ref(false);
+const grabAndGoCategoryId = 874;
 
 // --- Pagination
 const currentPage = ref(1);
@@ -180,34 +188,112 @@ const restoreFilters = () => {
   }
 };
 
-// --- Fetch from Pinia store
 const fetchProductsFromStore = async (page = 1) => {
-  const catId = categoryIdFromRoute.value;
-  if (!catId) return;
+  const child = route.params.child || "";
+  const parent = route.params.parent || "";
+  const slug = child || parent; // pick child first, else parent
 
-  await store.fetchProducts({
-    categoryId: catId,
-    page,
-    perPage,
-    append: page > 1,
-  });
+  console.log("➡️ Fetching products for slug:", slug, "page:", page);
 
-  const list = store.productLists[catId];
-  if (!list) return;
-
-  if (page === 1) {
-    allProducts.value = [...(list.products || [])];
-  } else {
-    // prevent duplicates
-    const newProducts = (list.products || []).filter(
-      (p) => !allProducts.value.some((ap) => ap.id === p.id)
-    );
-    allProducts.value.push(...newProducts);
+  if (!slug) {
+    console.warn("⚠️ No slug found in route params");
+    return;
   }
 
-  totalProductsCount.value = list.total || 0;
-  hasMore.value = allProducts.value.length < totalProductsCount.value;
+  const hasNumber = /\d/.test(slug); // category if number exists
+  const pageSize = perPage || 20;
+
+  const fetchParams = {
+    page,
+    perPage: pageSize,
+    append: page > 1,
+  };
+
+  try {
+    let list;
+
+    if (hasNumber) {
+      // --- 🏷 Fetch by Category
+      const categoryId = slug.match(/\d+/)?.[0];
+      if (!categoryId) {
+        console.warn("⚠️ No categoryId found in slug:", slug);
+        return;
+      }
+
+      console.log("Fetching category products, categoryId:", categoryId);
+      fetchParams.categoryId = categoryId;
+      await store.fetchProducts(fetchParams);
+
+      list = store.productLists?.[categoryId];
+
+      if (!list) {
+        console.warn("❌ No products found for categoryId:", categoryId);
+      } else {
+        console.log(`✅ Found ${list.products?.length || 0} category products`);
+      }
+    } else {
+      // --- 🏷 Fetch by Tag
+      fetchParams.tag = slug;
+      console.log("Fetching tag products, tag:", slug);
+      await store.fetchProductsByTag(fetchParams);
+
+      // 🔑 Use the same productLists store for tags
+      list = store.productLists?.[slug];
+
+      if (!list) {
+        const tagKeys = Object.keys(store.productLists || {});
+        console.log("Product list keys in store after fetch:", tagKeys);
+
+        list = tagKeys
+          .map((k) => store.productLists[k])
+          .find((l) => l?.products?.length);
+
+        if (list) {
+          console.log(
+            "✅ Found tag products under a different key in store:",
+            list
+          );
+        } else {
+          console.warn(`❌ No products found for tag: ${slug}`);
+        }
+      } else {
+        console.log(`✅ Found ${list.products?.length || 0} tag products`);
+      }
+    }
+
+    if (!list || !list.products?.length) return;
+
+    // Append or replace products
+    if (page === 1) allProducts.value = [...list.products];
+    else {
+      const newProds = list.products.filter(
+        (p) => !allProducts.value.some((ap) => ap.id === p.id)
+      );
+      allProducts.value.push(...newProds);
+    }
+
+    // ✅ Recompute filtered products immediately
+    await computeFilteredProducts();
+
+    totalProductsCount.value = list.total || 0;
+    hasMore.value = allProducts.value.length < totalProductsCount.value;
+
+    console.log(
+      "Total products now:",
+      allProducts.value.length,
+      "Has more?",
+      hasMore.value
+    );
+  } catch (err) {
+    console.error("❌ Error fetching products:", err);
+  }
 };
+
+
+
+
+
+
 
 // --- Infinite Scroll
 const sentinel = ref(null);
@@ -215,12 +301,27 @@ let observer;
 
 const loadMore = async () => {
   if (isLoadingMore.value || !hasMore.value) return;
+
   isLoadingMore.value = true;
-  currentPage.value++;
-  await fetchProductsFromStore(currentPage.value);
-  await computeFilteredProducts();
-  isLoadingMore.value = false;
+  try {
+    // Increment page
+    currentPage.value++;
+
+    // Fetch more products from store
+    await fetchProductsFromStore(currentPage.value);
+
+    // Recompute filteredProducts client-side
+    computeFilteredProducts();
+
+    // Update hasMore after appending
+    hasMore.value = allProducts.value.length < totalProductsCount.value;
+  } catch (err) {
+    console.error("❌ Error loading more products:", err);
+  } finally {
+    isLoadingMore.value = false;
+  }
 };
+
 
 const initObserver = async () => {
   await nextTick();
@@ -238,10 +339,13 @@ onMounted(initObserver);
 onBeforeUnmount(() => observer && observer.disconnect());
 
 // --- Compute filtered products
-const computeFilteredProducts = async () => {
-  const catId = categoryIdFromRoute.value;
-  if (!catId) return;
+const computeFilteredProducts = () => {
+  if (!allProducts.value.length) {
+    filteredProducts.value = [];
+    return;
+  }
 
+  // --- Normalize products
   const allProds = allProducts.value.map((p) => ({
     ...p,
     imageUrl: p.images?.[0]?.img || "",
@@ -253,7 +357,7 @@ const computeFilteredProducts = async () => {
     sizes: (p.sizes || []).map(normalizeSize),
   }));
 
-  // no filters selected
+  // --- No filters selected → show all products
   if (
     !selectedCategories.value.length &&
     !selectedTags.value.length &&
@@ -264,39 +368,29 @@ const computeFilteredProducts = async () => {
     return;
   }
 
-  try {
-    const filters = [`categories:=${catId}`, `active:=1`];
-    const tags = [...selectedCategories.value, ...selectedTags.value].filter(
-      (v) => !isSize(v)
-    );
-    const sizes = [...selectedSizes.value].filter(isSize).map(normalizeSize);
+  // --- Client-side filtering
+  filteredProducts.value = allProds.filter((p) => {
+    const matchesCategory =
+      !selectedCategories.value.length ||
+      p.displayCategories?.some((c) => selectedCategories.value.includes(c));
 
-    if (tags.length)
-      filters.push(`tags:=[${tags.map((t) => `"${t}"`).join(",")}]`);
-    if (sizes.length)
-      filters.push(
-        `product_size_array:=[${sizes.map((s) => `"${s}"`).join(",")}]`
+    const matchesTag =
+      !selectedTags.value.length ||
+      p.tags?.some((t) => selectedTags.value.includes(t));
+
+    const matchesSize =
+      !selectedSizes.value.length ||
+      p.sizes?.some((s) =>
+        selectedSizes.value.map(normalizeSize).includes(s)
       );
 
-    const url = `https://api.streetstylestore.com/collections/products/documents/search?q=*&sort_by=date_updated_unix:desc&per_page=${perPage}&page=1${filters
-      .map((f) => `&filter_by=${f}`)
-      .join("")}&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    const apiIds = data.hits?.map((h) => h.document.id) || [];
-    filteredProducts.value = apiIds.length
-      ? allProds.filter((p) => apiIds.includes(p.id))
-      : allProds;
-
-    totalProductsCount.value = data.found || totalProductsCount.value;
-  } catch {
-    filteredProducts.value = allProds;
-  }
+    return matchesCategory && matchesTag && matchesSize;
+  });
 
   persistFilters();
 };
+
+
 
 // --- Sort
 const sortedProducts = computed(() => {
@@ -329,6 +423,14 @@ watch(
     await computeFilteredProducts();
   },
   { deep: true }
+);
+
+watch(
+  () => categoryIdFromRoute.value,
+  (catId) => {
+    showImportantNote.value = catId === grabAndGoCategoryId;
+  },
+  { immediate: true }
 );
 
 watch(

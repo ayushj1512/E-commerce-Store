@@ -156,28 +156,46 @@ async function handleOrder() {
 
   checkout.selectedPayment = selectedPayment.value;
 
+  // Build the order object
+  const orderData = {
+    orderItems: cart.items.map(item => ({
+      id: item.id,
+      name: item.name,
+      variant: item.variant || "",
+      image: item.images?.[0]?.img || "",
+      quantity: item.quantity,
+      price: cart.getFinalPrice(item),
+    })),
+    subtotal: subtotal.value,
+    discount: discount.value,
+    total: totalWithCod.value,
+    shipping: cart.COD_CHARGE || 0,
+    tax: 0, // add if applicable
+    deliveryAddress: addressStore.deliveryAddress,
+    billingAddress: addressStore.billingAddress || addressStore.deliveryAddress,
+    orderReference: "REF" + Date.now(),
+    orderDate: new Date().toLocaleString(),
+    customerName: addressStore.deliveryAddress?.name || "Customer",
+    storeName: "Our Store",
+    paymentMethod: selectedPayment.value,
+  };
+
+  // Save order in checkoutStore
+  checkout.setOrder(orderData);
+
+  // Clear cart
+  cart.clearCart();
+
   if (selectedPayment.value === "cod") {
-    orderStore.setOrderItems(cart.items);
-    orderStore.setOrderDetail({
-      total: totalWithCod.value,
-      subtotal: subtotal.value,
-      discount: discount.value,
-      deliveryAddress: addressStore.deliveryAddress,
-      paymentMethod: selectedPayment.value,
-    });
-
-    const orderId = "ORD" + Date.now();
-    orderStore.setOrderId(orderId);
-    orderStore.setOrderReference("REF" + Date.now());
-
-    alert("Order placed successfully!");
-    cart.clearCart();
-    router.push("/order-success");
+    // Navigate to order-success page
+    router.push("/order-success"); // no need for state
   } else {
     cart.setCOD(false);
     router.push("/checkout/payment");
   }
 }
+
+
 
 onMounted(() => {
   mounted.value = true;

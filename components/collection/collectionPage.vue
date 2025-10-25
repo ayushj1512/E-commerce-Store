@@ -36,13 +36,7 @@
             </button>
 
             <!-- Filter Sidebar -->
-            <FilterSidebar
-              :categories="categories"
-              :selectedCategories="selectedCategories"
-              :priceRange="priceRange"
-              @applyPrice="applyPriceFilter"
-              @clear="clearFilters"
-            />
+            
           </div>
         </aside>
       </div>
@@ -112,7 +106,6 @@
 import { ref, computed } from "vue";
 import { useRouter } from "#app";
 import ProductCard from "@/components/common/ProductCard.vue";
-import FilterSidebar from "@/components/collection/FilterSidebar.vue";
 
 const router = useRouter();
 const isFilterOpen = ref(false);

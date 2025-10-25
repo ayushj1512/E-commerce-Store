@@ -191,7 +191,7 @@ const recentlyViewStore = useRecentlyViewStore();
 const product = ref({});
 const selectedSize = ref("");
 const selectedImage = ref("");
-const selectedColor = ref(null); // ✅ Added selectedColor
+const selectedColor = ref(null);
 const eligibleVoucher = ref(null);
 const loading = ref(true);
 const error = ref(null);
@@ -208,7 +208,7 @@ const parsedColors = computed(() => {
   if (!product.value.colors) return [];
   return product.value.colors.split(',').map(colorStr => {
     const [hex, name, verticalImg, attrImg] = colorStr.split('*');
-    return { hex: hex.trim(), name: name.trim(), verticalImg: verticalImg.trim(), attrImg: attrImg.trim() };
+    return { hex: hex?.trim(), name: name?.trim(), verticalImg: verticalImg?.trim(), attrImg: attrImg?.trim() };
   });
 });
 
@@ -224,63 +224,74 @@ const toggleWishlist = (id) => {
   if (isAdding) console.log(`[Wishlist] Added product ID: ${id}`);
 };
 
-// Add to cart
+// Add to Cart
 const addToCart = () => {
   if (requiresSizeLogic.value && filteredSizes.value.length && !selectedSize.value) {
     return toast?.warning("Select a size first");
   }
 
-  const cartProduct = {
-    id: product.value.id,
-    name: product.value.name,
-    price: +product.value.real_selling_price || +product.value.price || 0,
-    realPrice: +product.value.selling_price || +product.value.real_selling_price || 0,
-    discountPrice: +product.value.discount_price || 0,
-    categories: (product.value.categories || []).map(Number),
-    size: selectedSize.value || null,
-    color: selectedColor.value || null, // ✅ Optional color
-    image: selectedImage.value || product.value.image || "",
-    quantity: 1,
-    attributes: product.value.attributes || [], // expects [{ attr, val }]
-    item_list_id: product.value.item_list_id || "",
-    item_list_name: product.value.item_list_name || "",
-    finalPrice: +product.value.real_selling_price || +product.value.price || 0,
-    discountApplied: false,
-    discountQty: 0,
-    discountPerItem: 0,
-    product_payload: {
-      product: {
-        product_id: product.value.id.toString(),
-        name: product.value.name,
-        selling_price: +product.value.price || 0,
-        discount_price: +product.value.discount_price || 0,
-        size: selectedSize.value || null,
-        color: selectedColor.value || null,
-      },
-    },
-  };
+  const sellingPrice = Number(product.value.selling_price || product.value.price || 0);
+  const realSellingPrice = Number(product.value.real_selling_price || sellingPrice);
 
-  // Apply eligible voucher
+  console.log("🛒 [AddToCart] Prices:", { sellingPrice, realSellingPrice, selectedSize: selectedSize.value, selectedColor: selectedColor.value });
+
+  const cartProduct = {
+  id: product.value.id,
+  name: product.value.name,
+  MRP_price: +realSellingPrice || 0,       // Base price per item
+  price: +realSellingPrice || 0,           // Ensure store reads correct price
+  real_selling_price: +realSellingPrice || 0, // Used internally
+  categories: (product.value.categories || []).map(Number),
+  size: selectedSize.value || null,
+  color: selectedColor.value || null,
+  image: selectedImage.value || product.value.image || "",
+  quantity: 1,
+  attributes: product.value.attributes || [],
+  item_list_id: product.value.item_list_id || "",
+  item_list_name: product.value.item_list_name || "",
+  finalPrice: +realSellingPrice || 0,       // total price for this line
+  discountApplied: false,
+  discountQty: 0,
+  discountPerItem: 0,
+  voucherApplied: false,
+  voucherId: null,
+  product_payload: {
+    product: {
+      product_id: product.value.id?.toString() || "",
+      name: product.value.name,
+      selling_price: +realSellingPrice || 0, // ensure checkout payload is correct
+      discount_price: 0,
+      size: selectedSize.value || null,
+      color: selectedColor.value || null,
+    },
+  },
+};
+
+
+
+  console.log("🛒 [AddToCart] Before Voucher:", cartProduct);
+
+  // Apply voucher if eligible
   if (eligibleVoucher.value) {
-    const voucherCatId = String(eligibleVoucher.value.id_category || "");
-    const matchesCategory = cartProduct.categories.map(String).includes(voucherCatId);
-    if (matchesCategory) {
+    const voucherCatId = Number(eligibleVoucher.value.id_category || 0);
+    if (cartProduct.categories.includes(voucherCatId)) {
+      const voucherDiscount = Number(eligibleVoucher.value.discount || 0);
       if (eligibleVoucher.value.discount_type === "percent") {
-        cartProduct.price =
-          cartProduct.realPrice - (cartProduct.realPrice * (eligibleVoucher.value.discount || 0)) / 100;
+        cartProduct.finalPrice = +(realSellingPrice * (1 - voucherDiscount / 100)).toFixed(2);
       } else if (eligibleVoucher.value.discount_type === "fixed") {
-        cartProduct.price = Math.max(cartProduct.realPrice - (eligibleVoucher.value.discount || 0), 0);
+        cartProduct.finalPrice = Math.max(realSellingPrice - voucherDiscount, 0);
       }
       cartProduct.voucherApplied = true;
       cartProduct.voucherId = eligibleVoucher.value.id;
     }
   }
 
+console.log(cartProduct)
   cartStore.addToCart(cartProduct);
   toast?.success(`${product.value.name} added to cart`);
 };
 
-// Buy now
+// Buy Now
 const buyNow = () => {
   if (requiresSizeLogic.value && filteredSizes.value.length && !selectedSize.value) {
     return toast?.warning("Select a size first");
@@ -315,7 +326,7 @@ const notifyMe = async () => {
 const goToProduct = (id) => router.push(`/category/subcategory/product/${id}`);
 const formatText = (text) => text ? text.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : "";
 
-// Fetch product and vouchers
+// Fetch Product
 const fetchProduct = async () => {
   loading.value = true;
   error.value = null;
@@ -334,22 +345,28 @@ const fetchProduct = async () => {
       ...doc,
       id: doc.id,
       name: doc.name || firstData.name || "",
-      selling_price: doc.selling_price ?? firstData.selling_price ?? 0,
-      real_selling_price: doc.real_selling_price ?? firstData.real_selling_price ?? doc.selling_price ?? 0,
-      discount_price: doc.discount_price ?? firstData.discount_price ?? 0,
+      selling_price: Number(doc.selling_price || firstData.selling_price || doc.price || 0),
+      real_selling_price: Number(doc.real_selling_price || firstData.real_selling_price || doc.selling_price || doc.price || 0),
       images: parsed.images || [],
       product_size_array: doc.product_size_array || firstData.product_size_array || [],
       product_all_sizes: doc.product_all_sizes || [],
       customSizeChartArr: parsed.customSizeChartArr || null,
       fbt_items: (parsed.fbt || []).map(i => ({ ...i, hover: false })),
       categories: doc.categories || [],
-      attributes: doc.attributes || [], // ✅ Added attributes
-      item_list_id: doc.item_list_id || "", // ✅ Added
-      item_list_name: doc.item_list_name || "", // ✅ Added
+      attributes: doc.attributes || [],
+      item_list_id: doc.item_list_id || "",
+      item_list_name: doc.item_list_name || "",
       avg_rating: doc.review_stats?.avg_rating || 0,
       total_ratings: doc.review_stats?.total_ratings || 0,
       colors: doc.colors || firstData.colors || "",
     };
+
+    console.log("📦 [fetchProduct] Loaded product:", {
+      id: product.value.id,
+      name: product.value.name,
+      selling_price: product.value.selling_price,
+      real_selling_price: product.value.real_selling_price,
+    });
 
     recentlyViewStore.addProduct(product.value.id);
     selectedImage.value = product.value.images[0]?.bigImg || "";
@@ -362,7 +379,6 @@ const fetchProduct = async () => {
     const productCatIds = (product.value.categories || []).map(String);
 
     eligibleVoucher.value = vouchers.find(v => productCatIds.includes(String(v.id_category || "").trim()));
-
   } catch (err) {
     error.value = "Failed to fetch product data";
     console.error(err);

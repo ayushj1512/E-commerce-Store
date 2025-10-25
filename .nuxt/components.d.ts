@@ -36,11 +36,11 @@ export const CommonGlobalToast: typeof import("../components/common/GlobalToast.
 export const CommonHeader: typeof import("../components/common/Header.vue")['default']
 export const CommonHeaderSearch: typeof import("../components/common/HeaderSearch.vue")['default']
 export const CommonProductCard: typeof import("../components/common/ProductCard.vue")['default']
+export const CommonProductCardScroll: typeof import("../components/common/ProductCardScroll.vue")['default']
 export const CommonProductHorizontalList: typeof import("../components/common/ProductHorizontalList.vue")['default']
 export const CommonScrollToTopButton: typeof import("../components/common/ScrollToTopButton.vue")['default']
 export const CommonShareButton: typeof import("../components/common/ShareButton.vue")['default']
 export const CommonVideoCard: typeof import("../components/common/VideoCard.vue")['default']
-export const CommonElectricBorder: typeof import("../components/common/electricBorder.vue")['default']
 export const CommonErrorHandler: typeof import("../components/common/errorHandler.vue")['default']
 export const HeaderCartIcon: typeof import("../components/header/CartIcon.vue")['default']
 export const HeaderProfileIcon: typeof import("../components/header/ProfileIcon.vue")['default']
@@ -65,7 +65,7 @@ export const LoginOtpInput: typeof import("../components/login/OtpInput.vue")['d
 export const LoginPhoneNumberInput: typeof import("../components/login/PhoneNumberInput.vue")['default']
 export const OrderCancelOrderModal: typeof import("../components/order/CancelOrderModal.vue")['default']
 export const OrderGetSupportButton: typeof import("../components/order/GetSupportButton.vue")['default']
-export const OrderTrackOrderButton: typeof import("../components/order/TrackOrderButton.vue")['default']
+export const OrderTrackOrderModal: typeof import("../components/order/TrackOrderModal.vue")['default']
 export const ProductDetailColorSelector: typeof import("../components/productDetail/ColorSelector.vue")['default']
 export const ProductDetailEligibleVoucher: typeof import("../components/productDetail/EligibleVoucher.vue")['default']
 export const ProductDetailFrequentlyBoughtTogether: typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']
@@ -127,11 +127,11 @@ export const LazyCommonGlobalToast: LazyComponent<typeof import("../components/c
 export const LazyCommonHeader: LazyComponent<typeof import("../components/common/Header.vue")['default']>
 export const LazyCommonHeaderSearch: LazyComponent<typeof import("../components/common/HeaderSearch.vue")['default']>
 export const LazyCommonProductCard: LazyComponent<typeof import("../components/common/ProductCard.vue")['default']>
+export const LazyCommonProductCardScroll: LazyComponent<typeof import("../components/common/ProductCardScroll.vue")['default']>
 export const LazyCommonProductHorizontalList: LazyComponent<typeof import("../components/common/ProductHorizontalList.vue")['default']>
 export const LazyCommonScrollToTopButton: LazyComponent<typeof import("../components/common/ScrollToTopButton.vue")['default']>
 export const LazyCommonShareButton: LazyComponent<typeof import("../components/common/ShareButton.vue")['default']>
 export const LazyCommonVideoCard: LazyComponent<typeof import("../components/common/VideoCard.vue")['default']>
-export const LazyCommonElectricBorder: LazyComponent<typeof import("../components/common/electricBorder.vue")['default']>
 export const LazyCommonErrorHandler: LazyComponent<typeof import("../components/common/errorHandler.vue")['default']>
 export const LazyHeaderCartIcon: LazyComponent<typeof import("../components/header/CartIcon.vue")['default']>
 export const LazyHeaderProfileIcon: LazyComponent<typeof import("../components/header/ProfileIcon.vue")['default']>
@@ -156,7 +156,7 @@ export const LazyLoginOtpInput: LazyComponent<typeof import("../components/login
 export const LazyLoginPhoneNumberInput: LazyComponent<typeof import("../components/login/PhoneNumberInput.vue")['default']>
 export const LazyOrderCancelOrderModal: LazyComponent<typeof import("../components/order/CancelOrderModal.vue")['default']>
 export const LazyOrderGetSupportButton: LazyComponent<typeof import("../components/order/GetSupportButton.vue")['default']>
-export const LazyOrderTrackOrderButton: LazyComponent<typeof import("../components/order/TrackOrderButton.vue")['default']>
+export const LazyOrderTrackOrderModal: LazyComponent<typeof import("../components/order/TrackOrderModal.vue")['default']>
 export const LazyProductDetailColorSelector: LazyComponent<typeof import("../components/productDetail/ColorSelector.vue")['default']>
 export const LazyProductDetailEligibleVoucher: LazyComponent<typeof import("../components/productDetail/EligibleVoucher.vue")['default']>
 export const LazyProductDetailFrequentlyBoughtTogether: LazyComponent<typeof import("../components/productDetail/FrequentlyBoughtTogether.vue")['default']>

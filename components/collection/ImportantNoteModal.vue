@@ -5,9 +5,10 @@
       <div class="modal-header">
         <h2 class="modal-title">Important Note</h2>
       </div>
-      <p class="modal-content">
-        We do not offer returns or exchanges on purchase of items from this category.
-      </p>
+     <p class="modal-content">
+  Kindly note that items from this category are final sale. We are unable to offer returns or exchanges, and we appreciate your understanding.
+</p>
+
     </div>
   </div>
 </template>

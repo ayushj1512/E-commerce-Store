@@ -20,7 +20,6 @@
         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight truncate text-black">
           Order #{{ order.order_detail.order }}
         </h1>
-
         <span
           :class="[ 'px-4 py-2 rounded-full text-sm sm:text-base font-semibold capitalize border', statusClass(order.order_detail.status) ]"
         >
@@ -44,21 +43,31 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-3 mt-2">
-        <TrackOrderButton
-          :order="order"
-          class="flex-1"
-        />
-        <GetSupportButton
-          :order="order"
-          class="flex-1"
-        />
-        <CancelOrderModal
-          :order-id="order.order_detail.order"
-          class="flex-1"
-          :disabled="!order.order_detail.cancelled"
-        />
+      <!-- Action Buttons (hide all if canceled) -->
+      <div
+        v-if="order.order_detail.status.toLowerCase() !== 'canceled' && order.order_detail.status.toLowerCase() !== 'cancelled'"
+        class="flex flex-wrap gap-3 mt-2"
+      >
+        <button
+          class="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition text-sm sm:text-base"
+          @click="showTrackModal = true"
+        >
+          Track Order
+        </button>
+
+        <button
+          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          @click="showSupportModal = true"
+        >
+          Get Support
+        </button>
+
+        <button
+          class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          @click="showCancelModal = true"
+        >
+          Cancel Order
+        </button>
       </div>
 
       <!-- Products List -->
@@ -66,7 +75,8 @@
         <div
           v-for="product in order.order_products"
           :key="product.product_id"
-          class="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
+          @click="navigateProduct(product)"
+          class="cursor-pointer bg-white border border-gray-200 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100"
         >
           <img
             :src="product.img"
@@ -97,7 +107,7 @@
         <p>Email: {{ order.customer_detail.email || "—" }}</p>
       </div>
 
-      <!-- Order History (Card style with colored dots) -->
+      <!-- Order History -->
       <div class="bg-white p-4 rounded-xl shadow-md mt-4 hover:shadow-lg transition">
         <h2 class="font-semibold text-lg mb-4 border-b pb-1 border-gray-200">Order History</h2>
         <div class="space-y-4">
@@ -123,6 +133,11 @@
     <div v-else class="text-center py-20 text-gray-400 text-lg">
       Order not found.
     </div>
+
+    <!-- Modals -->
+    <TrackOrderModal v-model="showTrackModal" :id-order="order?.order_detail.order || 0" />
+    <GetSupportButton v-model="showSupportModal" />
+    <CancelOrderModal v-model="showCancelModal" :order-id="order?.order_detail.order || 0" />
   </div>
 </template>
 
@@ -133,8 +148,7 @@ import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 import { Calendar, CreditCard, Wallet } from "lucide-vue-next";
 
-// Import modular buttons
-import TrackOrderButton from "@/components/order/TrackOrderButton.vue";
+import TrackOrderModal from "@/components/order/TrackOrderModal.vue";
 import GetSupportButton from "@/components/order/GetSupportButton.vue";
 import CancelOrderModal from "@/components/order/CancelOrderModal.vue";
 
@@ -144,8 +158,11 @@ const authStore = useAuthStore();
 
 const order = ref(null);
 const loading = ref(true);
-
 const orderId = route.params.order_id;
+
+const showSupportModal = ref(false);
+const showCancelModal = ref(false);
+const showTrackModal = ref(false);
 
 const fetchOrders = async () => {
   try {
@@ -199,13 +216,12 @@ const formatDate = dateStr => {
   });
 };
 
+// Navigate to product
+const navigateProduct = product => {
+  if (!product.parent_category || !product.child_category) return;
+  const slug = `${product.parent_category}/${product.child_category}/${product.product_name}/${product.product_id}`;
+  router.push(`/${slug}`);
+};
+
 onMounted(fetchOrders);
 </script>
-
-<style scoped>
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn { animation: fadeIn 0.7s ease-in-out both; }
-</style>

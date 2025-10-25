@@ -13,7 +13,11 @@
       <input
         v-model="pinCode"
         type="text"
-        placeholder="Enter pincode"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="6"
+        placeholder="Enter 6-digit pincode"
+        @input="filterDigits"
         :class="[
           'flex-1 rounded-md px-3 py-1.5 text-sm focus:outline-none transition border',
           componentColor.text,
@@ -23,7 +27,12 @@
       />
       <button
         @click="checkPinCode"
-        :class="['rounded-md text-sm font-medium flex items-center justify-center gap-1 px-3 py-1.5 transition', buttonColor]"
+        :disabled="pinCode.length !== 6"
+        :class="[
+          'rounded-md text-sm font-medium flex items-center justify-center gap-1 px-3 py-1.5 transition',
+          buttonColor,
+          pinCode.length !== 6 ? 'opacity-50 cursor-not-allowed' : ''
+        ]"
       >
         <Check class="w-4 h-4" /> Check
       </button>
@@ -67,26 +76,48 @@ const statusMessage = ref("");
 const codInfo = ref(null);
 const prepaidInfo = ref(null);
 
+// ✅ Filter: Only digits & max 6 characters
+function filterDigits(e) {
+  pinCode.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+}
+
 // Dynamic colors
 const componentColor = computed(() => {
   if (available.value === null) {
-    return { bg: "bg-white", border: "border-black", text: "text-black", placeholder: "placeholder-gray-400" };
+    return {
+      bg: "bg-white",
+      border: "border-black",
+      text: "text-black",
+      placeholder: "placeholder-gray-400"
+    };
   }
   if (codInfo.value || prepaidInfo.value) {
-    return { bg: "bg-green-50", border: "border-green-600", text: "text-green-700", placeholder: "placeholder-green-600" };
+    return {
+      bg: "bg-green-50",
+      border: "border-green-600",
+      text: "text-green-700",
+      placeholder: "placeholder-green-600"
+    };
   }
-  return { bg: "bg-red-50", border: "border-red-600", text: "text-red-600", placeholder: "placeholder-red-600" };
+  return {
+    bg: "bg-red-50",
+    border: "border-red-600",
+    text: "text-red-600",
+    placeholder: "placeholder-red-600"
+  };
 });
 
 const buttonColor = computed(() => {
-  if (available.value === null) return "bg-black text-white hover:bg-gray-800";
-  if (codInfo.value || prepaidInfo.value) return "bg-green-700 text-white hover:bg-green-800";
+  if (available.value === null)
+    return "bg-black text-white hover:bg-gray-800";
+  if (codInfo.value || prepaidInfo.value)
+    return "bg-green-700 text-white hover:bg-green-800";
   return "bg-red-600 text-white hover:bg-red-700";
 });
 
 async function checkPinCode() {
-  if (!pinCode.value) {
-    statusMessage.value = "Please enter a valid pincode.";
+  if (pinCode.value.length !== 6) {
+    statusMessage.value = "Please enter a valid 6-digit pincode.";
     available.value = null;
     codInfo.value = null;
     prepaidInfo.value = null;
@@ -100,17 +131,19 @@ async function checkPinCode() {
   prepaidInfo.value = null;
 
   try {
-    // Minimal payload without auth
     const payload = {
       gateway_action: "order/checkPinCode",
       pin_code: pinCode.value,
       site: "sss",
-      id_cart: "0", // default dummy cart
-      id_customer: "0", // dummy user
-      user_hash_key: "", // no login
+      id_cart: "0",
+      id_customer: "0",
+      user_hash_key: ""
     };
 
-    const res = await ofetch("https://gateway.streetstylestore.com/gateway/v1/", { method: "POST", body: payload });
+    const res = await ofetch("https://gateway.streetstylestore.com/gateway/v1/", {
+      method: "POST",
+      body: payload
+    });
 
     if (res.details) {
       codInfo.value = res.details.cod === 1;

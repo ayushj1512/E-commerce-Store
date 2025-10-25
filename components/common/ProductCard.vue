@@ -2,6 +2,7 @@
   <div
     class="relative cursor-pointer group overflow-hidden shadow-sm hover:shadow-md transform transition-all duration-300 bg-white rounded-lg flex flex-col"
     @click="goToDetail"
+    ref="cardRef"
   >
     <!-- Wishlist Button -->
     <button
@@ -24,6 +25,7 @@
     <!-- Product Image -->
     <div class="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 flex-shrink-0 overflow-hidden">
       <img
+        v-if="loaded"
         :src="currentImage"
         :alt="title"
         class="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -31,6 +33,7 @@
         @mouseleave="currentImage = image"
         loading="lazy"
       />
+      <div v-else class="w-full h-full bg-gray-200 animate-pulse"></div>
 
       <!-- Discount Badge -->
       <span
@@ -79,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from "vue"
+import { ref, computed, watchEffect, onMounted, onBeforeUnmount } from "vue"
 import { useRouter } from "#app"
 import { useWishlistStore } from "@/stores/wishlist"
 import { useCartStore } from "@/stores/cartStore"
@@ -105,6 +108,8 @@ const wishlist = useWishlistStore()
 const cart = useCartStore()
 const animating = ref(false)
 const voucher = ref(null)
+const loaded = ref(false)
+const cardRef = ref(null)
 
 // Wishlist logic
 const isWishlisted = computed(() => wishlist.isFavorite(props.id))
@@ -117,21 +122,14 @@ const discountPercent = computed(() => {
   return 0
 })
 
-// --- Voucher logic with reactive watchEffect ---
+// --- Voucher logic ---
 watchEffect(() => {
   if (!cart.vouchers.length) {
     voucher.value = null
     return
   }
-
-  // Convert both sides to numbers to avoid type mismatch
   const matched = cart.vouchers.find(v => props.categories.map(Number).includes(Number(v.id_category)))
-
-  if (matched) {
-    voucher.value = matched
-  } else {
-    voucher.value = null
-  }
+  voucher.value = matched || null
 })
 
 // Go to product detail
@@ -151,8 +149,32 @@ const toggleWishlist = () => {
   setTimeout(() => (animating.value = false), 400)
 }
 
-// Debug: watch cart vouchers to see updates live
-watchEffect(() => {
+// --- Lazy-load using IntersectionObserver ---
+let observer
+const observeImage = () => {
+  if (!cardRef.value) return
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        loaded.value = true
+        if (props.hoverImage) {
+          const img = new Image()
+          img.src = props.hoverImage
+        }
+        observer.disconnect()
+      }
+    },
+    { threshold: 0.1 }
+  )
+  observer.observe(cardRef.value)
+}
+
+onMounted(() => {
+  observeImage()
+})
+
+onBeforeUnmount(() => {
+  if (observer) observer.disconnect()
 })
 </script>
 
@@ -176,4 +198,12 @@ watchEffect(() => {
   100% { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 </style>

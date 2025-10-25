@@ -9,24 +9,15 @@
         <!-- Cart Items & Summary -->
         <template v-else>
           <!-- Cart & Summary Row -->
-          <div class="flex flex-col md:flex-row gap-6">
+          <div class="flex flex-col md:flex-row gap-12">
 
             <!-- Items -->
             <div class="w-full md:w-2/3 space-y-4">
               <transition-group name="list" tag="div" appear>
-                <CartCard
-                  v-for="item in sortedCartItems"
-                  :key="item._key"
-                  :item="item"
-                  :filtered-vouchers="cart.filteredItemVouchers(item)"
-                  :is-voucher-applied="cart.isVoucherApplied(item)"
-                  :final-price="cart.getFinalPrice(item)"
-                  @increase="increaseQty"
-                  @decrease="decreaseQty"
-                  @remove="confirmRemove"
-                  @go-to-detail="goToDetail"
-                  @go-to-voucher="goToVoucherLink"
-                />
+                <CartCard v-for="item in sortedCartItems" :key="item._key" :item="item"
+                  :filtered-vouchers="cart.filteredItemVouchers(item)" :is-voucher-applied="cart.isVoucherApplied(item)"
+                  :final-price="cart.getFinalPrice(item)" @increase="increaseQty" @decrease="decreaseQty"
+                  @remove="confirmRemove" @go-to-detail="goToDetail" @go-to-voucher="goToVoucherLink" />
               </transition-group>
 
               <!-- Buy Along Products Section (📱 Mobile Only, Above Summary) -->
@@ -61,17 +52,24 @@
                 <span>₹{{ cart.total }}</span>
               </div>
 
-              <button
-                @click="checkout"
-                class="w-full bg-black text-white py-3 rounded-xl mt-6 hover:bg-gray-800 font-semibold transition-all duration-200"
-              >
+             <div v-if="isGrabAndGoOnly" class="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-lg p-3 mt-4">
+  <strong>Note:</strong> Debug: <b>{{ isGrabAndGoOnly }}</b>
+  Because of deep discounted pricing, items from <b>Grab and Go</b> category can only
+  be purchased when you also buy items from another category.
+</div>
+
+              <button @click="checkout" :disabled="isGrabAndGoOnly"
+                class="w-full bg-black text-white py-3 rounded-xl mt-6 font-semibold transition-all duration-200"
+                :class="{
+                  'opacity-50 cursor-not-allowed hover:bg-black': isGrabAndGoOnly,
+                  'hover:bg-gray-800': !isGrabAndGoOnly
+                }">
                 Proceed to Checkout
               </button>
 
-              <button
-                @click="confirmClearCart"
-                class="w-full bg-red-500 text-white py-3 rounded-xl mt-3 hover:bg-red-600 font-semibold transition-all duration-200"
-              >
+
+              <button @click="confirmClearCart"
+                class="w-full bg-red-500 text-white py-3 rounded-xl mt-3 hover:bg-red-600 font-semibold transition-all duration-200">
                 Clear Cart
               </button>
             </div>
@@ -87,38 +85,78 @@
         </template>
 
         <!-- Modals and Toasts remain unchanged -->
+
+        <!-- Clear Cart Confirmation Modal -->
+        <div v-if="showClearCartModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-6 shadow-xl w-80 text-center">
+            <h3 class="text-lg font-semibold mb-4">Clear all items?</h3>
+            <p class="text-gray-600 text-sm mb-6">
+              This will remove all items from your cart.
+            </p>
+            <div class="flex gap-3 justify-center">
+              <button @click="clearCartConfirmed"
+                class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">
+                Yes, Clear
+              </button>
+              <button @click="showClearCartModal = false"
+                class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 font-medium">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remove Item Confirmation Modal -->
+<div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-6 shadow-xl w-80 text-center">
+    <h3 class="text-lg font-semibold mb-4">Remove this item?</h3>
+    <p class="text-gray-600 text-sm mb-6">
+      Are you sure you want to remove <strong>{{ modalItem?.name }}</strong> from your cart?
+    </p>
+    <div class="flex gap-3 justify-center">
+      <button @click="removeConfirmed"
+        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 font-semibold">
+        Yes, Remove
+      </button>
+      <button @click="showModal = false"
+        class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 font-medium">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
       </div>
     </div>
   </template>
 
 
-  <style scoped>
-  /* Horizontal scroll for Buy Along Products */
-  .buy-along-products {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0,0,0,0.3) transparent;
-    padding-bottom: 0.5rem;
-  }
+<style scoped>
+/* Horizontal scroll for Buy Along Products */
+.buy-along-products {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  padding-bottom: 0.5rem;
+}
 
-  .buy-along-products::-webkit-scrollbar {
-    height: 6px;
-  }
+.buy-along-products::-webkit-scrollbar {
+  height: 6px;
+}
 
-  .buy-along-products::-webkit-scrollbar-thumb {
-    background-color: rgba(0,0,0,0.3);
-    border-radius: 3px;
-  }
+.buy-along-products::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
 
-  .buy-along-products::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  </style>
+.buy-along-products::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/auth";
@@ -155,6 +193,9 @@ const decreaseQty = (item) => {
   if (item.quantity > 1) {
     cart.updateQuantity(item, item.quantity - 1, item.size);
     addToast("warning", `- ${item.name}`);
+  } else {
+    cart.removeFromCart(item);
+    addToast("error", `${item.name} removed from cart`);
   }
 };
 
@@ -176,10 +217,7 @@ const removeConfirmed = () => {
 const removeAndWishlist = () => {
   cart.removeFromCart(modalItem.value);
   wishlist.toggleFavorite(modalItem.value.id);
-  addToast(
-    "success",
-    `${modalItem.value.name} removed from cart & added to wishlist`
-  );
+  addToast("success", `${modalItem.value.name} removed & added to wishlist`);
   showModal.value = false;
 };
 
@@ -195,7 +233,7 @@ const clearCartConfirmed = () => {
 // Checkout handler
 const checkout = async () => {
   if (!cart.items.length) {
-    addToast("error", "Cart empty");
+    addToast("error", "Cart is empty");
     return;
   }
 
@@ -207,8 +245,6 @@ const checkout = async () => {
 
   try {
     addToast("loading", "Preparing your checkout...");
-
-    // Fetch checkout data (auto-fills all required fields)
     await cart.fetchCartCheckout();
 
     if (cart.checkoutError) {
@@ -216,14 +252,19 @@ const checkout = async () => {
       return;
     }
 
-    console.log("Checkout payload response:", cart.cartData);
-
-    // Navigate to checkout page
     router.push("/checkout");
   } catch (err) {
     addToast("error", err.message || "Checkout failed");
   }
 };
+
+// Grab & Go logic
+const isGrabAndGoOnly = computed(() => {
+  if (!cart.items.length) return false;
+  const allGrabAndGo = cart.items.every(item => item.categories?.includes(874));
+  console.log("⚙️ Grab & Go check:", cart.items, "Result:", allGrabAndGo);
+  return allGrabAndGo;
+});
 
 // Navigation helpers
 const slugify = (text) =>
@@ -238,35 +279,64 @@ const goToVoucherLink = (link) => {
   if (link) router.push(link);
 };
 
-// On mount: load cart, vouchers, and fetch checkout data
-onMounted(async () => {
-  cart.loadCart();
-  await cart.fetchVouchers();
+// Watch cart items
+watch(
+  () => cart.items,
+  (newItems) => {
+    console.log("🛒 Cart updated:", newItems);
+    console.table(newItems.map(i => ({
+      id: i.id,
+      name: i.name,
+      qty: i.quantity,
+      size: i.size,
+      finalPrice: i.finalPrice,
+      discount: i.discountApplied
+    })));
+  },
+  { deep: true }
+);
 
-  // ✅ Automatically fetch checkout data if cart has items
+// On mount
+onMounted(async () => {
+  console.log("🚀 Cart Page Mounted");
+
+  await cart.loadCart();
+  console.log("✅ Cart loaded:", cart.items);
+
+  await cart.fetchVouchers();
+  console.log("🎟️ Vouchers fetched:", cart.vouchers || "None");
+
+  // Fetch checkout info if cart has items
   if (cart.items.length) {
     try {
+      console.log("💳 Fetching checkout data...");
       await cart.fetchCartCheckout();
-      if (cart.checkoutError) {
-        console.warn("Checkout fetch error:", cart.checkoutError);
-      } else {
-        console.log("Cart checkout fetched successfully on page load");
-      }
+      if (cart.checkoutError) console.warn("⚠️ Checkout error:", cart.checkoutError);
+      else console.log("✅ Checkout fetched:", cart.checkout);
     } catch (err) {
-      console.error("Failed to fetch checkout on mount:", err);
+      console.error("❌ Checkout fetch failed:", err);
     }
+  } else {
+    console.log("🕳️ Cart empty, skipping checkout fetch");
   }
 });
+
+// Helper: per-unit price display
+const getItemUnitPrice = (item) =>
+  item.quantity > 0
+    ? ((item.finalPrice || item.MRP_price * item.quantity) / item.quantity).toFixed(2)
+    : item.MRP_price.toFixed(2);
 </script>
 
-  <style>
-  .list-enter-active,
-  .list-leave-active {
-    transition: all 0.3s ease;
-  }
-  .list-enter-from,
-  .list-leave-to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  </style>
+<style>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+</style>

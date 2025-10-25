@@ -21,16 +21,18 @@ export const useCartStore = defineStore("cart", {
     // subtotal before discounts
     subtotal: (state) =>
       state.items
-        .reduce((sum, i) => sum + (i.realPrice || 0) * (i.quantity || 0), 0)
+        .reduce((sum, i) => sum + (i.MRP_price || 0) * (i.quantity || 0), 0)
         .toFixed(2),
 
     // total after discounts (and COD if selected)
     total: (state) => {
       const baseTotal = state.items.reduce(
-        (sum, i) => sum + (i.finalPrice || i.price * i.quantity),
+        (sum, i) => sum + (i.finalPrice || i.MRP_price * i.quantity),
         0
       );
-      const withCOD = state.codSelected ? baseTotal + state.COD_CHARGE : baseTotal;
+      const withCOD = state.codSelected
+        ? baseTotal + state.COD_CHARGE
+        : baseTotal;
       return Number(withCOD.toFixed(2));
     },
   },
@@ -53,53 +55,92 @@ export const useCartStore = defineStore("cart", {
   const cartItem = {
     id: product.id,
     name: product.name,
-    price: +product.real_selling_price || +product.price || 0,
-    realPrice: +product.selling_price || +product.real_selling_price || 0,
-    discountPrice: +product.discount_price || 0,
+    MRP_price: +product.MRP_price || 0,             // use actual field from payload
+    discountPrice: +product.discountPerItem || 0,  // per-item discount
     categories: (product.categories || []).map(Number),
     size: product.size || null,
     color: product.color || null,
     image: product.image || "",
     quantity: product.quantity || 1,
     _key: key,
-    discountApplied: false,
-    discountQty: 0,
-    discountPerItem: 0,
-    finalPrice: +product.real_selling_price || +product.price || 0, // total for this item row
+    discountApplied: product.discountApplied || false,
+    discountQty: product.discountQty || 0,
+    discountPerItem: product.discountPerItem || 0,
+    finalPrice: +product.finalPrice || +product.MRP_price || 0, // total line price
 
-    // New fields for checkout payload
-    attributes: product.attributes || [],       // expects [{ attr, val }]
+    // Checkout payload
+    attributes: product.attributes || [],
     item_list_id: product.item_list_id || "",
     item_list_name: product.item_list_name || "",
     product_payload: {
       product: {
         product_id: product.id.toString(),
         name: product.name,
-        selling_price: +product.price || 0,
-        discount_price: +product.discount_price || 0,
+        selling_price: +product.MRP_price || 0,           // per-unit price
+        discount_price: +product.discountPerItem || 0,    // per-unit discount
+        size: product.size || null,
+        color: product.color || null,
       },
     },
   };
 
+  console.log("🛍️ addToCart called with product:", {
+    id: product.id,
+    name: product.name,
+    size: product.size,
+    color: product.color,
+    qty: product.quantity,
+    MRP_price: cartItem.MRP_price,
+    discount: cartItem.discountPrice,
+    categories: product.categories,
+  });
+
   if (existing) {
-    // Merge quantities and attributes if item exists
+    console.log("🔁 Existing item found in cart, merging quantities...");
+    console.log("Before merge:", {
+      existingQty: existing.quantity,
+      addedQty: cartItem.quantity,
+    });
+
+    // Merge quantities
     existing.quantity += cartItem.quantity;
 
-    // Optionally update other fields if needed
-    existing.discountApplied = cartItem.discountApplied;
-    existing.discountQty = cartItem.discountQty;
-    existing.discountPerItem = cartItem.discountPerItem;
-    existing.finalPrice = cartItem.finalPrice;
+    // Update attributes & payload
     existing.attributes = cartItem.attributes;
     existing.item_list_id = cartItem.item_list_id;
     existing.item_list_name = cartItem.item_list_name;
     existing.product_payload = cartItem.product_payload;
+
+    // Recalculate line total if needed
+    existing.finalPrice = +cartItem.MRP_price * existing.quantity;
+
+    console.log("After merge (before discount recalculation):", existing);
   } else {
+    console.log("🆕 New product added to cart:", cartItem);
     this.items.push(cartItem);
   }
 
-  this.saveCart();
+  // Recalculate discounts for all items
   this.computeDiscounts();
+
+  console.log(
+    "🧾 Updated Cart Items:",
+    this.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      qty: i.quantity,
+      size: i.size,
+      color: i.color,
+      MRP_price: i.MRP_price,
+      finalPrice: i.finalPrice,
+      discountQty: i.discountQty,
+      discountPerItem: i.discountPerItem,
+    }))
+  );
+
+  this.saveCart();
+  console.log("💾 Cart saved to local storage.");
+  console.log("💸 Discounts recalculated.");
 },
 
 
@@ -184,73 +225,85 @@ export const useCartStore = defineStore("cart", {
     },
 
     normalizeCartItems() {
-      this.items.forEach((item, index) => {
-        if (!item._key)
-          item._key = `${item.id}-${item.size || "default"}-${index}`;
-        if (!Array.isArray(item.categories))
-          item.categories = [Number(item.categoryId || 0)];
-        item.categories = item.categories.map(Number);
-        if (!item.realPrice) item.realPrice = item.price;
-        if (!item.finalPrice) item.finalPrice = item.price * item.quantity;
-      });
-    },
+  this.items.forEach((item, index) => {
+    // Ensure unique key for each cart item
+    if (!item._key)
+      item._key = `${item.id}-${item.size || "default"}-${index}`;
+
+    // Ensure categories is an array of numbers
+    if (!Array.isArray(item.categories))
+      item.categories = [Number(item.categoryId || 0)];
+    item.categories = item.categories.map(Number);
+
+    // Ensure MRP_price exists
+    if (!item.MRP_price) item.MRP_price = 0;
+
+    // Ensure finalPrice is calculated from MRP_price and quantity
+    if (!item.finalPrice) item.finalPrice = item.MRP_price * (item.quantity || 1);
+
+    // Optional: ensure quantity is at least 1
+    if (!item.quantity || item.quantity <= 0) item.quantity = 1;
+  });
+},
+
 
     computeDiscounts() {
-      if (!Array.isArray(this.items)) return;
-      this.discount = 0;
-      this.applicableVouchers = [];
-      this.normalizeCartItems();
+  if (!Array.isArray(this.items)) return;
+  this.discount = 0;
+  this.applicableVouchers = [];
+  this.normalizeCartItems();
 
-      const categoryGroups = {};
-      this.items.forEach((item) => {
-        item.categories.forEach((catId) => {
-          if (!categoryGroups[catId]) categoryGroups[catId] = [];
-          categoryGroups[catId].push(item);
-        });
-      });
+  const categoryGroups = {};
+  this.items.forEach((item) => {
+    item.categories.forEach((catId) => {
+      if (!categoryGroups[catId]) categoryGroups[catId] = [];
+      categoryGroups[catId].push(item);
+    });
+  });
 
-      this.vouchers.forEach((v) => {
-        const itemsInCat = categoryGroups[v.categoryId] || [];
-        if (!itemsInCat.length) return;
+  this.vouchers.forEach((v) => {
+    const itemsInCat = categoryGroups[v.categoryId] || [];
+    if (!itemsInCat.length) return;
 
-        let totalQty = itemsInCat.reduce((sum, i) => sum + i.quantity, 0);
-        const fullGroups = Math.floor(totalQty / v.minQty);
-        const discountedQty = fullGroups * v.minQty;
-        const leftoverQty = totalQty - discountedQty;
-        const remainingToUnlock = leftoverQty > 0 ? v.minQty - leftoverQty : 0;
+    let totalQty = itemsInCat.reduce((sum, i) => sum + i.quantity, 0);
+    const fullGroups = Math.floor(totalQty / v.minQty);
+    const discountedQty = fullGroups * v.minQty;
+    const leftoverQty = totalQty - discountedQty;
+    const remainingToUnlock = leftoverQty > 0 ? v.minQty - leftoverQty : 0;
 
-        let remainingDiscountQty = discountedQty;
-        const remainingPerItem = {};
+    let remainingDiscountQty = discountedQty;
+    const remainingPerItem = {};
 
-        itemsInCat.forEach((item) => {
-          if (remainingDiscountQty > 0) {
-            const qtyToDiscount = Math.min(item.quantity, remainingDiscountQty);
-            item.discountQty = qtyToDiscount;
-            item.discountPerItem = v.discount;
-            item.discountApplied = qtyToDiscount > 0;
-            item.finalPrice = +(
-              qtyToDiscount * (item.price - v.discount) +
-              (item.quantity - qtyToDiscount) * item.price
-            ).toFixed(2);
-            remainingDiscountQty -= qtyToDiscount;
-            remainingPerItem[item._key] =
-              item.quantity > qtyToDiscount ? remainingToUnlock : 0;
-          } else {
-            item.discountQty = 0;
-            item.discountPerItem = 0;
-            item.discountApplied = false;
-            item.finalPrice = +(item.price * item.quantity).toFixed(2);
-            remainingPerItem[item._key] = remainingToUnlock;
-          }
-        });
+    itemsInCat.forEach((item) => {
+      if (remainingDiscountQty > 0) {
+        const qtyToDiscount = Math.min(item.quantity, remainingDiscountQty);
+        item.discountQty = qtyToDiscount;
+        item.discountPerItem = v.discount;
+        item.discountApplied = qtyToDiscount > 0;
+        item.finalPrice = +(
+          qtyToDiscount * (item.MRP_price - v.discount) +
+          (item.quantity - qtyToDiscount) * item.MRP_price
+        ).toFixed(2);
+        remainingDiscountQty -= qtyToDiscount;
+        remainingPerItem[item._key] =
+          item.quantity > qtyToDiscount ? remainingToUnlock : 0;
+      } else {
+        item.discountQty = 0;
+        item.discountPerItem = 0;
+        item.discountApplied = false;
+        item.finalPrice = +(item.MRP_price * item.quantity).toFixed(2);
+        remainingPerItem[item._key] = remainingToUnlock;
+      }
+    });
 
-        this.discount += itemsInCat.reduce(
-          (sum, i) => sum + i.discountQty * (i.discountPerItem || 0),
-          0
-        );
-        this.applicableVouchers.push({ ...v, remainingPerItem });
-      });
-    },
+    this.discount += itemsInCat.reduce(
+      (sum, i) => sum + i.discountQty * (i.discountPerItem || 0),
+      0
+    );
+    this.applicableVouchers.push({ ...v, remainingPerItem });
+  });
+}
+,
 
     getItemVouchers(item) {
       return this.applicableVouchers.filter((v) =>
@@ -272,10 +325,10 @@ export const useCartStore = defineStore("cart", {
 
     // returns per-unit price for display
     getFinalPrice(item) {
-      return item.quantity > 0
-        ? (item.finalPrice || item.price * item.quantity) / item.quantity
-        : item.price;
-    },
+  return item.quantity > 0
+    ? (item.finalPrice || item.MRP_price * item.quantity) / item.quantity
+    : item.MRP_price;
+},
 
     async fetchCartCheckout() {
   if (!this.items.length) return;
@@ -294,13 +347,14 @@ export const useCartStore = defineStore("cart", {
           product_id: item.id.toString(),
           product_name: item.name,
           quantity: item.quantity,
-          product_price: item.price || item.realPrice || 0,
+          product_price: item.MRP_price || 0,               // use MRP_price
           discount_price: item.discountPerItem || 0,
-          discount_percent: item.discountQty && item.discountPerItem
-            ? ((item.discountPerItem / item.price) * 100).toFixed(0)
-            : "0",
+          discount_percent:
+            item.discountQty && item.discountPerItem
+              ? ((item.discountPerItem / item.MRP_price) * 100).toFixed(0)
+              : "0",
           categories: item.categories || [],
-          attribute: item.attributes || [], // expects [{ attr, val }]
+          attribute: item.attributes || [],                // expects [{ attr, val }]
           item_list_id: item.item_list_id || "",
           item_list_name: item.item_list_name || "",
           product_img: item.image || "",
@@ -308,14 +362,14 @@ export const useCartStore = defineStore("cart", {
             product: {
               product_id: item.id.toString(),
               name: item.name,
-              selling_price: item.price,
+              selling_price: item.MRP_price,               // use MRP_price
               discount_price: item.discountPerItem || 0,
             },
           },
         },
       })),
       checkout: "new",
-      deal_city: "",                 // optionally from config store
+      deal_city: "", // optionally from config store
       id_cart: authStore.cart_id,
       id_customer: authStore.id_customer,
       site: "sss",

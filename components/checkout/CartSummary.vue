@@ -21,7 +21,7 @@
         <div v-if="!cartStore.items.length" class="text-center py-12">
           <p class="text-gray-500 text-sm sm:text-base md:text-lg mb-4">Your cart is empty.</p>
           <button
-            class="mt-4 bg-gradient-to-r from-black to-gray-800 text-white px-5 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg hover:from-gray-900 hover:to-gray-700 hover:scale-105 transition-all duration-300"
+            class="mt-4 bg-black text-white px-5 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg hover:from-gray-900 hover:to-gray-700 hover:scale-105 transition-all duration-300"
           >
             Continue Shopping
           </button>

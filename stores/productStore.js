@@ -123,6 +123,79 @@ export const useProductStore = defineStore("productStore", () => {
   };
 
   // ------------------------------
+// 🔍 Fetch Products by Tag (with Pagination)
+// ------------------------------
+const fetchProductsByTag = async (options = {}) => {
+  const {
+    tag,
+    perPage = 30,
+    page = 1,
+    maxPrice,
+    append = false
+  } = options;
+
+  if (!tag) return [];
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    // --- Build URL for tag endpoint (assuming Typesense search is supported)
+    const url = `${API_URL}/collections/products/documents/search?q=*&filter_by=tags:=[${encodeURIComponent(tag)}]&filter_by=active:=1&sort_by=date_updated_unix:desc&sort_by=avg_rating:desc&per_page=${perPage}&page=${page}`;
+
+    const res = await ofetch(url, { headers: { "x-typesense-api-key": API_KEY } });
+    const hits = Array.isArray(res.hits) ? res.hits : [];
+    const totalFound = res.found || 0;
+
+    const newProducts = hits.map(hit => {
+      const doc = hit.document ?? hit;
+      const parsed = doc.product_data ? safeParseJSON(doc.product_data) : {};
+      const first = parsed["0"] || {};
+      const price = Number(first.selling_price) || Number(doc.real_selling_price) || Number(doc.selling_price) || 0;
+
+      if (maxPrice != null && price > maxPrice) return null;
+
+      const displayCategories = first.categories ? first.categories.split("^").map(c => c.split("*")[0]) : doc.categories?.map(String) || [];
+      const matchedVoucher = vouchers.value.find(v => displayCategories.includes(String(v.categoryId)));
+
+      return {
+        id: String(doc.product_id || first.id || doc.id),
+        displayName: first.name || doc.name || "",
+        displayPrice: price,
+        displayDiscount: Number(first.discount_price) || Number(doc.discount_price) || 0,
+        sizes: (parsed.shoeSize || []).map(s => s.Size).filter(Boolean) || (doc.product_all_sizes || []).filter(Boolean) || ["N/A"],
+        brand: doc.brand || first.brand || "",
+        displayCategories,
+        tags: doc.tags || [tag],
+        slug: slugify(doc.name || first.name || doc.id),
+        images: parsed.images || [{ img: doc.img }],
+        quantity_available: first.product_quantity || doc.quantity_available || 0,
+        rawData: doc,
+        voucherName: matchedVoucher?.category_name || null,
+      };
+    }).filter(Boolean);
+
+    // --- Store products in productLists[tag]
+    if (!productLists.value[tag]) productLists.value[tag] = { products: [], currentPage: 1, total: 0 };
+
+    if (append) productLists.value[tag].products.push(...newProducts);
+    else productLists.value[tag].products = newProducts;
+
+    productLists.value[tag].currentPage = page;
+    productLists.value[tag].total = totalFound;
+
+    return newProducts;
+  } catch (err) {
+    console.error(`❌ Failed to fetch products for tag: ${tag}`, err);
+    error.value = err?.message || "Failed to fetch tag products";
+    return [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+
+  // ------------------------------
   // Fetch Products by Category (Paginated + Filters + Infinite Scroll)
   // ------------------------------
   const fetchProducts = async (options = {}) => {
@@ -259,6 +332,6 @@ export const useProductStore = defineStore("productStore", () => {
     fetchProducts, fetchFilters: generateFilters,
     fetchRecentProducts, fetchTrendingProducts,
     getProductsByCategory, getCurrentPage, getTotalProducts, availableTags,
-    addToRecentProducts, vouchers, fetchVouchers
+    addToRecentProducts, vouchers, fetchVouchers, fetchProductsByTag
   };
 });

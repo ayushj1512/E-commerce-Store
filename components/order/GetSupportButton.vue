@@ -11,8 +11,9 @@
         <div class="flex justify-between items-center p-5 border-b flex-shrink-0 sticky top-0 bg-black z-10 shadow-sm">
           <h3 class="text-lg sm:text-2xl font-bold text-white">Order Support</h3>
           <button
-            @click="$emit('close')"
+            @click="closeModal"
             class="text-gray-500 hover:text-white text-2xl transition-transform hover:scale-110"
+            aria-label="Close modal"
           >
             &times;
           </button>
@@ -85,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import axios from "axios";
 
 const props = defineProps({
@@ -98,6 +99,7 @@ const supportData = ref([]);
 const expandedCategory = ref(null);
 const expandedQuestions = ref({});
 
+// Watch parent v-model
 watch(
   () => props.modelValue,
   (val) => {
@@ -106,13 +108,14 @@ watch(
   }
 );
 
+// Fetch support data
 const fetchSupportData = async () => {
   try {
     const res = await axios.get(
       "https://api.streetstylestore.com/collections/sss_config/documents/sss-new-order-support-listing?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
     );
     if (res.data?.data) {
-      let cleanedData = res.data.data.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+      const cleanedData = res.data.data.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
       supportData.value = JSON.parse(cleanedData);
     }
   } catch (err) {
@@ -121,22 +124,25 @@ const fetchSupportData = async () => {
   }
 };
 
+// Toggle category
 const toggleCategory = (index) => {
   expandedCategory.value = expandedCategory.value === index ? null : index;
 };
 
+// Toggle question
 const toggleQuestion = (catId, qIndex) => {
   if (!expandedQuestions.value[catId]) expandedQuestions.value[catId] = {};
   expandedQuestions.value[catId][qIndex] = !expandedQuestions.value[catId][qIndex];
 };
 
-const isQuestionExpanded = (catId, qIndex) => {
-  return expandedQuestions.value[catId]?.[qIndex] || false;
-};
+// Check if question is expanded
+const isQuestionExpanded = (catId, qIndex) => expandedQuestions.value[catId]?.[qIndex] || false;
 
-watch(showModal, (val) => {
-  emit("update:modelValue", val);
-});
+// Close modal function
+const closeModal = () => {
+  showModal.value = false;
+  emit("update:modelValue", false);
+};
 </script>
 
 <style scoped>
