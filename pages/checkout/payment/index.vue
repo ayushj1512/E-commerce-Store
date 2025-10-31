@@ -57,10 +57,17 @@
             <UpiPayment />
 
             <!-- 💳 Card Payment -->
-            <CardPayment />
+           <CardPayment
+  :selected="paymentStore.selectedPaymentMethod === 'card'"
+  @select="paymentStore.selectMethod"
+/>
 
             <!-- 🟢 Snapmint Payment -->
-            <SnapmintPayment :cart-total="finalTotal" />
+           <SnapmintPayment
+  :cart-total="finalTotal"
+  :selected="paymentStore.isSelected('snapmint')"
+  @select="paymentStore.selectMethod('snapmint')"
+/>
 
             <!-- 🏦 NetBanking / Wallet -->
             <NetBanking />

@@ -3,15 +3,19 @@
     <!-- 💳 UPI Payment Option Card -->
     <div
       class="relative border rounded-xl p-5 flex flex-col gap-4 cursor-pointer transition-all duration-300"
-      :class="selectedOption === 'upi' ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'"
-      @click="selectOption('upi')"
+      :class="paymentStore.isSelected('upi') 
+        ? 'border-green-600 bg-green-50' 
+        : 'border-gray-200 bg-white hover:bg-gray-50'"
+      @click="handleSelect('upi')"
     >
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div
             class="p-3 rounded-full transition-all duration-300"
-            :class="selectedOption === 'upi' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'"
+            :class="paymentStore.isSelected('upi') 
+              ? 'bg-green-100 text-green-600' 
+              : 'bg-gray-100 text-gray-500'"
           >
             <QrCode class="w-5 h-5" />
           </div>
@@ -22,7 +26,7 @@
             </p>
           </div>
         </div>
-        <div v-if="selectedOption === 'upi'" class="text-green-600">
+        <div v-if="paymentStore.isSelected('upi')" class="text-green-600">
           <Check class="w-5 h-5" />
         </div>
       </div>
@@ -30,7 +34,7 @@
       <!-- Expanded Section -->
       <transition name="fade-slide">
         <div
-          v-if="selectedOption === 'upi'"
+          v-if="paymentStore.isSelected('upi')"
           class="mt-4 border-t border-gray-200 pt-4 space-y-6"
         >
           <!-- 💰 Total Payable -->
@@ -123,7 +127,7 @@ const cartStore = useCartStore()
 const paymentStore = usePaymentStore()
 const { $cashfree } = useNuxtApp()
 
-const selectedOption = ref('')
+// 🧾 Cashfree Component States
 const upiCollectLoaded = ref(false)
 const upiQrLoaded = ref(false)
 const upiAppsLoaded = ref(false)
@@ -146,22 +150,22 @@ onBeforeUnmount(() => {
   upiAppInstances.forEach((inst) => inst?.destroy?.())
 })
 
-// 🟢 User selects UPI
-function selectOption(option: string) {
-  selectedOption.value = selectedOption.value === option ? '' : option
-  if (selectedOption.value === 'upi') {
+// 🟢 Handle select (auto closes others via store)
+function handleSelect(method: string) {
+  paymentStore.selectMethod(method)
+  if (paymentStore.isSelected('upi')) {
     waitForSessionAndLoad()
   }
 }
 
-// 🟢 Wait for session ID before loading Cashfree components
+// 🕒 Wait for session ID
 async function waitForSessionAndLoad(retryCount = 0) {
   if (!paymentStore.sessionId) {
     if (retryCount < 8) {
       console.warn(`⚠️ Waiting for session ID... Retry ${retryCount + 1}`)
       return setTimeout(() => waitForSessionAndLoad(retryCount + 1), 800)
     }
-    return console.error('❌ No payment session ID found in store after waiting.')
+    return console.error('❌ No payment session ID found.')
   }
   loadUPIComponents()
 }
@@ -169,16 +173,15 @@ async function waitForSessionAndLoad(retryCount = 0) {
 // 🚀 Proceed button
 function proceedToPayment() {
   const sessionId = paymentStore.sessionId
-  console.log('🟢 Proceeding with UPI payment for session:', sessionId)
   if (!$cashfree || !sessionId) return console.error('❌ Missing Cashfree SDK or session ID.')
+  console.log('🟢 Proceeding with UPI payment for session:', sessionId)
   $cashfree.checkout()
 }
 
 // 🧠 Load UPI Components
 async function loadUPIComponents(retryCount = 0) {
   const sessionId = paymentStore.sessionId
-  if (!sessionId) return console.error('❌ Missing payment session ID in store.')
-
+  if (!sessionId) return console.error('❌ Missing session ID in store.')
   await nextTick()
 
   if (!$cashfree || typeof $cashfree.create !== 'function') {
@@ -207,7 +210,7 @@ async function loadUPIComponents(retryCount = 0) {
     upiCollectInstance.mount('#upiCollect')
     upiCollectInstance.on('ready', () => {
       upiCollectLoaded.value = true
-      console.log('✅ UPI Collect component loaded')
+      console.log('✅ UPI Collect loaded')
     })
 
     // 📱 UPI Apps
@@ -238,7 +241,7 @@ async function loadUPIComponents(retryCount = 0) {
     upiQrInstance.mount('#upiQr')
     upiQrInstance.on('ready', () => {
       upiQrLoaded.value = true
-      console.log('✅ UPI QR component loaded')
+      console.log('✅ UPI QR loaded')
     })
   } catch (err) {
     console.error('❌ Error initializing UPI components:', err)
@@ -246,7 +249,7 @@ async function loadUPIComponents(retryCount = 0) {
 }
 
 onMounted(() => {
-  if (selectedOption.value === 'upi') waitForSessionAndLoad()
+  if (paymentStore.isSelected('upi')) waitForSessionAndLoad()
 })
 </script>
 

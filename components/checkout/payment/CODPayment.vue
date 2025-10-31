@@ -3,15 +3,19 @@
     <!-- 💵 COD Payment Option Card -->
     <div
       class="relative border rounded-xl p-5 flex flex-col gap-4 cursor-pointer transition-all duration-300"
-      :class="cartStore.codSelected ? 'border-green-600 bg-green-50 shadow-sm' : 'border-gray-200 bg-white hover:bg-gray-50'"
-      @click="toggleCOD"
+      :class="paymentStore.isSelected('cod') 
+        ? 'border-green-600 bg-green-50 shadow-sm' 
+        : 'border-gray-200 bg-white hover:bg-gray-50'"
+      @click="handleSelect('cod')"
     >
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div
             class="p-3 rounded-full transition-all duration-300"
-            :class="cartStore.codSelected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'"
+            :class="paymentStore.isSelected('cod') 
+              ? 'bg-green-100 text-green-600' 
+              : 'bg-gray-100 text-gray-500'"
           >
             <Wallet class="w-5 h-5" />
           </div>
@@ -22,7 +26,7 @@
             </p>
           </div>
         </div>
-        <div v-if="cartStore.codSelected" class="text-green-600">
+        <div v-if="paymentStore.isSelected('cod')" class="text-green-600">
           <Check class="w-5 h-5" />
         </div>
       </div>
@@ -30,7 +34,7 @@
       <!-- Expanded Section -->
       <transition name="fade-slide">
         <div
-          v-if="cartStore.codSelected"
+          v-if="paymentStore.isSelected('cod')"
           class="mt-4 border-t border-gray-200 pt-4 space-y-6"
         >
           <!-- 💰 Total Payable -->
@@ -49,7 +53,10 @@
           >
             <Info class="w-5 h-5 text-green-600 mt-0.5" />
             <p class="text-sm text-gray-700 leading-snug">
-              💡 Pay online and <span class="font-semibold text-green-700">save ₹{{ cartStore.COD_CHARGE }}</span>
+              💡 Pay online and 
+              <span class="font-semibold text-green-700">
+                save ₹{{ cartStore.COD_CHARGE }}
+              </span>
               COD handling charge.
             </p>
           </div>
@@ -82,27 +89,31 @@
 import { ref } from 'vue'
 import { Wallet, Check, Info } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cartStore'
+import { usePaymentStore } from '@/stores/paymentStore'
 import CODConfirmModal from '@/components/checkout/payment/CODConfirmModal.vue'
 
 const cartStore = useCartStore()
+const paymentStore = usePaymentStore()
 const showCODModal = ref(false)
 
-// Toggle COD selection
-function toggleCOD() {
-  const newState = !cartStore.codSelected
-  cartStore.setCOD(newState)
-  cartStore.saveCart()
+// 🟢 Handle selection (auto closes others)
+function handleSelect(method: string) {
+  paymentStore.selectMethod(method)
+  if (paymentStore.isSelected('cod')) {
+    // You can run any COD-specific logic here if needed
+    console.log('💵 COD selected')
+  }
 }
 
-// Open confirmation modal
+// 🧾 Open confirmation modal
 function openCODModal() {
   showCODModal.value = true
 }
 
-// Confirm COD order
+// ✅ Handle confirm COD
 function handleCODConfirmed() {
   console.log('✅ COD order confirmed successfully for ₹', cartStore.total)
-  // placeOrder({ payment_mode: 'COD' }) // your logic here
+  // Example: placeOrder({ payment_mode: 'COD' })
 }
 </script>
 

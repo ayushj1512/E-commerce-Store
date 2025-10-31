@@ -3,15 +3,20 @@
     <!-- 💳 Card Payment Option -->
     <div
       class="relative border rounded-xl p-5 flex flex-col gap-4 cursor-pointer transition-all duration-300"
-      :class="selected ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'"
+      :class="selected
+        ? 'border-green-600 bg-green-50 shadow-sm'
+        : 'border-gray-200 bg-white hover:bg-gray-50'"
       @click="toggleSelect"
+      ref="cardSection"
     >
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div
             class="p-3 rounded-full transition-all duration-300"
-            :class="selected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'"
+            :class="selected
+              ? 'bg-green-100 text-green-600'
+              : 'bg-gray-100 text-gray-500'"
           >
             <CreditCard class="w-5 h-5" />
           </div>
@@ -47,46 +52,45 @@
 
           <!-- 🧾 Card Payment Fields -->
           <div class="space-y-5">
-            <div>
-              <label class="block text-gray-700 font-medium text-sm mb-2">
-                Enter your card details
-              </label>
-              <div class="grid gap-4">
+            <label class="block text-gray-700 font-medium text-sm mb-2">
+              Enter your card details
+            </label>
+
+            <div class="grid gap-4">
+              <div
+                id="card-number"
+                class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
+              >
+                <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
+                  Loading card number field...
+                </span>
+              </div>
+
+              <div
+                id="card-holder"
+                class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
+              >
+                <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
+                  Loading name field...
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
                 <div
-                  id="card-number"
+                  id="card-expiry"
                   class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
                 >
                   <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
-                    Loading card number field...
+                    Loading expiry...
                   </span>
                 </div>
-
                 <div
-                  id="card-holder"
+                  id="card-cvv"
                   class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
                 >
                   <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
-                    Loading name field...
+                    Loading CVV...
                   </span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                  <div
-                    id="card-expiry"
-                    class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
-                  >
-                    <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
-                      Loading expiry...
-                    </span>
-                  </div>
-                  <div
-                    id="card-cvv"
-                    class="border rounded-lg p-3 bg-white min-h-[50px] flex items-center justify-center"
-                  >
-                    <span class="text-gray-400 text-sm" v-if="!fieldsLoaded">
-                      Loading CVV...
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -112,31 +116,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { CreditCard, Check } from 'lucide-vue-next'
 import { usePaymentStore } from '@/stores/paymentStore'
 import { useCartStore } from '@/stores/cartStore'
 
-// Props & Emits
 const props = defineProps({ selected: Boolean })
 const emit = defineEmits(['select'])
 
 const cartStore = useCartStore()
 const paymentStore = usePaymentStore()
 const fieldsLoaded = ref(false)
+const cardSection = ref<HTMLElement | null>(null)
+
 let cashfree: any = null
 let cardNumber: any, cardHolder: any, cardExpiry: any, cardCvv: any
 
-// ✅ Toggle select/deselect (only header toggles)
-const toggleSelect = () => {
+// ✅ Toggle section
+const toggleSelect = (e: MouseEvent) => {
+  e.stopPropagation()
   emit('select', props.selected ? '' : 'card')
 }
 
-// Load Cashfree when selected
+// ✅ Close when clicked outside
+const handleClickOutside = (event: MouseEvent) => {
+  if (!props.selected) return
+  const target = event.target as HTMLElement
+  if (cardSection.value && !cardSection.value.contains(target)) {
+    emit('select', '') // close the section
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// ✅ Watch for open/close
 watch(
   () => props.selected,
   async (isSelected) => {
-    if (!isSelected) return
+    if (!isSelected) {
+      destroyCashfreeFields()
+      return
+    }
+
+    await nextTick()
     await loadCashfree()
     mountCardFields()
   }
@@ -153,15 +181,19 @@ const loadCashfree = async () => {
   })
 }
 
-// ✅ Mount Cashfree Components
+// ✅ Mount Cashfree Fields
 const mountCardFields = () => {
   if (!paymentStore.sessionId) {
     console.error('❌ No sessionId found in payment store')
     return
   }
 
-  cashfree = Cashfree({ mode: 'sandbox' }) // change to 'production' later
+  if (!window.Cashfree) {
+    console.error('❌ Cashfree SDK not loaded')
+    return
+  }
 
+  cashfree = Cashfree({ mode: 'sandbox' })
   fieldsLoaded.value = false
 
   cardNumber = cashfree.create('cardNumber', { values: { placeholder: 'Enter card number' } })
@@ -175,21 +207,34 @@ const mountCardFields = () => {
   cardCvv.mount('#card-cvv')
 
   let readyCount = 0
-  const checkAllReady = () => {
+  const markReady = () => {
     readyCount++
-    if (readyCount >= 4) fieldsLoaded.value = true
+    if (readyCount === 4) fieldsLoaded.value = true
   }
 
-  cardNumber.on('ready', checkAllReady)
-  cardHolder.on('ready', checkAllReady)
-  cardExpiry.on('ready', checkAllReady)
-  cardCvv.on('ready', checkAllReady)
+  cardNumber.on('ready', markReady)
+  cardHolder.on('ready', markReady)
+  cardExpiry.on('ready', markReady)
+  cardCvv.on('ready', markReady)
 }
 
-// 🚀 Handle submit
+// 🧹 Destroy on close
+const destroyCashfreeFields = () => {
+  try {
+    cardNumber?.destroy?.()
+    cardHolder?.destroy?.()
+    cardExpiry?.destroy?.()
+    cardCvv?.destroy?.()
+  } catch (e) {
+    console.warn('⚠️ Cleanup error:', e)
+  } finally {
+    fieldsLoaded.value = false
+  }
+}
+
+// 🚀 Submit handler
 const submitCard = async () => {
-  console.log('💳 Submitting card payment...')
-  // Later you’ll trigger cashfree.pay() with session ID
+  console.log('💳 Card payment initiated...')
 }
 </script>
 

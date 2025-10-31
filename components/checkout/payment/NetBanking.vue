@@ -93,7 +93,7 @@ const netbankingLoaded = ref(false)
 let netbankingInstance: any = null
 
 // ✅ Computed: whether this payment method is selected
-const isSelected = computed(() => paymentStore.isSelected('snapmint'))
+const isSelected = computed(() => paymentStore.isSelected('netbanking'))
 
 // 🧹 Cleanup on unmount
 onBeforeUnmount(() => {
@@ -103,21 +103,24 @@ onBeforeUnmount(() => {
 // 🟢 Handle selection
 async function handleSelect() {
   if (isSelected.value) {
-    // If already selected → deselect (close it)
+    // 🟢 First deselect, then wait for DOM update before destroy
     paymentStore.clearMethod()
+    await nextTick()
     destroyNetbanking()
-  } else {
-    // Otherwise, select and mount component
-    paymentStore.selectMethod('netbanking')
-
-    if (!paymentStore.sessionId) {
-      console.log('🌀 Creating Cashfree session for Netbanking...')
-      await paymentStore.proceedToPayment('netbanking')
-    }
-
-    loadNetbankingComponent()
+    return
   }
+
+  // Otherwise, select and mount component
+  paymentStore.selectMethod('netbanking')
+
+  if (!paymentStore.sessionId) {
+    console.log('🌀 Creating Cashfree session for Netbanking...')
+    await paymentStore.proceedToPayment('netbanking')
+  }
+
+  loadNetbankingComponent()
 }
+
 
 // 🚀 Proceed to Payment
 async function proceedToPayment() {
