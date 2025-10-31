@@ -1,19 +1,34 @@
 <template>
   <div
-    class="relative bg-white p-8 sm:p-5 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1 border border-gray-200"
+    class="relative bg-white p-3 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1 border border-gray-200"
   >
     <!-- Address Info -->
-    <div class="mb-3 sm:mb-4">
-      <p class="text-sm sm:text-base md:text-lg font-semibold text-black mb-1 truncate">
+    <div class="flex flex-col gap-0.5 sm:gap-1">
+      <!-- Name -->
+      <p class="text-[15px] sm:text-base md:text-lg font-semibold text-black">
         {{ address.fullname }}
       </p>
-      <p class="text-gray-600 text-[11px] sm:text-xs md:text-sm leading-snug">
-        {{ address.address1 }}, {{ address.address2 }}
+
+      <!-- Address Line 1 -->
+      <p class="text-gray-600 text-[12px] sm:text-[13px] md:text-sm leading-snug">
+        {{ address.address1 }}
       </p>
-      <p class="text-gray-600 text-[11px] sm:text-xs md:text-sm leading-snug">
+
+      <!-- Address Line 2 -->
+      <p
+        v-if="address.address2"
+        class="text-gray-600 text-[12px] sm:text-[13px] md:text-sm leading-snug"
+      >
+        {{ address.address2 }}
+      </p>
+
+      <!-- City, State & Pincode -->
+      <p class="text-gray-600 text-[12px] sm:text-[13px] md:text-sm leading-snug">
         {{ address.city }}, {{ address.name }} - {{ address.postcode }}
       </p>
-      <p class="text-gray-500 text-[11px] sm:text-xs md:text-sm mt-1">
+
+      <!-- Phone -->
+      <p class="text-gray-500 text-[12px] sm:text-[13px] md:text-sm mt-1">
         📞 {{ address.phone_mobile }}
       </p>
     </div>
@@ -30,8 +45,19 @@ const props = defineProps({
 </script>
 
 <style scoped>
-/* Subtle hover background */
-div:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+/* ✨ Subtle hover gradient */
+.relative:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+}
+
+/* 📱 Mobile optimization */
+@media (max-width: 640px) {
+  .relative {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+  }
+  p {
+    margin-bottom: 0.15rem;
+  }
 }
 </style>

@@ -16,7 +16,23 @@ export default defineNuxtConfig({
 
   plugins: [
     '~/plugins/global.client.js',
+    '~/plugins/cashfree.client.ts', // ✅ Added Cashfree plugin
   ],
+
+  app: {
+    head: {
+      link: [
+        // ✅ Favicon configuration
+        { rel: 'icon', type: 'image/x-icon', href: '/sss-logo.ico' },
+      ],
+      script: [
+        {
+          src: "https://sdk.cashfree.com/js/v3/cashfree.js", // ✅ Cashfree SDK v3
+          defer: true,
+        },
+      ],
+    },
+  },
 
   // @ts-ignore
   nuxtToast: {

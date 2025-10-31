@@ -36,6 +36,7 @@ export { useCartStore } from '../stores/cartStore';
 export { useCheckoutStore } from '../stores/checkoutStore';
 export { useHomeStore } from '../stores/homeStore';
 export { useOrdersStore } from '../stores/orders';
+export { usePaymentStore } from '../stores/paymentStore';
 export { useProductStore } from '../stores/productStore';
 export { useRecentlyViewStore } from '../stores/recentlyViewStore';
 export { useWishlistStore } from '../stores/wishlist';

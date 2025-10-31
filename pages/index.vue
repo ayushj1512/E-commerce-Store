@@ -21,7 +21,7 @@
       <PremiumCategories />
 
       <!-- Offers -->
-      <OfferList class="py-4" />
+      <!-- <OfferList class="py-4" /> -->
 
       <!-- Shop By Section -->
       <ShopBy />
@@ -30,17 +30,12 @@
       <InstaGallery />
 
       <!-- Influencer Banner -->
-      <div class="py-4">
+      <div class="pb-4">
         <BannerComponent image="influencer.jpg" aspect="1200/563" link="/influencer" />
       </div>
 
       <!-- Recently Viewed -->
       <RecentlyViewedProducts />
-
-      <!-- Headline -->
-      <div class="py-4">
-        <Headline />
-      </div>
 
       <!-- Trending Products -->
       <div class="py-0">

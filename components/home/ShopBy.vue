@@ -1,5 +1,5 @@
 <template>
-  <section class="py-6 bg-white">
+  <section class="py-6 bg-white relative">
     <!-- Section Heading -->
     <div class="w-full bg-black py-2 sm:py-3 mb-4">
       <h2 class="text-white text-center text-lg sm:text-xl md:text-2xl font-bold tracking-wide">
@@ -8,31 +8,60 @@
     </div>
 
     <!-- Subcategories: horizontal scroll -->
-    <div class="overflow-x-auto px-4 sm:px-6 mb-4 flex space-x-4 md:justify-center scrollbar-hide">
-      <button v-for="(sub, index) in subcategories" :key="index" @click="selectedSubcategory = sub" :class="[
-        'flex-shrink-0 px-4 sm:px-5 py-2 font-medium border-b-2 transition-all duration-300 whitespace-nowrap text-sm sm:text-base rounded',
-        selectedSubcategory === sub
-          ? 'border-black text-black'
-          : 'border-transparent text-gray-600 hover:text-black hover:border-gray-400'
-      ]">
-        {{ sub }}
-      </button>
-    </div>
+    <div
+  class="overflow-x-auto px-4 sm:px-6 mb-6 flex space-x-6 md:justify-center scrollbar-hide"
+>
+  <button
+    v-for="(sub, index) in subcategories"
+    :key="index"
+    @click="selectedSubcategory = sub"
+    :class="[
+      'relative flex-shrink-0 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 pb-1',
+      selectedSubcategory === sub
+        ? 'text-black after:w-full after:bg-black'
+        : 'text-gray-500 hover:text-black after:w-0 hover:after:w-full after:bg-gray-400'
+    ]"
+  >
+    {{ sub }}
+    <!-- Underline animation -->
+    <span
+      class="absolute left-0 bottom-0 h-[2px] transition-all duration-300 rounded-full"
+      :class="[
+        selectedSubcategory === sub ? 'w-full bg-black' : 'w-0 group-hover:w-full bg-gray-400'
+      ]"
+    ></span>
+  </button>
+</div>
+
 
     <!-- Products Horizontal Scroll -->
-    <transition-group name="fade-stagger" tag="div"
-      class="overflow-x-auto px-4 sm:px-6 pb-4 flex space-x-4 sm:space-x-6 scrollbar-hide">
+    <transition-group
+      name="fade-move"
+      tag="div"
+      class="overflow-x-auto px-4 sm:px-6 pb-4 flex space-x-4 sm:space-x-6 scrollbar-hide relative"
+    >
       <!-- Loading placeholders -->
       <div v-if="loading">
-        <div v-for="n in placeholderCount" :key="'placeholder-' + n"
-          class="flex-shrink-0 w-40 sm:w-56 md:w-64 h-80 sm:h-96 bg-gray-200 rounded-xl animate-pulse"></div>
+        <div
+          v-for="n in placeholderCount"
+          :key="'placeholder-' + n"
+          class="flex-shrink-0 w-40 sm:w-56 md:w-64 h-80 sm:h-96 bg-gray-200 rounded-xl animate-pulse"
+        ></div>
       </div>
 
-
       <!-- Product Cards -->
-      <ProductCard v-else v-for="(product, index) in filteredProducts" :key="product.id" :title="product.name"
-        :image="product.image" :price="product.price" :mrp="product.mrp" :hoverImage="product.hoverImage"
-        class="flex-shrink-0 w-40 sm:w-56 md:w-64 h-80 sm:h-96" :style="{ transitionDelay: (index * 0.05) + 's' }" />
+      <ProductCard
+        v-else
+        v-for="(product, index) in filteredProducts"
+        :key="product.id"
+        :title="product.name"
+        :image="product.image"
+        :price="product.price"
+        :mrp="product.mrp"
+        :hoverImage="product.hoverImage"
+        class="flex-shrink-0 w-40 sm:w-56 md:w-64 h-80 sm:h-96"
+        :style="{ transitionDelay: (index * 80) + 'ms' }"
+      />
     </transition-group>
   </section>
 </template>
@@ -85,27 +114,37 @@ const filteredProducts = computed(() =>
 </script>
 
 <style scoped>
-/* Fade animation with stagger effect */
-.fade-stagger-enter-active,
-.fade-stagger-leave-active {
-  transition: opacity 0.4s ease;
+/* --- ✨ Enhanced Crossfade Animation --- */
+.fade-move-enter-active {
+  transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.fade-move-leave-active {
+  transition: all 0.4s ease;
+  position: absolute; /* prevents layout jump during fade-out */
 }
 
-.fade-stagger-enter-from,
-.fade-stagger-leave-to {
+.fade-move-enter-from {
   opacity: 0;
+  transform: translateY(15px) scale(0.96);
 }
-
-.fade-stagger-enter-to,
-.fade-stagger-leave-from {
+.fade-move-enter-to {
   opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
-/* Hide horizontal scrollbar */
+.fade-move-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.fade-move-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+/* --- Scrollbar Hide + Smooth Scroll --- */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

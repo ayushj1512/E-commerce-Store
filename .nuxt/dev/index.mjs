@@ -1019,7 +1019,7 @@ const _opqSvQqwWIdyA_f3s8PKqpJi9aPPY2wGm7MOniBlqW0 = (function(nitro) {
 
 const rootDir = "C:/Users/DELL/SSS-Website/E-commerce-Store";
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[{"rel":"icon","type":"image/x-icon","href":"/sss-logo.ico"}],"style":[],"script":[{"src":"https://sdk.cashfree.com/js/v3/cashfree.js","defer":true}],"noscript":[]};
 
 const appRootTag = "div";
 

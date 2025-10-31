@@ -1,8 +1,14 @@
 <template>
-  <section class="relative w-full overflow-hidden" style="padding-top: 46.92%;">
+  <section
+    class="relative w-full overflow-hidden touch-pan-y select-none"
+    style="padding-top: 46.92%;"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+  >
     <!-- Slides Container -->
     <div
-      class="absolute top-0 left-0 w-full h-full flex transition-transform duration-700"
+      class="absolute top-0 left-0 w-full h-full flex transition-transform duration-700 ease-in-out"
       :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
     >
       <div
@@ -34,7 +40,9 @@
     </button>
 
     <!-- Pagination Dots -->
-    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+    <div
+      class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20"
+    >
       <span
         v-for="(slide, index) in slides"
         :key="index"
@@ -51,19 +59,22 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
-const slides = ref([
-  "/1.jpg",
-  "/2.jpg",
-  "/3.jpg",
-  "/4.jpg",
-]);
+const slides = ref(["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg"]);
 
 const currentSlide = ref(0);
 let slideInterval = null;
 
+// Touch variables
+let startX = 0;
+let endX = 0;
+
 // Autoplay
 const startAutoplay = () => {
   slideInterval = setInterval(() => nextSlide(), 5000);
+};
+
+const stopAutoplay = () => {
+  if (slideInterval) clearInterval(slideInterval);
 };
 
 // Navigation
@@ -71,10 +82,31 @@ const nextSlide = () => {
   currentSlide.value = (currentSlide.value + 1) % slides.value.length;
 };
 const prevSlide = () => {
-  currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length;
+  currentSlide.value =
+    (currentSlide.value - 1 + slides.value.length) % slides.value.length;
 };
 const goToSlide = (index) => {
   currentSlide.value = index;
+};
+
+// Touch handlers
+const handleTouchStart = (e) => {
+  stopAutoplay();
+  startX = e.touches[0].clientX;
+};
+
+const handleTouchMove = (e) => {
+  endX = e.touches[0].clientX;
+};
+
+const handleTouchEnd = () => {
+  const diff = startX - endX;
+  const threshold = 50; // Minimum swipe distance in px
+  if (Math.abs(diff) > threshold) {
+    if (diff > 0) nextSlide(); // swipe left
+    else prevSlide(); // swipe right
+  }
+  startAutoplay();
 };
 
 onMounted(() => {
@@ -87,5 +119,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Smooth swipe transition handled by Tailwind */
+/* Optional: Prevent double-tap zoom and select */
+section {
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
 </style>

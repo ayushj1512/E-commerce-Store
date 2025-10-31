@@ -7,9 +7,7 @@
       v-if="singleVoucher"
       :class="[
         'px-3 py-2 border-b font-medium text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2',
-        singleVoucher.remainingPerItem[item._key] > 0
-          ? 'bg-black text-white border-gray-700'
-          : 'bg-green-500 text-white border-green-500'
+        remainingQty > 0 ? 'bg-black text-white border-gray-700' : 'bg-green-500 text-white border-green-500'
       ]"
     >
       <div class="flex flex-wrap items-center gap-1 sm:gap-2">
@@ -19,15 +17,12 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 sm:mt-0">
-        <span
-          v-if="singleVoucher.remainingPerItem[item._key] > 0"
-          class="text-gray-200 italic text-xs sm:text-sm"
-        >
-          (Add {{ singleVoucher.remainingPerItem[item._key] }} more to unlock full discount)
+        <span v-if="remainingQty > 0" class="text-gray-200 italic text-xs sm:text-sm">
+          (Add {{ remainingQty }} more to unlock full discount)
         </span>
 
         <button
-          v-if="singleVoucher.remainingPerItem[item._key] > 0 && singleVoucher.link"
+          v-if="remainingQty > 0 && singleVoucher.link"
           @click.stop="$emit('go-to-voucher', singleVoucher.link)"
           class="px-2 py-1 bg-white text-black rounded-md text-xs sm:text-sm font-semibold hover:bg-gray-200 transition"
         >
@@ -46,9 +41,6 @@
     <!-- Product Details -->
     <div
       class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 transition-all duration-300 hover:bg-gray-50 rounded-2xl"
-      :class="{
-        'shadow-lg ': !item.discountApplied && isVoucherApplied
-      }"
     >
       <!-- Product Info -->
       <div
@@ -61,27 +53,33 @@
           class="w-16 h-20 sm:w-20 sm:h-24 object-cover rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         />
         <div class="flex-1 min-w-0">
-          <h2
-            class="truncate font-semibold text-base sm:text-lg"
-            :class="item.discountApplied || isVoucherApplied ? 'text-green-700' : 'text-gray-900'"
-          >
+          <h2 class="truncate font-semibold text-base sm:text-lg text-gray-900">
             {{ item.name }}
           </h2>
           <p v-if="item.size" class="text-xs sm:text-sm text-gray-500 truncate">
             Size: {{ item.size }}
           </p>
-          <div class="mt-1 flex items-center gap-2 flex-wrap">
-            <span
-              v-if="item.discountApplied"
-              class="line-through text-gray-400 text-xs sm:text-sm"
-            >
+
+          <!-- Price Section -->
+          <div class="mt-1 flex flex-col gap-1">
+            <!-- MRP -->
+            <span v-if="item.realPrice" class="line-through text-gray-400 text-xs sm:text-sm">
               ₹{{ item.realPrice * item.quantity }}
             </span>
-            <span
-              class="font-bold text-sm sm:text-base"
-              :class="item.discountApplied || isVoucherApplied ? 'text-green-700' : 'text-gray-900'"
-            >
+
+            <!-- Discounted Price -->
+            <span class="font-bold text-sm sm:text-base text-black">
               ₹{{ finalPrice }}
+            </span>
+
+            <!-- Extra Discount (optional) -->
+            <span v-if="extraDiscountPrice" class="font-semibold text-green-600 text-xs sm:text-sm">
+              Extra discount of ₹{{ extraDiscountPrice }} applied on each
+            </span>
+
+            <!-- Discount % -->
+            <span v-if="item.realPrice && finalPrice" class="text-xs text-gray-500">
+              ({{ discountPercent }}% off)
             </span>
           </div>
         </div>
@@ -120,7 +118,8 @@ const props = defineProps({
   item: Object,
   filteredVouchers: Array,
   isVoucherApplied: Boolean,
-  finalPrice: Number,
+  finalPrice: Number,       // Discounted price
+  extraDiscountPrice: Number // Optional extra discount
 });
 
 const emit = defineEmits([
@@ -131,14 +130,30 @@ const emit = defineEmits([
   "go-to-voucher",
 ]);
 
+// Pick a single voucher safely
 const singleVoucher = computed(() => {
   if (!props.filteredVouchers?.length) return null;
   return [...props.filteredVouchers].sort(
     (a, b) => (a.minQty || 0) - (b.minQty || 0)
   )[0];
 });
+
+// Compute remaining quantity dynamically
+const remainingQty = computed(() => {
+  if (!singleVoucher.value) return 0;
+  const minQty = singleVoucher.value.minQty || 1;
+  return Math.max(minQty - (props.item.quantity || 0), 0);
+});
+
+// Compute discount percentage
+const discountPercent = computed(() => {
+  if (!props.item.realPrice || !props.finalPrice) return 0;
+  const totalMRP = props.item.realPrice * props.item.quantity;
+  const discount = totalMRP - props.finalPrice;
+  return Math.round((discount / totalMRP) * 100);
+});
 </script>
 
 <style scoped>
-
+/* Minor UI tweaks */
 </style>

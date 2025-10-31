@@ -7,82 +7,104 @@
         <EmptyCart v-if="!cart.items.length" class="w-full" />
 
         <!-- Cart Items & Summary -->
-        <template v-else>
-          <!-- Cart & Summary Row -->
-          <div class="flex flex-col md:flex-row gap-12">
+<template v-else>
+  <!-- Cart & Summary Row -->
+  <div class="flex flex-col md:flex-row gap-12">
+    
+    <!-- Items Section -->
+    <div class="w-full md:w-2/3">
+      <transition-group
+        name="list"
+        tag="div"
+        appear
+        class="flex flex-col gap-5"  
+      >
+        <CartCard
+          v-for="item in sortedCartItems"
+          :key="item._key"
+          :item="item"
+          :filtered-vouchers="cart.filteredItemVouchers(item)"
+          :is-voucher-applied="cart.isVoucherApplied(item)"
+          :final-price="cart.getFinalPrice(item)"
+          :extra-discount-price="getExtraDiscount(item)"
+          @increase="increaseQty"
+          @decrease="decreaseQty"
+          @remove="confirmRemove"
+          @go-to-detail="goToDetail"
+          @go-to-voucher="goToVoucherLink"
+        />
+      </transition-group>
 
-            <!-- Items -->
-            <div class="w-full md:w-2/3 space-y-4">
-              <transition-group name="list" tag="div" appear>
-                <CartCard v-for="item in sortedCartItems" :key="item._key" :item="item"
-                  :filtered-vouchers="cart.filteredItemVouchers(item)" :is-voucher-applied="cart.isVoucherApplied(item)"
-                  :final-price="cart.getFinalPrice(item)" @increase="increaseQty" @decrease="decreaseQty"
-                  @remove="confirmRemove" @go-to-detail="goToDetail" @go-to-voucher="goToVoucherLink" />
-              </transition-group>
+      <!-- Buy Along Products Section (📱 Mobile Only, Above Summary) -->
+      <div class="my-8 md:hidden">
+        <h2 class="text-xl font-bold mb-4">Customers Also Bought</h2>
+        <div class="overflow-x-auto flex gap-4 pb-2">
+          <BuyAlongProducts />
+        </div>
+      </div>
+    </div>
 
-              <!-- Buy Along Products Section (📱 Mobile Only, Above Summary) -->
-              <div class="my-8 md:hidden">
-                <h2 class="text-xl font-bold mb-4">Customers Also Bought</h2>
-                <div class="overflow-x-auto flex gap-4 pb-2">
-                  <BuyAlongProducts />
-                </div>
-              </div>
-            </div>
+    <!-- Summary Section -->
+    <div class="w-full md:w-1/3 border rounded-2xl p-6 shadow-md bg-white md:sticky md:top-20 space-y-4">
+      <h2 class="text-xl font-bold mb-4">Order Summary</h2>
 
-            <!-- Summary -->
-            <div class="w-full md:w-1/3 border rounded-2xl p-6 shadow-md bg-white md:sticky md:top-20 space-y-4">
-              <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+      <div class="flex justify-between text-gray-700">
+        <span>Subtotal</span>
+        <span>₹{{ cart.subtotal }}</span>
+      </div>
 
-              <div class="flex justify-between text-gray-700">
-                <span>Subtotal</span>
-                <span>₹{{ cart.subtotal }}</span>
-              </div>
+      <div v-if="cart.discount > 0" class="flex justify-between text-green-600 font-semibold">
+        <span>Discount</span>
+        <span>-₹{{ cart.discount }}</span>
+      </div>
 
-              <div v-if="cart.discount > 0" class="flex justify-between text-green-600 font-semibold">
-                <span>Discount</span>
-                <span>-₹{{ cart.discount }}</span>
-              </div>
+      <div v-if="cart.discount > 0" class="text-green-700 font-medium text-sm">
+        You saved ₹{{ cart.discount }} on this order!
+      </div>
 
-              <div v-if="cart.discount > 0" class="text-green-700 font-medium text-sm">
-                You saved ₹{{ cart.discount }} on this order!
-              </div>
+      <div class="flex justify-between font-bold text-2xl mt-6 border-t pt-4 text-gray-900">
+        <span>Total Amount</span>
+        <span>₹{{ cart.total }}</span>
+      </div>
 
-              <div class="flex justify-between font-bold text-2xl mt-6 border-t pt-4 text-gray-900">
-                <span>Total Amount</span>
-                <span>₹{{ cart.total }}</span>
-              </div>
+      <div
+        v-if="isGrabAndGoOnly"
+        class="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-lg p-3 mt-4"
+      >
+        <strong>Note:</strong> Debug: <b>{{ isGrabAndGoOnly }}</b>
+        Because of deep discounted pricing, items from <b>Grab and Go</b> category can only
+        be purchased when you also buy items from another category.
+      </div>
 
-             <div v-if="isGrabAndGoOnly" class="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-lg p-3 mt-4">
-  <strong>Note:</strong> Debug: <b>{{ isGrabAndGoOnly }}</b>
-  Because of deep discounted pricing, items from <b>Grab and Go</b> category can only
-  be purchased when you also buy items from another category.
-</div>
+      <button
+        @click="checkout"
+        :disabled="isGrabAndGoOnly"
+        class="w-full bg-black text-white py-3 rounded-xl mt-6 font-semibold transition-all duration-200"
+        :class="{
+          'opacity-50 cursor-not-allowed hover:bg-black': isGrabAndGoOnly,
+          'hover:bg-gray-800': !isGrabAndGoOnly
+        }"
+      >
+        Proceed to Checkout
+      </button>
 
-              <button @click="checkout" :disabled="isGrabAndGoOnly"
-                class="w-full bg-black text-white py-3 rounded-xl mt-6 font-semibold transition-all duration-200"
-                :class="{
-                  'opacity-50 cursor-not-allowed hover:bg-black': isGrabAndGoOnly,
-                  'hover:bg-gray-800': !isGrabAndGoOnly
-                }">
-                Proceed to Checkout
-              </button>
+      <button
+        @click="confirmClearCart"
+        class="w-full bg-red-500 text-white py-3 rounded-xl mt-3 hover:bg-red-600 font-semibold transition-all duration-200"
+      >
+        Clear Cart
+      </button>
+    </div>
+  </div>
 
-
-              <button @click="confirmClearCart"
-                class="w-full bg-red-500 text-white py-3 rounded-xl mt-3 hover:bg-red-600 font-semibold transition-all duration-200">
-                Clear Cart
-              </button>
-            </div>
-          </div>
-
-          <!-- Buy Along Products Section (💻 Desktop Only, Below Cart Row) -->
-          <div class="my-10 hidden md:block">
-            <h2 class="text-xl font-bold mb-4">Customers Also Bought</h2>
-            <div class="overflow-x-auto flex gap-4 pb-2">
-              <BuyAlongProducts />
-            </div>
-          </div>
-        </template>
+  <!-- Buy Along Products Section (💻 Desktop Only, Below Cart Row) -->
+  <div class="my-10 hidden md:block">
+    <h2 class="text-xl font-bold mb-4">Customers Also Bought</h2>
+    <div class="overflow-x-auto flex gap-4 pb-2">
+      <BuyAlongProducts />
+    </div>
+  </div>
+</template>
 
         <!-- Modals and Toasts remain unchanged -->
 
@@ -277,6 +299,22 @@ const goToDetail = (item) =>
 
 const goToVoucherLink = (link) => {
   if (link) router.push(link);
+};
+
+// Helper to determine any extra discount for display
+const getExtraDiscount = (item) => {
+  // Prefer explicit extraDiscount if available
+  if (item.extraDiscount && item.extraDiscount > 0) return item.extraDiscount;
+
+  // Fallback: discount per item or computed difference
+  if (item.discountPerItem && item.discountPerItem > 0)
+    return item.discountPerItem;
+
+  // As a last resort, compute from MRP and final price if applicable
+  if (item.MRP_price && cart.getFinalPrice(item))
+    return Math.max(item.MRP_price - cart.getFinalPrice(item), 0);
+
+  return 0; // No discount
 };
 
 // Watch cart items

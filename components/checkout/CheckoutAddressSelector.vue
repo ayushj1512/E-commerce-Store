@@ -6,7 +6,7 @@
         <!-- Header with toggle -->
         <div
           @click="toggleCard"
-          class="bg-gradient-to-r from-black to-gray-800 p-4 cursor-pointer flex justify-between items-center rounded-t-2xl transition-all duration-300 hover:from-gray-900 hover:to-gray-700 select-none"
+          class="bg-black p-4 cursor-pointer flex justify-between items-center rounded-t-2xl transition-all duration-300 hover:from-gray-900 hover:to-gray-700 select-none"
         >
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
             📍 DELIVERY ADDRESS ({{ addresses.length }})
@@ -89,11 +89,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAddressStore } from "~/stores/address";
 import { useAuthStore } from "~/stores/auth";
 import { useRouter } from "vue-router";
-import { ChevronDown,  Plus } from "lucide-vue-next";
+import { ChevronDown, Plus } from "lucide-vue-next";
 
 const mounted = ref(false);
 const loading = ref(true);
@@ -122,10 +122,17 @@ function goToAddAddress() {
   router.push("/profile/add-address");
 }
 
+// ✅ When user selects an address
 function selectAddress(addr) {
   selectedAddress.value = addr;
+
+  // store selected address globally (for checkout/payment)
+  addressStore.setDeliveryAddress(addr);
+
+  console.log("✅ Selected delivery address:", addr);
 }
 
+// collapsible toggle
 function toggleCard() {
   isExpanded.value = !isExpanded.value;
   rotation.value += 180;
@@ -134,12 +141,14 @@ function toggleCard() {
 onMounted(async () => {
   mounted.value = true;
   loading.value = true;
+
   authStore.initAuth();
 
   if (authStore.isAuthenticated && authStore.key) {
     await addressStore.fetchAddresses();
 
     if (addressStore.addresses.length > 0) {
+      // Default: pick first address if none selected
       const a = addressStore.addresses[0];
       selectedAddress.value = {
         id_address: a.id_address,
@@ -151,9 +160,18 @@ onMounted(async () => {
         postcode: a.postcode || "",
         phone_mobile: a.phone_mobile || "",
       };
+
+      // store it in global checkout state
+      addressStore.setDeliveryAddress(selectedAddress.value);
     }
   }
+
   loading.value = false;
+});
+
+// ✅ Optional: Watch for manual changes and sync to store
+watch(selectedAddress, (newVal) => {
+  if (newVal) addressStore.setDeliveryAddress(newVal);
 });
 </script>
 

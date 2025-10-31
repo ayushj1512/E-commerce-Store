@@ -22,7 +22,13 @@ export const CartConfetti: typeof import("../components/cart/confetti.vue")['def
 export const CartRelatedProducts: typeof import("../components/cart/relatedProducts.vue")['default']
 export const CheckoutCartSummary: typeof import("../components/checkout/CartSummary.vue")['default']
 export const CheckoutAddressSelector: typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']
-export const CheckoutPaymentOptions: typeof import("../components/checkout/PaymentOptions.vue")['default']
+export const CheckoutPaymentCODConfirmModal: typeof import("../components/checkout/payment/CODConfirmModal.vue")['default']
+export const CheckoutPaymentCODPayment: typeof import("../components/checkout/payment/CODPayment.vue")['default']
+export const CheckoutPaymentCardPayment: typeof import("../components/checkout/payment/CardPayment.vue")['default']
+export const CheckoutPaymentCouponSection: typeof import("../components/checkout/payment/CouponSection.vue")['default']
+export const CheckoutPaymentNetBanking: typeof import("../components/checkout/payment/NetBanking.vue")['default']
+export const CheckoutPaymentSnapmintPayment: typeof import("../components/checkout/payment/SnapmintPayment.vue")['default']
+export const CheckoutPaymentUpiPayment: typeof import("../components/checkout/payment/UpiPayment.vue")['default']
 export const CollectionAvailableVoucher: typeof import("../components/collection/AvailableVoucher.vue")['default']
 export const CollectionFilters: typeof import("../components/collection/Filters.vue")['default']
 export const CollectionImportantNoteModal: typeof import("../components/collection/ImportantNoteModal.vue")['default']
@@ -81,6 +87,7 @@ export const ProfilePastOrders: typeof import("../components/profile/PastOrders.
 export const ProfileRecentlyViewed: typeof import("../components/profile/ProfileRecentlyViewed.vue")['default']
 export const ProfileSavedAddresses: typeof import("../components/profile/SavedAddresses.vue")['default']
 export const SearchNoResults: typeof import("../components/search/NoResults.vue")['default']
+export const SnapmintPayment: typeof import("../components/snapmint/SnapmintPayment.vue")['default']
 export const NuxtWelcome: typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
 export const NuxtLayout: typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
 export const NuxtErrorBoundary: typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']
@@ -113,7 +120,13 @@ export const LazyCartConfetti: LazyComponent<typeof import("../components/cart/c
 export const LazyCartRelatedProducts: LazyComponent<typeof import("../components/cart/relatedProducts.vue")['default']>
 export const LazyCheckoutCartSummary: LazyComponent<typeof import("../components/checkout/CartSummary.vue")['default']>
 export const LazyCheckoutAddressSelector: LazyComponent<typeof import("../components/checkout/CheckoutAddressSelector.vue")['default']>
-export const LazyCheckoutPaymentOptions: LazyComponent<typeof import("../components/checkout/PaymentOptions.vue")['default']>
+export const LazyCheckoutPaymentCODConfirmModal: LazyComponent<typeof import("../components/checkout/payment/CODConfirmModal.vue")['default']>
+export const LazyCheckoutPaymentCODPayment: LazyComponent<typeof import("../components/checkout/payment/CODPayment.vue")['default']>
+export const LazyCheckoutPaymentCardPayment: LazyComponent<typeof import("../components/checkout/payment/CardPayment.vue")['default']>
+export const LazyCheckoutPaymentCouponSection: LazyComponent<typeof import("../components/checkout/payment/CouponSection.vue")['default']>
+export const LazyCheckoutPaymentNetBanking: LazyComponent<typeof import("../components/checkout/payment/NetBanking.vue")['default']>
+export const LazyCheckoutPaymentSnapmintPayment: LazyComponent<typeof import("../components/checkout/payment/SnapmintPayment.vue")['default']>
+export const LazyCheckoutPaymentUpiPayment: LazyComponent<typeof import("../components/checkout/payment/UpiPayment.vue")['default']>
 export const LazyCollectionAvailableVoucher: LazyComponent<typeof import("../components/collection/AvailableVoucher.vue")['default']>
 export const LazyCollectionFilters: LazyComponent<typeof import("../components/collection/Filters.vue")['default']>
 export const LazyCollectionImportantNoteModal: LazyComponent<typeof import("../components/collection/ImportantNoteModal.vue")['default']>
@@ -172,6 +185,7 @@ export const LazyProfilePastOrders: LazyComponent<typeof import("../components/p
 export const LazyProfileRecentlyViewed: LazyComponent<typeof import("../components/profile/ProfileRecentlyViewed.vue")['default']>
 export const LazyProfileSavedAddresses: LazyComponent<typeof import("../components/profile/SavedAddresses.vue")['default']>
 export const LazySearchNoResults: LazyComponent<typeof import("../components/search/NoResults.vue")['default']>
+export const LazySnapmintPayment: LazyComponent<typeof import("../components/snapmint/SnapmintPayment.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
 export const LazyNuxtLayout: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
 export const LazyNuxtErrorBoundary: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue")['default']>
