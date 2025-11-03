@@ -3,9 +3,13 @@
     <!-- 🔹 Top bar: Filters + Sorting -->
     <div class="flex flex-wrap gap-2 mb-4 items-center w-full">
       <div class="hidden md:flex items-center w-full gap-2">
-        <button @click="toggleDrawer" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
-          Filters
-        </button>
+       <button
+  v-if="hasFilterData"
+  @click="toggleDrawer"
+  class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+>
+  Filters
+</button>
         <SortingTags v-model="selectedSort" :options="sortOptions" />
         <div class="ml-auto text-gray-700 text-sm">
           Total Results: {{ totalProductsCount }}
@@ -14,9 +18,13 @@
 
       <!-- 🔸 Mobile -->
       <div class="flex md:hidden items-center w-full gap-2">
-        <button @click="toggleDrawer" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
-          Filters
-        </button>
+       <button
+  v-if="hasFilterData"
+  @click="toggleDrawer"
+  class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+>
+  Filters
+</button>
         <div class="ml-auto">
           <SortDropdown v-model="selectedSort" :options="sortOptions" />
         </div>
@@ -289,10 +297,14 @@ const fetchProductsFromStore = async (page = 1) => {
   }
 };
 
-
-
-
-
+const hasFilterData = computed(() => {
+  const filters = store.filters || {}
+  return (
+    (filters.categories && filters.categories.length > 0) ||
+    (filters.tags && filters.tags.length > 0) ||
+    (filters.sizes && filters.sizes.length > 0)
+  )
+})
 
 
 // --- Infinite Scroll

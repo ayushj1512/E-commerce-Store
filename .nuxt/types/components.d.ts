@@ -42,6 +42,7 @@ interface _GlobalComponents {
     'CommonHeader': typeof import("../../components/common/Header.vue")['default']
     'CommonHeaderSearch': typeof import("../../components/common/HeaderSearch.vue")['default']
     'CommonProductCard': typeof import("../../components/common/ProductCard.vue")['default']
+    'CommonProductCard1': typeof import("../../components/common/ProductCard1.vue")['default']
     'CommonProductCardScroll': typeof import("../../components/common/ProductCardScroll.vue")['default']
     'CommonProductHorizontalList': typeof import("../../components/common/ProductHorizontalList.vue")['default']
     'CommonScrollToTopButton': typeof import("../../components/common/ScrollToTopButton.vue")['default']
@@ -58,6 +59,7 @@ interface _GlobalComponents {
     'HomeHeadline': typeof import("../../components/home/Headline.vue")['default']
     'HomeHeadline2': typeof import("../../components/home/Headline2.vue")['default']
     'HomeHeroSection': typeof import("../../components/home/HeroSection.vue")['default']
+    'HomeHighlightsBar': typeof import("../../components/home/HighlightsBar.vue")['default']
     'HomeInstaGallery': typeof import("../../components/home/InstaGallery.vue")['default']
     'HomePremiumCategories': typeof import("../../components/home/PremiumCategories.vue")['default']
     'HomeRecentlyViewedProducts': typeof import("../../components/home/RecentlyViewedProducts.vue")['default']
@@ -140,6 +142,7 @@ interface _GlobalComponents {
     'LazyCommonHeader': LazyComponent<typeof import("../../components/common/Header.vue")['default']>
     'LazyCommonHeaderSearch': LazyComponent<typeof import("../../components/common/HeaderSearch.vue")['default']>
     'LazyCommonProductCard': LazyComponent<typeof import("../../components/common/ProductCard.vue")['default']>
+    'LazyCommonProductCard1': LazyComponent<typeof import("../../components/common/ProductCard1.vue")['default']>
     'LazyCommonProductCardScroll': LazyComponent<typeof import("../../components/common/ProductCardScroll.vue")['default']>
     'LazyCommonProductHorizontalList': LazyComponent<typeof import("../../components/common/ProductHorizontalList.vue")['default']>
     'LazyCommonScrollToTopButton': LazyComponent<typeof import("../../components/common/ScrollToTopButton.vue")['default']>
@@ -156,6 +159,7 @@ interface _GlobalComponents {
     'LazyHomeHeadline': LazyComponent<typeof import("../../components/home/Headline.vue")['default']>
     'LazyHomeHeadline2': LazyComponent<typeof import("../../components/home/Headline2.vue")['default']>
     'LazyHomeHeroSection': LazyComponent<typeof import("../../components/home/HeroSection.vue")['default']>
+    'LazyHomeHighlightsBar': LazyComponent<typeof import("../../components/home/HighlightsBar.vue")['default']>
     'LazyHomeInstaGallery': LazyComponent<typeof import("../../components/home/InstaGallery.vue")['default']>
     'LazyHomePremiumCategories': LazyComponent<typeof import("../../components/home/PremiumCategories.vue")['default']>
     'LazyHomeRecentlyViewedProducts': LazyComponent<typeof import("../../components/home/RecentlyViewedProducts.vue")['default']>

@@ -25,16 +25,16 @@
       </div>
     </div>
 
-    <!-- Navigation Arrows -->
+    <!-- Navigation Arrows (Hidden on Mobile) -->
     <button
       @click="prevSlide"
-      class="absolute top-1/2 left-4 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 z-20"
+      class="hidden sm:flex absolute top-1/2 left-4 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 z-20"
     >
       &#10094;
     </button>
     <button
       @click="nextSlide"
-      class="absolute top-1/2 right-4 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 z-20"
+      class="hidden sm:flex absolute top-1/2 right-4 transform -translate-y-1/2 text-white text-3xl bg-black bg-opacity-30 p-2 rounded-full hover:bg-opacity-50 z-20"
     >
       &#10095;
     </button>

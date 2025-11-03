@@ -44,6 +44,8 @@
 
       <!-- Stars -->
       <Stars />
+
+      <highlights-bar />
     </main>
 
     <!-- ✅ App Download Banner (fixed bottom) -->
@@ -68,6 +70,7 @@ import RecentlyViewedProducts from '~/components/home/RecentlyViewedProducts.vue
 import InstaGallery from '~/components/home/InstaGallery.vue'
 import OfferList from '@/components/home/voucher.vue'
 import AppDownload from '@/components/home/AppDownload.vue' // 👈 added
+import HighlightsBar from '../components/home/HighlightsBar.vue'
 </script>
 
 <style scoped>
