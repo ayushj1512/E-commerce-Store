@@ -8,7 +8,7 @@
       >
         <!-- Conditional Link -->
         <component
-          :is="isInternal(product.document.product_url) ? 'router-link' : 'a'"
+          :is="isInternal(product.document.product_url) ? 'NuxtLink' : 'a'"
           :to="isInternal(product.document.product_url) ? product.document.product_url : null"
           :href="!isInternal(product.document.product_url) ? product.document.product_url : null"
           :target="!isInternal(product.document.product_url) ? '_blank' : null"
@@ -54,14 +54,45 @@ function isInternal(url) {
   return typeof url === "string" && url.startsWith("/");
 }
 
-async function fetchBuyAlongProducts() {
-  try {
-    const { data } = await axios.get(
-      "https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=product_id:=[126397,125399,126416,125294,73000]&filter_by=active:=1&sort_by=date_added_unix:desc&per_page=200&page=1&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh"
-    );
+/**
+ * Fetch list of offer product IDs from config
+ */
+async function fetchOfferProductIds() {
+  const CONFIG_URL =
+    "https://api.streetstylestore.com/collections/sss_config/documents/sss-cart-offers?a=1";
 
-    if (data.hits) {
-      // Process product_data JSON safely for pricing
+  try {
+    const { data } = await axios.get(CONFIG_URL, {
+      headers: {
+        "x-typesense-api-key":
+          "Bm23NaocNyDb2qWiT9Mpn4qXdSmq7bqdoLzY6espTB3MC6Rx",
+      },
+    });
+
+    if (data && data.data) {
+      return data.data; // string of product IDs: "126397,125399,126416,125294,73000"
+    } else {
+      console.warn("No offer product data returned from config API");
+      return "";
+    }
+  } catch (error) {
+    console.error("Error fetching offer product IDs:", error);
+    return "";
+  }
+}
+
+/**
+ * Fetch detailed product data for given IDs
+ */
+async function fetchProductsByIds(idsString) {
+  if (!idsString) return;
+
+  const PRODUCTS_URL = `https://api.streetstylestore.com/collections/products/documents/search?q=*&filter_by=product_id:=[${idsString}]&filter_by=active:=1&sort_by=date_added_unix:desc&per_page=200&page=1&x-typesense-api-key=VvSmt6K1hvlGJhtTPsxjVrq8RNm9tSXh`;
+
+  try {
+    const { data } = await axios.get(PRODUCTS_URL);
+
+    if (data.hits && Array.isArray(data.hits)) {
       products.value = data.hits.map((p) => {
         const doc = p.document;
         let parsedPrice = doc.selling_price || 0;
@@ -86,7 +117,17 @@ async function fetchBuyAlongProducts() {
       });
     }
   } catch (error) {
-    console.error("Error fetching buy along products:", error);
+    console.error("Error fetching product details:", error);
+  }
+}
+
+/**
+ * Combined flow: first fetch IDs, then fetch products
+ */
+async function fetchBuyAlongProducts() {
+  const idsString = await fetchOfferProductIds();
+  if (idsString) {
+    await fetchProductsByIds(idsString);
   }
 }
 
@@ -99,7 +140,6 @@ onMounted(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 

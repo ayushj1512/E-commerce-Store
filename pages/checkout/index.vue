@@ -122,7 +122,7 @@ function goToPayment() {
 onMounted(() => {
   mounted.value = true;
   cart.loadCart();
-  cart.fetchVouchers();
+  cart.fetchDeals();
 });
 </script>
 

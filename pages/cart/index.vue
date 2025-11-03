@@ -341,7 +341,7 @@ onMounted(async () => {
   await cart.loadCart();
   console.log("✅ Cart loaded:", cart.items);
 
-  await cart.fetchVouchers();
+  await cart.fetchDeals();
   console.log("🎟️ Vouchers fetched:", cart.vouchers || "None");
 
   // Fetch checkout info if cart has items

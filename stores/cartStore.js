@@ -19,10 +19,10 @@ export const useCartStore = defineStore("cart", {
       state.items.reduce((sum, i) => sum + (i.quantity || 0), 0),
 
     // subtotal before discounts
-    subtotal: (state) =>
-      state.items
-        .reduce((sum, i) => sum + (i.MRP_price || 0) * (i.quantity || 0), 0)
-        .toFixed(2),
+subtotal: (state) =>
+  Number(
+    state.items.reduce((sum, i) => sum + (i.MRP_price || 0) * (i.quantity || 0), 0).toFixed(2)
+  ),
 
     // total after discounts (and COD if selected)
     total: (state) => {
@@ -203,7 +203,7 @@ export const useCartStore = defineStore("cart", {
       this.computeDiscounts();
     },
 
-    async fetchVouchers() {
+    async fetchDeals() {
       try {
         const res = await axios.get(
           "https://api.streetstylestore.com/collections/sss_config/documents/voucher-listing?a=1&x-typesense-api-key=F5gdSFxpg6bi8ZXfuybIsQy074HtBDkC"
@@ -321,6 +321,57 @@ export const useCartStore = defineStore("cart", {
       return this.getItemVouchers(item).some(
         (v) => v.remainingPerItem[item._key] === 0
       );
+    },
+
+    // 💳 NEW: Fetch Credit Vouchers
+    async fetchCreditVoucher() {
+      const authStore = useAuthStore();
+      this.creditVoucherLoading = true;
+
+      try {
+        if (!authStore.isAuthenticated) {
+          console.warn("⚠️ User not logged in, skipping voucher fetch");
+          this.creditVouchers = [];
+          return;
+        }
+
+        const requestData = {
+          gateway_action: "cart/availableVoucher",
+          site: "sss",
+          all: 1,
+          user_hash_key: authStore.key,
+          id_customer: authStore.id_customer,
+          id_cart: authStore.cart_id,
+        };
+
+        const response = await axios.post(
+          import.meta.env.VITE_BASE_URL,
+          JSON.stringify(requestData),
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+
+        const { status, user_email, checkOutUrl, voucherList } = response.data;
+
+        if (status && Array.isArray(voucherList)) {
+          this.creditVouchers = voucherList;
+          this.creditVoucherUserEmail = user_email || "";
+          this.creditVoucherCheckoutUrl = checkOutUrl || "";
+          console.log("✅ Loaded Credit Vouchers:", this.creditVouchers);
+        } else {
+          this.creditVouchers = [];
+          this.creditVoucherCheckoutUrl = "";
+          console.log("ℹ️ No credit vouchers found.");
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch credit vouchers:", err);
+        this.creditVouchers = [];
+        this.creditVoucherCheckoutUrl = "";
+      } finally {
+        this.creditVoucherLoading = false;
+      }
     },
 
     // returns per-unit price for display

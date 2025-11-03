@@ -20,6 +20,7 @@
     "axios": "^1.11.0",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.5.0",
+    "crypto-js": "^4.2.0",
     "izitoast": "^1.4.0",
     "lucide-vue-next": "^0.542.0",
     "nuxt-toast": "^1.1.4",

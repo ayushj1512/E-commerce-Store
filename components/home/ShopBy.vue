@@ -7,36 +7,28 @@
       </h2>
     </div>
 
-    <!-- Subcategories: horizontal scroll -->
+    <!-- Subcategories -->
     <div
-  class="overflow-x-auto px-4 sm:px-6 mb-6 flex space-x-6 md:justify-center scrollbar-hide"
->
-  <button
-    v-for="(sub, index) in subcategories"
-    :key="index"
-    @click="selectedSubcategory = sub"
-    :class="[
-      'relative flex-shrink-0 text-sm sm:text-base font-medium tracking-wide transition-all duration-300 pb-1',
-      selectedSubcategory === sub
-        ? 'text-black after:w-full after:bg-black'
-        : 'text-gray-500 hover:text-black after:w-0 hover:after:w-full after:bg-gray-400'
-    ]"
-  >
-    {{ sub }}
-    <!-- Underline animation -->
-    <span
-      class="absolute left-0 bottom-0 h-[2px] transition-all duration-300 rounded-full"
-      :class="[
-        selectedSubcategory === sub ? 'w-full bg-black' : 'w-0 group-hover:w-full bg-gray-400'
-      ]"
-    ></span>
-  </button>
-</div>
+      class="overflow-x-auto px-4 sm:px-6 mb-6 flex space-x-6 md:justify-center scrollbar-hide"
+    >
+      <button
+        v-for="(sub, index) in subcategories"
+        :key="index"
+        @click="selectedSubcategory = sub"
+        class="relative flex-shrink-0 text-sm sm:text-base font-medium tracking-wide transition-colors duration-200 pb-1"
+        :class="[
+          selectedSubcategory === sub
+            ? 'text-black border-b-2 border-black'
+            : 'text-gray-500 hover:text-black hover:border-b-2 hover:border-gray-400'
+        ]"
+      >
+        {{ sub }}
+      </button>
+    </div>
 
-
-    <!-- Products Horizontal Scroll -->
+    <!-- Products -->
     <transition-group
-      name="fade-move"
+      name="fade"
       tag="div"
       class="overflow-x-auto px-4 sm:px-6 pb-4 flex space-x-4 sm:space-x-6 scrollbar-hide relative"
     >
@@ -52,7 +44,7 @@
       <!-- Product Cards -->
       <ProductCard
         v-else
-        v-for="(product, index) in filteredProducts"
+        v-for="(product) in filteredProducts"
         :key="product.id"
         :title="product.name"
         :image="product.image"
@@ -60,7 +52,6 @@
         :mrp="product.mrp"
         :hoverImage="product.hoverImage"
         class="flex-shrink-0 w-40 sm:w-56 md:w-64 h-80 sm:h-96"
-        :style="{ transitionDelay: (index * 80) + 'ms' }"
       />
     </transition-group>
   </section>
@@ -78,7 +69,7 @@ const selectedSubcategory = ref(subcategories[0]);
 const loading = ref(false);
 const placeholderCount = 6;
 
-// Images and tags
+// Product Images
 const images = [
   "https://cdn.streetstylestore.com/3/1/0/7/3/9/310739-sss_vertical.webp",
   "https://cdn.streetstylestore.com/3/1/0/5/6/6/310566-sss_vertical.webp",
@@ -95,7 +86,7 @@ const images = [
 
 const tagsList = [["New"], ["Trending"], ["Best Seller"], [], ["Limited"]];
 
-// Generate 40 products dynamically
+// Generate products dynamically
 const products = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
   name: `Product ${i + 1}`,
@@ -104,44 +95,33 @@ const products = Array.from({ length: 40 }, (_, i) => ({
   mrp: Math.floor(Math.random() * 2000) + 2000,
   image: images[i % images.length],
   hoverImage: null,
-  tags: tagsList[i % tagsList.length]
+  tags: tagsList[i % tagsList.length],
 }));
 
-// Filter products by selected subcategory
+// Filter by subcategory
 const filteredProducts = computed(() =>
   products.filter((p) => p.category === selectedSubcategory.value)
 );
 </script>
 
 <style scoped>
-/* --- ✨ Enhanced Crossfade Animation --- */
-.fade-move-enter-active {
-  transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+/* --- Minimal fade transition --- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
 }
-.fade-move-leave-active {
-  transition: all 0.4s ease;
-  position: absolute; /* prevents layout jump during fade-out */
-}
-
-.fade-move-enter-from {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: translateY(15px) scale(0.96);
+  transform: translateY(8px);
 }
-.fade-move-enter-to {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
-.fade-move-leave-from {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-.fade-move-leave-to {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.98);
-}
-
-/* --- Scrollbar Hide + Smooth Scroll --- */
+/* Hide scrollbars + smooth scroll */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

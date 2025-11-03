@@ -24,9 +24,10 @@ const globals = {
 
 export const useAddressStore = defineStore('address', {
   state: () => ({
-    addresses: [],            // All user addresses
-    lastUsedAddress: {},      // Last used address (optional)
-    deliveryAddress: {},      // ✅ Currently selected address (for checkout)
+    addresses: [],            // 🏠 All user addresses
+    lastUsedAddress: {},      // 🕒 Last used address
+    deliveryAddress: {},      // ✅ Selected delivery address
+    id_address: null,         // ✅ Current selected address ID
     saveAddressClick: false,
     saveAddressButton: false,
     editAddress: {},
@@ -37,6 +38,7 @@ export const useAddressStore = defineStore('address', {
     getAddresses: (state) => state.addresses,
     getLastUsedAddress: (state) => state.lastUsedAddress,
     getDeliveryAddress: (state) => state.deliveryAddress,
+    getSelectedAddressId: (state) => state.id_address,
     getAddressClick: (state) => state.saveAddressClick,
     getSaveAddressButton: (state) => state.saveAddressButton,
     getEditAddress: (state) => state.editAddress,
@@ -44,16 +46,18 @@ export const useAddressStore = defineStore('address', {
   },
 
   actions: {
-    // 🔄 Initialize the address store
+    // 🔄 Initialize store (used in main checkout flow)
     async init() {
+      console.log("🚀 [Address Store] Initialization started...")
       await this.fetchAddresses()
+      console.log("✅ [Address Store] Initialization complete. Selected:", this.id_address)
     },
 
-    // 📦 Fetch all addresses from API
+    // 📦 Fetch Addresses from API
     async fetchAddresses() {
       const auth = useAuthStore()
       if (!auth.isAuthenticated || !auth.key) {
-        console.warn("[Address Store] ⚠️ User not authenticated, skipping fetchAddresses")
+        console.warn("[Address Store] ⚠️ User not authenticated, skipping fetchAddresses.")
         return
       }
 
@@ -64,28 +68,33 @@ export const useAddressStore = defineStore('address', {
         site: globals.site,
       })
 
-      console.log("[Address Store] 📤 Fetch Addresses Request:", requestData)
+      console.log("[Address Store] 📤 Sending Fetch Addresses Request:", requestData)
 
       try {
         const { data } = await axios.post(globals.gatewayUrl, requestData, {
           headers: { 'Content-Type': 'application/json' },
         })
 
-        console.log("[Address Store] 📩 Fetch Addresses Response:", data)
+        console.log("[Address Store] 📩 Received Response:", data)
 
         if (Array.isArray(data)) {
           this.setAddresses(data)
         } else {
-          console.warn("[Address Store] ⚠️ Unexpected response format:", data)
+          console.warn("[Address Store] ⚠️ Unexpected response format. Resetting addresses.", data)
           this.addresses = []
+          this.id_address = null
+          this.deliveryAddress = {}
         }
 
       } catch (error) {
         console.error("[Address Store] ❌ Error fetching addresses:", error)
+        this.addresses = []
+        this.deliveryAddress = {}
+        this.id_address = null
       }
     },
 
-    // 💾 Save or update address
+    // 💾 Save / Update Address
     async saveAddress(payload) {
       const auth = useAuthStore()
       if (!auth.isAuthenticated || !auth.key) return
@@ -105,13 +114,14 @@ export const useAddressStore = defineStore('address', {
           headers: { 'Content-Type': 'application/json' },
         })
 
+        console.log("[Address Store] ✅ Address saved successfully. Refetching list...")
         await this.fetchAddresses()
       } catch (error) {
         console.error("[Address Store] ❌ Error saving address:", error)
       }
     },
 
-    // ❌ Remove an address
+    // ❌ Remove Address
     async removeAddress(id_address) {
       const auth = useAuthStore()
       if (!auth.isAuthenticated || !auth.key) return
@@ -132,55 +142,63 @@ export const useAddressStore = defineStore('address', {
           headers: { 'Content-Type': 'application/json' },
         })
 
+        console.log(`[Address Store] 🗑️ Address ${id_address} removed. Refreshing list...`)
         await this.fetchAddresses()
 
-        // If the deleted address was selected
+        // Reset if deleted address was selected
         if (this.deliveryAddress?.id_address === id_address) {
-          console.log("[Address Store] 🧹 Removed selected delivery address from store")
           this.deliveryAddress = {}
+          this.id_address = null
+          console.log("[Address Store] 🧹 Cleared selected delivery address (was removed).")
         }
+
       } catch (error) {
         console.error("[Address Store] ❌ Error removing address:", error)
       }
     },
 
-    // 🧠 Local setters
+    // 🧠 Simple Setters
     setSaveAddressClick(val) { this.saveAddressClick = val },
     setSaveAddressButton(val) { this.saveAddressButton = val },
     setLastUsedAddress(val) { this.lastUsedAddress = val },
     setEditAddress(val) { this.editAddress = val },
     setCheckAddressValidation(val) { this.checkAddressValidation = val },
 
-    // ✅ Store the current selected delivery address
+    // ✅ Explicitly set selected delivery address
     setDeliveryAddress(address) {
       if (!address || !address.id_address) {
-        console.warn("[Address Store] ⚠️ Invalid address selected:", address)
+        console.warn("[Address Store] ⚠️ Invalid address passed to setDeliveryAddress:", address)
         return
       }
+
       this.deliveryAddress = address
-      console.log("✅ [Address Store] Delivery address set:", address)
+      this.id_address = address.id_address
+
+      console.log(`✅ [Address Store] Delivery address manually set: ${address.id_address}`, address)
     },
 
-    // 📋 Update the address list and sync selected address
+    // 📋 Parse all addresses and auto-select preferred one
     setAddresses(list) {
       if (!Array.isArray(list) || list.length === 0) {
-        console.warn("[Address Store] ⚠️ No addresses found.")
+        console.warn("[Address Store] ⚠️ No addresses found in response.")
         this.addresses = []
         this.lastUsedAddress = {}
         this.deliveryAddress = {}
+        this.id_address = null
         return
       }
 
       this.addresses = list
-
-      // Pick last used or first one if none selected
       const preferred = list.find(a => a.recent === "1") || list[0]
       this.lastUsedAddress = preferred
 
       if (!this.deliveryAddress?.id_address) {
         this.deliveryAddress = preferred
-        console.log("📦 [Address Store] Default delivery address set:", preferred)
+        this.id_address = preferred.id_address
+        console.log("📦 [Address Store] Default delivery address auto-selected:", preferred)
       }
+
+      console.log("🧾 [Address Store] Address List Updated → Selected ID:", this.id_address)
     },
   },
 })
